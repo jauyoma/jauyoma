@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright � 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -37,7 +37,12 @@ bool b_ConnectTo = false;
 // for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
 double pd_Buf[2];
 int    s32_BufLen = 2;
-int    ps32_ReadLen[2];
+int    ps32_ReadLen[2];
+
+int   s32_SendBufLen;   
+uint  u32_Err;   
+string ps8_SendBuf = "Connected";      
+s32_SendBufLen = StringLen(ps8_SendBuf);
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -68,12 +73,6 @@ void OnInit()
 //+------------------------------------------------------------------+
 int DeInit()
 {
-   int   s32_SendBufLen;
-   uint  u32_Err;
-   string ps8_SendBuf = "Close";
-   
-   s32_SendBufLen = StringLen(ps8_SendBuf);
-   
 //----
    if (b_ConnectTo)
    {
@@ -82,7 +81,6 @@ int DeInit()
       
       if (s31_Error == OK)
          b_ConnectTo = false;
-         u32_Err = SendToString(ph_Client[0],ps8_SendBuf,s32_SendBufLen); // in - SendBuf string size in char element
    }
    EventKillTimer();
    return(0);
@@ -140,6 +138,8 @@ void OnTimer()
          Print("Error: No data(",ph_Client[0],"...) return is: ", GetErrMsg(s32_Error));
          Sleep(5);
       }
-   
+      
+      u32_Err = SendToString(ph_Client[0],ps8_SendBuf,s32_SendBufLen); // in - SendBuf string size in char element
+   
 }
 //+------------------------------------------------------------------+
