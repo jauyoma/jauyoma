@@ -1,0 +1,145 @@
+//+---------------------------------------------------------------------------+
+//|                                            Client.mq4                     |
+//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                                       tradertobe@gmail.com                |
+//+---------------------------------------------------------------------------+
+#include <ImportNetEventsProcDLL.mqh>
+/*int ConnectTo(string  ps8_ServerIP, // in - string ps8_ServerIP = "0123456789123456"
+                int     s32_Port,     // in 
+                int&    ph_Client[]); // out - int ph_Client[1]
+*/
+/*int SendToDouble(int     h_Client,        // in
+                   double& pd_SendBuf[],    // in
+                   int     s32_SendBufLen); // in - SendBuf[] array size in double element 
+*/
+/*int ReadFromDouble(int     h_Client,        // in
+                     double& pd_ReadBuf[],    // in
+                     int     s32_ReadBufLen,  // in  - ReadBuf[] array size in double element
+                     int&    ps32_ReadLen[]); // out - int ps32_ReadLen[1] - count of actually read data in double element
+*/                      
+/*int ConnectClose(int h_Client);    // in
+*/ 
+       
+// Globals variables
+int s32_Error=1;
+int s32_Err=1;
+int s31_Error;
+int i,h=0;
+// for int ConnectTo(ps8_ServerIP, s32_Port, ph_Client);  // out - int h_Client[1]
+extern string ps8_ServerIP = "192.168.1.102";  // mine local IP
+int    s32_Port = 2000;
+uchar  uc_ServerIP[];
+int    ph_Client[1];
+
+bool b_ConnectTo = false;
+
+// for int SendToDouble(ph_Client[0], pd_Buf, s32_BufLen);  
+// for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
+double pd_Buf[3];
+int    s32_BufLen = 3;
+int    ps32_ReadLen[3];
+
+int   s32_SendBufLen;   
+uint  u32_Err;   
+string ps8_SendBuf = "Connected";      
+
+//+------------------------------------------------------------------+
+//| expert initialization function                                   |
+//+------------------------------------------------------------------+
+void OnInit()
+{
+//----
+  EventSetMillisecondTimer(10);
+  StringToCharArray(ps8_ServerIP,uc_ServerIP);
+   
+   if(!b_ConnectTo)
+   {
+      s31_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
+      Print("ConnectTo(...) return is: ",GetErrMsg(s32_Error));
+      Print("ConnectTo(...) handle is: ",ph_Client[0]);
+      
+      if (s31_Error == OK)
+      {
+         b_ConnectTo = true;
+         Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
+      }
+   }
+
+//----
+
+}
+//+------------------------------------------------------------------+
+//| expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+int DeInit()
+{
+//----
+      s31_Error = ConnectClose(ph_Client[0]);
+      Print("ConnectClose(...) return is: ",GetErrMsg(s32_Error));
+      
+      if (s31_Error == OK)
+         b_ConnectTo = false;
+   
+   EventKillTimer();
+   return(0);
+//----
+}  
+
+void OnTick()
+{
+//----   
+   if (!b_ConnectTo)
+      Print("ConnectTo(...) return is: ",GetErrMsg(s32_Error));
+   
+   RefreshRates();
+   double pd_Value[3];
+   
+   pd_Value[0] = NormalizeDouble(Bid,Digits);
+   pd_Value[1] = NormalizeDouble(Ask,Digits);
+   pd_Value[2] = 10;
+   
+   s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
+   
+   if (s32_Error != 0)
+   {
+      Print("SendToDouble(",ph_Client[0],"...) return is: ",GetErrMsg(s32_Error));
+   }
+   else
+   {
+      Print("SendToDouble(",ph_Client[0],"...) return is: OK");
+      s32_Err = 1;
+   }
+}
+
+void OnTimer()
+{
+      s32_Error = ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen); 
+      if(ps32_ReadLen[0]>0)
+      {
+         Print("ReadFromDouble(",ph_Client[0],"...) return is: OK"); 
+         Print("Read double value is: ", DoubleToString(pd_Buf[1],5));
+         Print("Read double value is: ", DoubleToString(pd_Buf[0],5));
+         Print("Read double value is: ", DoubleToString(pd_Buf[2],0));
+         s32_Err = 0;
+      }
+      else   
+      if (ps32_ReadLen[0]<=0&&s32_Error == 0)
+      {
+         Print("Waiting for data(",ph_Client[0],"...) return is: ", GetErrMsg(s32_Error));
+         Sleep(5);
+      }
+      else
+      if (s32_Error != 0&&ps32_ReadLen[0]>0)
+      {
+         Print("ReadFromDouble(",ph_Client[0],"...) return is: ", GetErrMsg(s32_Error));
+         Sleep(5);
+      }
+      else
+      if (s32_Error != 0&&ps32_ReadLen[0]<0)
+      {
+         Print("Error: No data(",ph_Client[0],"...) return is: ", GetErrMsg(s32_Error));
+         Sleep(5);
+      }
+         
+}
+//+------------------------------------------------------------------+
