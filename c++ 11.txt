@@ -1,0 +1,203 @@
+//+---------------------------------------------------------------------------+
+//|                                            EchoServer.cpp                 |
+//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                                       tradertobe@gmail.com                |
+//+---------------------------------------------------------------------------+
+
+// EchoServer.cpp
+
+#include <winsock2.h>
+#pragma comment(lib, "NetEventsProcDLL") // NetEventsProcDLL.lib placed in ...\FastStart\EchoServer\ 
+#include <iostream>
+#include <conio.h>
+
+#include  "cNetEventsProcDLL.h"
+
+BOOL FormatIP(DWORD u32_IP, char* s8_IP);
+
+int main()
+{
+	int s32_Port = 2000;
+
+	// Try to create server listening on port 2000
+	// You may change port.
+	DWORD u32_Error = cNetEventsProcDLL::ServerOpen(s32_Port);
+
+	if (u32_Error)
+	{
+		printf("\nServerOpen() failed with error: %d\n", u32_Error);
+		return 1;
+	}
+	else
+		printf("\nServerOpen() fine, we now are waiting for connections...\n");
+
+	DWORD u32_Count = 0;
+	DWORD u32_CountOld = 0;
+
+	double pd_Buf[1025];
+	DWORD  u32_BufLen = 1025;
+	int    ps32_ReadLen[2];
+	double Bid = 0;
+	double Ask = 0;
+	int m, k, p, x = 0, q = 0, z = 0;
+	WORD min = 0, hr = 0;
+	SYSTEMTIME tym;
+
+	pd_Buf[0] = 0;
+	pd_Buf[1] = 0;
+	pd_Buf[2] = 0;
+
+	int ph_Client[62];
+	int ps32_ClientIP[62];
+	int ps32_ClientCount[1];
+
+	char   ps8_ReadBuf[1025];
+	DWORD  s32_ReadBufLen = 1025;
+	int    ps31_ReadLen[1];
+
+
+	while (!kbhit())
+	{
+		u32_Error = cNetEventsProcDLL::GetAllConnections(ph_Client, ps32_ClientIP, ps32_ClientCount);
+
+		if (u32_Error)
+		{
+			printf("\nGetAllConnections(...) failed with error: %d\n", u32_Error);
+			break;
+		}
+		else
+			u32_Count = ps32_ClientCount[0];
+
+
+		if (u32_Count != u32_CountOld)
+		{
+			u32_CountOld = u32_Count;
+
+			printf("\nNumber of connections now = %d\n", u32_Count);
+			printf("#     h_Connect   (peer IP)\n");
+
+			for (DWORD i = 0; i<u32_Count; i++)
+			{
+				char  s8_IP[20];
+				sprintf(s8_IP, "%s", "123456789012345");
+
+				FormatIP(ps32_ClientIP[i], s8_IP);
+
+				printf("%d      %d       (%s)\n", i, ph_Client[i], s8_IP);
+			}
+		}
+
+		if ((u32_Count == 3 && (p==0||z==0||q==0)) || (u32_Count == 3 && (p==3)))
+		{
+
+			for (DWORD i = 0; i < u32_Count; i++)
+			{
+				u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[i], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("ReadFromDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+					system("pause");
+					cNetEventsProcDLL::ServerClose();
+				}
+
+				if (ps32_ReadLen[0])
+				{
+					printf("ReadFromDouble(%d...) read %d double values\n", ph_Client[i], ps32_ReadLen[0]);
+					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
+					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[0]);
+					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[2]);
+					
+					if(x != ph_Client[i] && p == 0)
+					{
+						x = ph_Client[i];
+					}
+					
+					if(z != ph_Client[i] && z == 0)
+					{
+						z = ph_Client[i];
+					}
+					
+					if(q != ph_Client[i] && q == 0)
+					{
+						q = ph_Client[i];
+					}
+
+					if(x == ph_Client[i])
+					{
+						p++;
+					}
+
+					if(z == ph_Client[i])
+					{
+						p++;
+					}
+
+					if(q == ph_Client[i])
+					{
+						p++;
+					}
+
+					if (pd_Buf[2] != 10)
+					{
+						cNetEventsProcDLL::DisconnectClient(ph_Client[0]);
+						system("pause");
+					}
+
+					GetSystemTime(&tym);
+					u32_Error = cNetEventsProcDLL::SendToDouble(ph_Client[i], pd_Buf, ps32_ReadLen[0]);
+
+					if (u32_Error)
+					{
+						printf("SendToDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+						system("pause");
+						cNetEventsProcDLL::ServerClose();
+					}
+					else
+					{
+						printf("SendToDouble(%d...) sent %d double values\n", ph_Client[i], ps32_ReadLen[0]);
+						printf("SendToDouble(%d...) sent Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
+						printf("SendToDouble(%d...) sent Data: %9.5f\n", ph_Client[i], pd_Buf[0]);
+						min = tym.wMinute;
+						hr = tym.wHour;
+						std::cout << min << std::endl;
+						std::cout << hr << std::endl;
+					}
+
+
+				}
+
+			}
+
+			std::cout << p << std::endl;	
+
+		}
+
+	}
+
+	u32_Error = cNetEventsProcDLL::ServerClose();
+
+	if (u32_Error)
+	{
+		printf("\nServerClose() failed with error: %d\n", u32_Error);
+		return 1;
+	}
+	else
+		printf("\nServerClose() fine...\n");
+
+	Sleep(10000);
+	return 0;
+}
+
+BOOL FormatIP(DWORD u32_IP, char* s8_IP)
+{
+	DWORD u32_Len = strlen(s8_IP);
+
+	if (u32_Len < 15)
+		return FALSE;
+
+	BYTE* pu8_Addr = (BYTE*)&u32_IP;
+	sprintf(s8_IP, "%d.%d.%d.%d", pu8_Addr[0], pu8_Addr[1], pu8_Addr[2], pu8_Addr[3]);
+
+	return TRUE;
+}
