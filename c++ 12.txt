@@ -40,8 +40,10 @@ int main()
 	double Bid = 0;
 	double Ask = 0;
 	int m, k, p = 0, x = 0, q = 0, z = 0;
+	bool x1 = false, q1 = false, z1 = false;
 	WORD min = 0, hr = 0;
 	SYSTEMTIME tym;
+	double tickcount;
 
 	pd_Buf[0] = 0;
 	pd_Buf[1] = 0;
@@ -87,7 +89,7 @@ int main()
 			}
 		}
 
-		if ((u32_Count == 3 && (x==0||z==0||q==0)) || (u32_Count == 3 && (p==3)))
+		if (u32_Count == 3)
 		{
 
 			for (DWORD i = 0; i < u32_Count; i++)
@@ -107,37 +109,50 @@ int main()
 					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
 					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[0]);
 					printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[2]);
-					
-					if(x != ph_Client[i] && p == 0)
+
+					if (i == 0)
 					{
 						x = ph_Client[i];
 					}
-					
-					if(z != ph_Client[i] && z == 0)
+
+					if (i==1)
 					{
 						z = ph_Client[i];
 					}
-					
-					if(q != ph_Client[i] && q == 0)
+
+					if (i==2)
 					{
 						q = ph_Client[i];
 					}
 
-					if(x == ph_Client[i])
+					if (x == ph_Client[i])
 					{
-						p++;
+						if (pd_Buf[2] <= tickcount)
+						{
+							cNetEventsProcDLL::DisconnectClient(x);
+							system("pause");
+						}
+						tickcount = pd_Buf[2];
+						std::cout << x << std::endl;
+						std::cout << pd_Buf[2] << std::endl;
+						std::cout << tickcount << std::endl;
 					}
 
-					if(z == ph_Client[i])
+					if (z == ph_Client[i])
 					{
-						p++;
+						tickcount = pd_Buf[2];
+						std::cout << z << std::endl;
+						std::cout << pd_Buf[2] << std::endl;
+						std::cout << tickcount << std::endl;
 					}
 
-					if(q == ph_Client[i])
+					if (q == ph_Client[i])
 					{
-						p++;
+						tickcount = pd_Buf[2];
+						std::cout << q << std::endl;
+						std::cout << pd_Buf[2] << std::endl;
+						std::cout << tickcount << std::endl;
 					}
-
 
 					GetSystemTime(&tym);
 					u32_Error = cNetEventsProcDLL::SendToDouble(ph_Client[i], pd_Buf, ps32_ReadLen[0]);
@@ -159,36 +174,7 @@ int main()
 						std::cout << hr << std::endl;
 					}
 
-
 				}
-
-			}
-
-			std::cout << p << std::endl;
-
-			if(p==2)
-			{
-
-			for(int y = 0; y<p; y++)
-			{
-				if(ph_Client[y]!=x && ph_Client[y]!=z)
-				{
-					cNetEventsProcDLL::DisconnectClient[q];
-					q=0;
-				}
-
-				if(ph_Client[y]!=q && ph_Client[y]!=z)
-				{
-					cNetEventsProcDLL::DisconnectClient[x];
-					x=0;
-				}
-
-				if(ph_Client[y]!=q && ph_Client[y]!=x)
-				{
-					cNetEventsProcDLL::DisconnectClient[z];
-					z=0;
-				}
-			}
 
 			}
 
