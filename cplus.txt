@@ -190,21 +190,142 @@ int main()
 							}
 						}
 
+						if (MagicNumber1 == pd_Buf[3] && ph_Client[i] != z)
+						{
+							if (abs((pd_Buf[0] - _bid1) < 0.00009))
+							{
+								if (pd_Buf[5] == 0.1)
+								{
+									ss_Buf[1] = 3;
+								}
+								else
+									ss_Buf[1] = 4;
+								ss_Buf[0] = 2;
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+									system("pause");
+								}
+								else
+								{
+									printf("SendToInt(%d...) sent %d int values\n", ph_Client[i], ps32_ReadLen[0]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", ph_Client[i], ss_Buf[1]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", ph_Client[i], ss_Buf[0]);
+									min = tym.wMinute;
+									hr = tym.wHour;
+									std::cout << min << std::endl;
+									std::cout << hr << std::endl;
+								}
+
+								if (pd_Buf[5] == 0.1)
+								{
+									ss_Buf[1] = 4;
+								}
+								else
+									ss_Buf[1] = 3;
+
+								u32_Error = cNetEventsProcDLL::SendToInt(z, ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", z, u32_Error);
+									system("pause");
+								}
+								else
+								{
+									printf("SendToInt(%d...) sent %d int values\n", z, ps32_ReadLen[0]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", z, ss_Buf[1]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", z, ss_Buf[0]);
+									min = tym.wMinute;
+									hr = tym.wHour;
+									std::cout << min << std::endl;
+									std::cout << hr << std::endl;
+								}
+								
+							}
+						}
+
+						if (MagicNumber == pd_Buf[3] && ph_Client[i] != q)
+						{
+							if (abs((pd_Buf[0] - _bi2) < 0.00009))
+							{
+								if (pd_Buf[5] == 0.1)
+								{
+									ss_Buf[1] = 3;
+								}
+								else
+									ss_Buf[1] = 4;
+								ss_Buf[0] = 2;
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+									system("pause");
+								}
+								else
+								{
+									printf("SendToInt(%d...) sent %d int values\n", ph_Client[i], ps32_ReadLen[0]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", ph_Client[i], ss_Buf[1]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", ph_Client[i], ss_Buf[0]);
+									min = tym.wMinute;
+									hr = tym.wHour;
+									std::cout << min << std::endl;
+									std::cout << hr << std::endl;
+								}
+
+								if (pd_Buf[5] == 0.1)
+								{
+									ss_Buf[1] = 4;
+								}
+								else
+									ss_Buf[1] = 3;
+
+								u32_Error = cNetEventsProcDLL::SendToInt(q, ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", x, u32_Error);
+									system("pause");
+								}
+								else
+								{
+									printf("SendToInt(%d...) sent %d int values\n", q, ps32_ReadLen[0]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", q, ss_Buf[1]);
+									printf("SendToInt(%d...) sent Data: %9.5f\n", q, ss_Buf[0]);
+									min = tym.wMinute;
+									hr = tym.wHour;
+									std::cout << min << std::endl;
+									std::cout << hr << std::endl;
+								}
+								
+							}
+						}
+
 						if (MagicNumber == 0 && ph_Client[i] == x)
 						{
 							MagicNumber = pd_Buf[3];
 							_bid = pd_Buf[0];
 							_ask = pd_Buf[1];
 						}
-						if (MagicNumber == 0 && ph_Client[i] == z)
+
+						if (MagicNumber1 == 0 && ph_Client[i] == z)
 						{
 							MagicNumber1 = pd_Buf[3];
+							_bid1 = pd_Buf[0];
+							_ask1 = pd_Buf[1];
 						}
-						if (MagicNumber == 0 && ph_Client[i] == q)
+
+						if (MagicNumber2 == 0 && ph_Client[i] == q)
 						{
 							MagicNumber2 = pd_Buf[3];
+							_bid2 = pd_Buf[0];
+							_ask2 = pd_Buf[1];
 						}
 					}
+
 					if (Bid == 0 || pd_Buf[0] > Bid)
 					{
 						Bid = pd_Buf[0];
@@ -233,7 +354,7 @@ int main()
 			std::cout << m << std::endl;
 			std::cout << k << std::endl;
 
-			if (Bid > Ask && p == 3)
+			if (Bid > Ask && p == 3 && pd_Buf[3] == 0)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[0] = tickcount;
@@ -285,6 +406,9 @@ int main()
 			m = 5;
 			k = 5;
 			p = 0;
+			MagicNumber = 0;
+			MagicNumber1 = 0;
+			MagicNumber2 = 0;
 		}
 
 	}
