@@ -1,0 +1,2 @@
+1. disconnect client if error is client unreachable from server 
+2. Include account equity in data sent across to server for overall acount balance calculation
