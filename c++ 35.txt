@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -47,7 +47,7 @@ int main()
 	double Bid = 0, Ask = 0, MagicNumber = 0, MagicNumber1 = 0, MagicNumber2 = 0;
 	double _bid = 0, _bid1 = 0, _bid2 = 0, _ask = 0, _ask1 = 0, _ask2 = 0;
 	bool ok = false, ok1 = false, ok2 = false;
-	WORD stop = 0, stop1 = 0, stop2 = 0, _typ = 0, _typ1 = 0, _typ2 = 0, cpt = 0, cpt1 = 0, cpt2 = 0;
+	double _typ = 0, _typ1 = 0, _typ2 = 0, cpt = 0, cpt1 = 0, cpt2 = 0;
 	DWORD start = 1, end;
 
 	int ph_Client[62];
