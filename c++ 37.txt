@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -169,6 +169,15 @@ int main()
 						ss_Buf[0] = 3;
 						ss_Buf[1] = 4;
 
+						if(min == 2 && (m == i || k == i))
+						{
+							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
+							if(!u32_Error)
+							{
+								min = 0;
+							}
+						}						
+
 						if (MagicNumber == pd_Buf[3] && ph_Client[i] != ph_Client[x])
 						{
 							if ((_typ == 1 && _bid<pd_Buf[1]) || (_typ == 2 && _ask>pd_Buf[0]))
@@ -262,33 +271,36 @@ int main()
 
 			f = cpt + cpt1 + cpt2;
 
-			Bid = _bid;
-			m = x;
-			if (_bid1 > Bid)
+			if (min == 0)
 			{
-				Bid = _bid1;
-				m = z;
-			}
-			if (_bid2 > Bid)
-			{
-				Bid = _bid2;
-				m = q;
-			}
+				Bid = _bid;
+				m = x;
+				if (_bid1 > Bid)
+				{
+					Bid = _bid1;
+					m = z;
+				}
+				if (_bid2 > Bid)
+				{
+					Bid = _bid2;
+					m = q;
+				}
 
-			if (x != m)
-			{
-				Ask = _ask;
-				k = x;
-			}
-			if ((_ask1 < Ask || Ask == 0) && z != m)
-			{
-				Ask = _ask1;
-				k = z;
-			}
-			if ((_ask2 < Ask || Ask == 0) && q != m)
-			{
-				Ask = _ask2;
-				k = q;
+				if (x != m)
+				{
+					Ask = _ask;
+					k = x;
+				}
+				if ((_ask1 < Ask || Ask == 0) && z != m)
+				{
+					Ask = _ask1;
+					k = z;
+				}
+				if ((_ask2 < Ask || Ask == 0) && q != m)
+				{
+					Ask = _ask2;
+					k = q;
+				}
 			}
 
 			end = (GetTickCount() - start) / 1000;
@@ -311,7 +323,7 @@ int main()
 				close = false;
 			}
 
-			if (m != k && f == 0)
+			if (m != k && f == 0 && min == 0)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[0] = tickcount;
@@ -325,6 +337,7 @@ int main()
 				if (u32_Error)
 				{
 					printf("SendToInt(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
+					min = 1;
 				}
 				else
 				{
@@ -334,33 +347,42 @@ int main()
 				}
 
 				ss_Buf[1] = 2;
-				std::cout << "New reading:" << ph_Client[k] << std::endl;
-				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+				
+				if (min==0)
+				{
 
-				if (u32_Error)
-				{
-					printf("SendToInt(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+					std::cout << "New reading:" << ph_Client[k] << std::endl;
+					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+
+					if (u32_Error)
+					{
+						printf("SendToInt(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+						min = 2;
+					}
+					else
+					{
+						printf("SendToInt(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
+						std::cout << ss_Buf[1] << "Client:" << ph_Client[k] << std::endl;
+						std::cout << ss_Buf[0] << "Client:" << ph_Client[k] << std::endl;
+						if (m == x || k == x)
+						{
+							cpt = 1;
+						}
+						if (m == z || k == z)
+						{
+							cpt1 = 1;
+						}
+						if (m == q || k == q)
+						{
+							cpt2 = 1;
+						}
+						start = GetTickCount();
+						Sleep(10000);
+					}
+
 				}
-				else
-				{
-					printf("SendToInt(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
-					std::cout << ss_Buf[1] << "Client:" << ph_Client[k] << std::endl;
-					std::cout << ss_Buf[0] << "Client:" << ph_Client[k] << std::endl;
-					if (m == x || k == x)
-					{
-						cpt = 1;
-					}
-					if (m == z || k == z)
-					{
-						cpt1 = 1;
-					}
-					if (m == q || k == q)
-					{
-						cpt2 = 1;
-					}
-					start = GetTickCount();
-					Sleep(10000);
-				}
+				if (min == 1)
+					min = 0;
 				std::cout << tickcount << std::endl;
 				std::cout << ss_Buf[1] << std::endl;
 				std::cout << ss_Buf[0] << std::endl;
