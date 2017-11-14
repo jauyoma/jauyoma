@@ -41,13 +41,13 @@ int main()
 	DWORD  u32_BufLen = 1025;
 	int    ps32_ReadLen[5];
 	int m = 35, k = 38;
-	DWORD min = 0, hr = 0, p = 0, x = 25, q = 25, z = 25;
+	DWORD min = 0, hr = 0, p = 0, x = 25, q = 25, z = 25, w = 25, y = 25;
 	SYSTEMTIME tym;
 	int tickcount = 0;
-	double Bid = 0, Ask = 0, MagicNumber = 0, MagicNumber1 = 0, MagicNumber2 = 0;
-	double _bid = 0, _bid1 = 0, _bid2 = 0, _ask = 0, _ask1 = 0, _ask2 = 0;
+	double Bid = 0, Ask = 0, MagicNumber = 0, MagicNumber1 = 0, MagicNumber2 = 0, MagicNumber3 = 0, MagicNumber4 = 0;
+	double _bid = 0, _bid1 = 0, _bid2 = 0, _bid3 = 0, _bid4 = 0, _ask = 0, _ask1 = 0, _ask2 = 0, _ask3 = 0, _ask4 = 0;
 	bool ok = false, ok1 = false, ok2 = false;
-	double _typ = 0, _typ1 = 0, _typ2 = 0, cpt = 0, cpt1 = 0, cpt2 = 0, f = 0;
+	double _typ = 0, _typ1 = 0, _typ2 = 0, _typ3 = 0, _typ4 = 0, cpt = 0, cpt1 = 0, cpt2 = 0, cpt3 = 0, cpt4 = 0, f = 0;
 	DWORD start = 1, end;
 
 	int ph_Client[62];
@@ -85,12 +85,12 @@ int main()
 			}
 		}
 
-		if (u32_Count == 3)
+		if (u32_Count >= 2)
 		{
 
 			for (DWORD i = 0; i < u32_Count; i++)
 			{
-				if (x == 25 || z == 25 || q == 25)
+				if (x == 25 || z == 25 || q == 25 || y == 25 || w == 25)
 				{
 					if (i == 0)
 					{
@@ -105,6 +105,16 @@ int main()
 					if (i == 2)
 					{
 						q = i;
+					}
+					
+					if (i == 3)
+					{
+						w = i;
+					}
+					
+					if (i == 4)
+					{
+						y = i;
 					}
 				}
 
@@ -158,7 +168,22 @@ int main()
 							_bid2 = pd_Buf[0];
 							cpt2 = pd_Buf[4];
 						}
-						close = true;
+						if (ph_Client[i] == ph_Client[w])
+						{
+							MagicNumber3 = pd_Buf[3];
+							_typ3 = pd_Buf[4];
+							_ask3 = pd_Buf[1];
+							_bid3 = pd_Buf[0];
+							cpt3 = pd_Buf[4];
+						}
+						if (ph_Client[i] == ph_Client[y])
+						{
+							MagicNumber4 = pd_Buf[3];
+							_typ4 = pd_Buf[4];
+							_ask4 = pd_Buf[1];
+							_bid4 = pd_Buf[0];
+							cpt4 = pd_Buf[4];
+						}
 						p++;
 
 					}
@@ -262,6 +287,64 @@ int main()
 								}
 							}
 						}
+						
+						if (MagicNumber3 == pd_Buf[3] && ph_Client[i] != ph_Client[w])
+						{
+							if ((_typ3 == 1 && _bid3<pd_Buf[1]) || (_typ3 == 2 && _ask3>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[w], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[w], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[w] << "..." << ss_Buf[0] << std::endl;
+								}
+							}
+						}
+						
+						if (MagicNumber4 == pd_Buf[3] && ph_Client[i] != ph_Client[y])
+						{
+							if ((_typ4 == 1 && _bid4<pd_Buf[1]) || (_typ4 == 2 && _ask4>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[y], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[y], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[y] << "..." << ss_Buf[0] << std::endl;
+								}
+							}
+						}
 
 					}
 
@@ -269,7 +352,7 @@ int main()
 
 			}
 
-			f = cpt + cpt1 + cpt2;
+			f = cpt + cpt1 + cpt2 + cpt3 + cpt4;
 
 			if (min == 0)
 			{
@@ -284,6 +367,16 @@ int main()
 				{
 					Bid = _bid2;
 					m = q;
+				}
+				if (_bid3 > Bid)
+				{
+					Bid = _bid3;
+					m = w;
+				}
+				if (_bid4 > Bid)
+				{
+					Bid = _bid4;
+					m = y;
 				}
 
 				if (x != m)
@@ -301,6 +394,16 @@ int main()
 					Ask = _ask2;
 					k = q;
 				}
+				if ((_ask3 < Ask || Ask == 0) && w != m)
+				{
+					Ask = _ask3;
+					k = w;
+				}
+				if ((_ask4 < Ask || Ask == 0) && y != m)
+				{
+					Ask = _ask4;
+					k = y;
+				}
 			}
 
 			end = (GetTickCount() - start) / 1000;
@@ -317,10 +420,13 @@ int main()
 				std::cout << _bid << std::endl;
 				std::cout << _bid1 << std::endl;
 				std::cout << _bid2 << std::endl;
+				std::cout << _bid3 << std::endl;
+				std::cout << _bid4 << std::endl;
 				std::cout << _ask << std::endl;
 				std::cout << _ask1 << std::endl;
 				std::cout << _ask2 << std::endl;
-				close = false;
+				std::cout << _ask3 << std::endl;
+				std::cout << _ask4 << std::endl;
 			}
 
 			if (m != k && f == 0 && min == 0)
@@ -375,6 +481,14 @@ int main()
 						if (m == q || k == q)
 						{
 							cpt2 = 1;
+						}
+						if (m == w || k == w)
+						{
+							cpt3 = 1;
+						}
+						if (m == y || k == y)
+						{
+							cpt4 = 1;
 						}
 						start = GetTickCount();
 						Sleep(10000);
