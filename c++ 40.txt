@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -22,7 +22,7 @@
        
 // Globals variables
 int s32_Error=1;
-int i, j;
+int i, j, k = 0;
 // for int ConnectTo(ps8_ServerIP, s32_Port, ph_Client);  // out - int h_Client[1]
 extern string ps8_ServerIP = "192.168.1.106";  // mine local IP
 int    s32_Port = 2000;
@@ -107,44 +107,7 @@ void OnTimer()
     end = (GetTickCount()- begin)/1000;
     status = 2;
     
-    if(end<=5)
-    {     
-         pd_Value[3] = 0;
-              
-         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
-            
-         if(ps32_ReadLen[0]>0)
-         {
-          Print("ReadFromInt(",ph_Client[0],"...) checking for error orders");        
-         
-          if(ss_Value[1]==5 && OrderType()==OP_BUY)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
-             	Alert("Exited error order");
-             	Comment("");
-             	Sleep(5);
-          }
-			 if(ss_Value[1]==5 && OrderType()==OP_SELL)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
-             	Alert("Exited error order");
-             	Comment("");
-             	Sleep(5);
-          }
-         }
-    }
-    
-    if(end>5 && end<=120)
-    {
-         pd_Value[3] = 0;
-         if(b_ConnectTo==true)
-         {
-            s32_Error = ConnectClose(ph_Client[0]);
-            b_ConnectTo=false;
-         }
-    }
-    
-	 for(j=0; j<OrdersTotal(); j++)          
+    for(j=0; j<OrdersTotal(); j++)          
     {
      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
      {
@@ -161,10 +124,23 @@ void OnTimer()
       }    
      }   
     }
+    
+    if(end<=120)
+    {
+         pd_Value[3] = 0;
+	 pd_Value[4] = Magic;
+         if(b_ConnectTo==true)
+         {
+            s32_Error = ConnectClose(ph_Client[0]);
+            b_ConnectTo=false;
+         }
+	 k++;
+    }
    
     if(end>120)
     {  
         pd_Value[3] = Magic;
+	k = 0;
         if(b_ConnectTo==false)
         {
             s32_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
@@ -243,7 +219,7 @@ void OnTimer()
          Print("Type is:",pd_Value[2],"");
          Print("Magic number is:",pd_Value[3],"");
       
-         if(_bid!=tick.bid || _ask!=tick.ask)
+         if(_bid!=tick.bid || _ask!=tick.ask || k<2)
          {         
 
           s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
