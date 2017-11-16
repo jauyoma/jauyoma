@@ -1,1 +1,2 @@
 1. Access Violation: Ordertype should be accessed when OrderSelect function has previously been selected
+Send int to server showing magic number of order on opening order and count should be 1 to minimize number being sent
