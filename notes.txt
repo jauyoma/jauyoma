@@ -1,2 +1,1 @@
-1. disconnect client if error is client unreachable from server 
-2. Include account equity in data sent across to server for overall acount balance calculation
+1. Access Violation: Ordertype should be accessed when OrderSelect function has previously been selected
