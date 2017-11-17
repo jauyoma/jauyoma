@@ -510,12 +510,12 @@ int main()
 					if (min == false)
 					{
 						start = GetTickCount();
-						ss_Buf[1] = 3;
+						ss_Buf[1] = 7;
 					}
 
 					if (min == true)
 					{
-						ss_Buf[1] = 4;
+						ss_Buf[1] = 8;
 					}
 					
 					while(hr==false)
