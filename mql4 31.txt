@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -127,13 +127,41 @@ void OnTimer()
     
     if(end<=120)
     {
-         pd_Value[3] = 0;
-         pd_Value[4] = Magic;
-         if(b_ConnectTo==true)
+        if(b_ConnectTo==true)
+        {          
+         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
+            
+         if(ps32_ReadLen[0]>0)
+         {
+          Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
+          Alert(ss_Value[0],"...",ss_Value[1]);
+         
+         
+          if(ss_Value[0]==8 && pd_Value[4] == 1)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	Sleep(5);
+          }
+			 if(ss_Value[0]==8 && pd_Value[4] == 2)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	Sleep(5);
+          }
+         
+	 
+         if(ss_Value[0]==7)
          {
             s32_Error = ConnectClose(ph_Client[0]);
             b_ConnectTo=false;
          }
+        }
+       }
+        pd_Value[3] = 0;
+        pd_Value[4] = Magic;
     }
    
     if(end>120)
