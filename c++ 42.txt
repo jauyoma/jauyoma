@@ -518,8 +518,25 @@ int main()
 						ss_Buf[1] = 8;
 					}
 					
-					while(hr==false)
+					t = 0;
+					
+					while(t<2)
 					{
+						if(min!=true && t==0)
+						{
+							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+
+							if (u32_Error)
+							{
+								printf("Exit instructions(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+							}
+							else
+							{
+								printf("Successful k exit instructions(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
+								t++;
+							}
+						}
+						
 						u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
 
 						if (u32_Error)
@@ -528,9 +545,9 @@ int main()
 						}
 						else
 						{
-							printf("Successful exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
+							printf("Successful m exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
 							hr=true;
-							min = false;
+							t++;
 							_ask = 0;
 							_ask1 = 0
 							_ask2 = 0;
@@ -541,6 +558,10 @@ int main()
 							_bid2 = 0;
 							_bid3 = 0;
 							_bid4 = 0;
+							if(min==true)
+							{
+								t = 2;
+							}
 							Sleep(3000);
 						}
 					}
