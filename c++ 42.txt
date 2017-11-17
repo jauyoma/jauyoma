@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -40,7 +40,7 @@ int main()
 	double pd_Buf[1025];
 	DWORD  u32_BufLen = 1025;
 	int    ps32_ReadLen[5];
-	int m = 35, k = 38;
+	int m = ctrl+35, k = ctrl+40;
 	DWORD p = 0, x = 25, q = 25, z = 25, w = 25, y = 25;
 	SYSTEMTIME tym;
 	int tickcount = 0;
@@ -125,13 +125,6 @@ int main()
 					p++;
 				}
 
-				if ((m == i || k == i) && min == true)
-				{
-					ss_Buf[0] = 3;
-					ss_Buf[1] = 5;
-					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
-				}
-
 				pd_Buf[0] = 0;
 				pd_Buf[1] = 0;
 				pd_Buf[2] = 0;
@@ -155,11 +148,6 @@ int main()
 						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
 						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[2]);
 						std::cout << "Reading type..:" << pd_Buf[4] << std::endl;
-
-						if ((m == i || k == i) && min == true && pd_Buf[4] == 0)
-						{
-							min = false;
-						}
 
 						if (ph_Client[i] == ph_Client[x])
 						{
@@ -211,15 +199,6 @@ int main()
 						printf("\nReadFromDouble(%d...) Read Data: %9.1f\n", ph_Client[i], pd_Buf[3]);
 						ss_Buf[0] = 3;
 						ss_Buf[1] = 4;
-
-						if (min == 2 && (m == i || k == i))
-						{
-							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ps32_ReadLen[0]);
-							if (!u32_Error)
-							{
-								min = 0;
-							}
-						}
 
 						if (MagicNumber == pd_Buf[3] && ph_Client[i] != ph_Client[x])
 						{
@@ -421,22 +400,22 @@ int main()
 					Ask = _ask;
 					k = x;
 				}
-				if ((_ask1 < Ask || Ask == 0) && z != m && z != 25)
+				if (((_ask1 < Ask && _ask1!=0) || Ask == 0) && z != m && z != 25)
 				{
 					Ask = _ask1;
 					k = z;
 				}
-				if ((_ask2 < Ask || Ask == 0) && q != m && q != 25)
+				if (((_ask2 < Ask && _ask2!=0) || Ask == 0) && q != m && q != 25)
 				{
 					Ask = _ask2;
 					k = q;
 				}
-				if ((_ask3 < Ask || Ask == 0) && w != m && w != 25)
+				if (((_ask3 < Ask && _ask3!=0) || Ask == 0) && w != m && w != 25)
 				{
 					Ask = _ask3;
 					k = w;
 				}
-				if ((_ask4 < Ask || Ask == 0) && y != m && y != 25)
+				if (((_ask4 < Ask && _ask4!=0) || Ask == 0) && y != m && y != 25)
 				{
 					Ask = _ask4;
 					k = y;
@@ -472,7 +451,7 @@ int main()
 				close = false;
 			}
 
-			if (m != k && min == false)
+			if (m != k && min == false && m<=ctrl && k<=ctrlc && Bid!=0 && Ask!=0)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[0] = tickcount;
@@ -511,30 +490,21 @@ int main()
 						printf("SendToInt(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
 						std::cout << ss_Buf[1] << "Client:" << ph_Client[k] << std::endl;
 						std::cout << ss_Buf[0] << "Client:" << ph_Client[k] << std::endl;
-						if (m == x || k == x)
-						{
-							cpt = 1;
-						}
-						if (m == z || k == z)
-						{
-							cpt1 = 1;
-						}
-						if (m == q || k == q)
-						{
-							cpt2 = 1;
-						}
-						if (m == w || k == w)
-						{
-							cpt3 = 1;
-						}
-						if (m == y || k == y)
-						{
-							cpt4 = 1;
-						}
-						Sleep(10000);
+						_ask = 0;
+						_ask1 = 0
+						_ask2 = 0;
+						_ask3 = 0;
+						_ask4 = 0;
+						_bid = 0;
+						_bid1 = 0;
+						_bid2 = 0;
+						_bid3 = 0;
+						_bid4 = 0;
+						Sleep(5000);
 					}
 
 				}
+				
 				if (hr == false)
 				{
 					if (min == false)
@@ -547,19 +517,32 @@ int main()
 					{
 						ss_Buf[1] = 4;
 					}
-
-					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
-
-					if (u32_Error)
+					
+					while(hr==false)
 					{
-						printf("SendToInt(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
-						hr = true;
-					}
-					else
-					{
-						printf("SendToInt(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
-						std::cout << ss_Buf[1] << "Client:" << ph_Client[m] << std::endl;
-						std::cout << ss_Buf[0] << "Client:" << ph_Client[m] << std::endl;
+						u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
+
+						if (u32_Error)
+						{
+							printf("Exit instructions(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
+						}
+						else
+						{
+							printf("Successful exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
+							hr=true;
+							min = false;
+							_ask = 0;
+							_ask1 = 0
+							_ask2 = 0;
+							_ask3 = 0;
+							_ask4 = 0;
+							_bid = 0;
+							_bid1 = 0;
+							_bid2 = 0;
+							_bid3 = 0;
+							_bid4 = 0;
+							Sleep(3000);
+						}
 					}
 				}
 			}
@@ -568,6 +551,8 @@ int main()
 			Bid = 0;
 			Ask = 0;
 			f = 0;
+			m = ctrl+35;
+			k = ctrl+40;
 		}
 	}
 	system("pause");
