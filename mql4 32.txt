@@ -1,0 +1,272 @@
+//+---------------------------------------------------------------------------+
+//|                                            Client.mq4                     |
+//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                                       tradertobe@gmail.com                |
+//+---------------------------------------------------------------------------+
+#include <ImportNetEventsProcDLL.mqh>
+/*int ConnectTo(string  ps8_ServerIP, // in - string ps8_ServerIP = "0123456789123456"
+                int     s32_Port,     // in 
+                int&    ph_Client[]); // out - int ph_Client[1]
+*/
+/*int SendToDouble(int     h_Client,        // in
+                   double& pd_SendBuf[],    // in
+                   int     s32_SendBufLen); // in - SendBuf[] array size in double element 
+*/
+/*int ReadFromDouble(int     h_Client,        // in
+                     double& pd_ReadBuf[],    // in
+                     int     s32_ReadBufLen,  // in  - ReadBuf[] array size in double element
+                     int&    ps32_ReadLen[]); // out - int ps32_ReadLen[1] - count of actually read data in double element
+*/                      
+/*int ConnectClose(int h_Client);    // in
+*/ 
+       
+// Globals variables
+int s32_Error=1;
+int i, j;
+// for int ConnectTo(ps8_ServerIP, s32_Port, ph_Client);  // out - int h_Client[1]
+extern string ps8_ServerIP = "192.168.1.106";  // mine local IP
+int    s32_Port = 2000;
+uchar  uc_ServerIP[];
+int    ph_Client[1];
+
+bool b_ConnectTo = false, close, exit;
+
+// for int SendToDouble(ph_Client[0], pd_Buf, s32_BufLen);  
+// for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
+
+double pd_Buf[5];
+int    s32_BufLen = 5;
+int    ps32_ReadLen[5];
+double tickcount=0, buycount = 0.001, sellcount = 30;
+
+double _bid = 0, curr_bidpx;
+double _ask = 0, curr_askpx;
+int openbuy, opensell, MagicNumber, Magic;
+int min, hr, curr_min, curr_hr, curr_open, status;
+double len, price, type;
+uint begin = 0, end = 0;
+
+
+//+------------------------------------------------------------------+
+//| expert initialization function                                   |
+//+------------------------------------------------------------------+
+void OnInit()
+{
+//----
+  EventSetMillisecondTimer(10);
+  StringToCharArray(ps8_ServerIP,uc_ServerIP);
+   
+   if(!b_ConnectTo)
+   {
+      s32_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
+      Print("ConnectTo(...) return is: ",GetErrMsg(s32_Error));
+      Print("ConnectTo(...) handle is: ",ph_Client[0]);
+      
+      if (s32_Error == OK)
+      {
+         b_ConnectTo = true;
+         Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
+      }
+   }
+
+//----
+
+}
+//+------------------------------------------------------------------+
+//| expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+//----
+
+      s32_Error = ConnectClose(ph_Client[0]);
+      Print("ConnectClose(...) return is: ",GetErrMsg(s32_Error));
+      
+      if (s32_Error == OK)
+         b_ConnectTo = false;
+   
+   EventKillTimer();
+//----
+}  
+
+void OnTimer()
+{
+//----   
+      
+   RefreshRates();
+   MqlTick tick;
+   double pd_Value[5];
+   int ss_Value[3];
+   int ss_Buf[2];
+   
+  end = (GetTickCount()- begin)/1000;
+  
+  if(end>120)
+  {
+        if(b_ConnectTo==false)
+        {
+            s32_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
+            if (s32_Error == OK)
+            {
+               b_ConnectTo = true;
+            }
+        }
+  }
+  
+  if(b_ConnectTo == true)
+  {
+   
+   if(OrdersTotal()>0)
+   {    
+    status = 2;
+    
+    for(j=0; j<OrdersTotal(); j++)          
+    {
+     if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+     {
+      if(OrderSymbol()==Symbol())
+      {
+       Magic = NormalizeDouble(OrderMagicNumber(),0);
+       if(OrderType()==OP_BUY)
+       {
+         pd_Value[4] = 1;
+       }
+       else
+         pd_Value[4] = 2; 
+          
+      }    
+     }   
+    }
+    
+    if(end<=120)
+    {
+        pd_Value[3] = 0;
+        pd_Value[4] = Magic;
+        while(exit==false)
+        {          
+         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
+            
+         if(ps32_ReadLen[0]>0)
+         {
+          Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
+         
+          if(ss_Value[1]==8 && pd_Value[4] == 1)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	exit = true;
+          }
+			 if(ss_Value[1]==8 && pd_Value[4] == 2)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	exit = true;
+          }       
+	 
+         if(ss_Value[1]==7)
+         {
+            Alert("Disconnecting client");
+            s32_Error = ConnectClose(ph_Client[0]);
+            b_ConnectTo=false;
+            exit = true;
+         }
+        }
+       }
+    }
+   
+    if(end>120)
+    {  
+        pd_Value[3] = Magic;
+        
+        if(b_ConnectTo==true)
+        {          
+         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
+            
+         if(ps32_ReadLen[0]>0)
+         {
+          Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
+          Alert(ss_Value[0],"...",ss_Value[1]);
+         
+         
+          if(ss_Value[0]==3 && pd_Value[4] == 1)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	Sleep(5);
+          }
+			 if(ss_Value[0]==3 && pd_Value[4] == 2)
+          {
+             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+             	Alert("Closed");
+             	Comment("");
+             	Sleep(5);
+          }
+         }
+        }
+    }
+          
+  }
+   
+  if(OrdersTotal()==0 && status==0)
+  {
+    exit = false;
+    Comment("Opening new order");
+    status = 1;
+    pd_Value[3] = 0;
+    pd_Value[4] = 0;
+
+      s32_Error = ReadFromInt(ph_Client[0], ss_Buf, s32_BufLen, ps32_ReadLen); 
+
+      if(ps32_ReadLen[0]>0 && ss_Buf[0]!=0)
+      {
+         Print("ReadFromInt(",ph_Client[0],"...) No order opened");
+         Comment(ss_Buf[0],"....",ss_Buf[1]);
+          
+         MagicNumber = ss_Buf[0];
+         if(ss_Buf[1]==2 && OrdersTotal()==0)
+         {
+             openbuy = OrderSend(Symbol(),OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+             begin = GetTickCount();
+         }
+         if(ss_Buf[1]==1 && OrdersTotal()==0)
+         {
+             opensell = OrderSend(Symbol(),OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+             begin = GetTickCount();
+         }
+      }
+   } 
+   
+   if(SymbolInfoTick(Symbol(),tick) && b_ConnectTo==true)
+   {    
+         status = 0;      
+         pd_Value[0] = NormalizeDouble(tick.bid,Digits);
+         pd_Value[1] = NormalizeDouble(tick.ask,Digits);
+         pd_Value[2] = AccountEquity();
+         Print("Bid price is:",pd_Value[0],"");
+         Print("Ask price is:",pd_Value[1],"");
+         Print("Type is:",pd_Value[2],"");
+         Print("Magic number is:",pd_Value[3],"");
+      
+         if(_bid!=tick.bid || _ask!=tick.ask)
+         {         
+
+          s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
+   
+          if (s32_Error != 0)
+          {
+            Print("SendToDouble(",ph_Client[0],"...) Order opened, return is: ",GetErrMsg(s32_Error));
+          }
+          else
+          {
+           Print("SendToDouble(",ph_Client[0],"...",pd_Value[2],") Order opened, return is: OK");
+          }
+          _bid = tick.bid;
+          _ask = tick.ask;
+         }    
+   }
+ }
+    
+}
