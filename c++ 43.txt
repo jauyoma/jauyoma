@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -96,34 +96,6 @@ int main()
 			ok = true;
 			for (DWORD i = 0; i < u32_Count; i++)
 			{
-				if ((x == 25 || z == 25 || q == 25 || y == 25 || w == 25))
-				{
-					if (i == 0 && x==25)
-					{
-						x = i;
-					}
-
-					if (i == 1 && z==25)
-					{
-						z = i;
-					}
-
-					if (i == 2 && q==25)
-					{
-						q = i;
-					}
-
-					if (i == 3 && w==25)
-					{
-						w = i;
-					}
-
-					if (i == 4 && y==25)
-					{
-						y = i;
-					}
-				}
-
 				pd_Buf[0] = 0;
 				pd_Buf[1] = 0;
 				pd_Buf[2] = 0;
@@ -142,56 +114,78 @@ int main()
 
 					if (ps32_ReadLen[0] > 0)
 					{
+						if (i == 0 && x==25)
+						{
+							x = i;
+						}
+
+						if (i == 1 && z==25)
+						{
+							z = i;
+						}
+
+						if (i == 2 && q==25)
+						{
+							q = i;
+						}
+
+						if (i == 3 && w==25)
+						{
+							w = i;
+						}
+
+						if (i == 4 && y==25)
+						{
+							y = i;
+						}
+						
 						printf("ReadFromDouble(%d...) read %d double values\n", ph_Client[i], ps32_ReadLen[0]);
 						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[0]);
 						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
 						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[2]);
 						std::cout << "Reading type..:" << pd_Buf[4] << std::endl;
 
-						if (pd_Buf[4] == 0)
+						if (ph_Client[i] == ph_Client[x])
 						{
-							if (ph_Client[i] == ph_Client[x])
-							{
-								MagicNumber = pd_Buf[3];
-								_typ = pd_Buf[4];
-								_ask = pd_Buf[1];
-								_bid = pd_Buf[0];
-								cpt = pd_Buf[4];
-							}
+							MagicNumber = pd_Buf[3];
+							_typ = pd_Buf[4];
+							_ask = pd_Buf[1];
+							_bid = pd_Buf[0];
+							cpt = pd_Buf[4];
+						}
 
-							if (ph_Client[i] == ph_Client[z])
-							{
-								MagicNumber1 = pd_Buf[3];
-								_typ1 = pd_Buf[4];
-								_ask1 = pd_Buf[1];
-								_bid1 = pd_Buf[0];
-								cpt1 = pd_Buf[4];
-							}
+						if (ph_Client[i] == ph_Client[z])
+						{
+							MagicNumber1 = pd_Buf[3];
+							_typ1 = pd_Buf[4];
+							_ask1 = pd_Buf[1];
+							_bid1 = pd_Buf[0];
+							cpt1 = pd_Buf[4];
+						}
 
-							if (ph_Client[i] == ph_Client[q])
-							{
-								MagicNumber2 = pd_Buf[3];
-								_typ2 = pd_Buf[4];
-								_ask2 = pd_Buf[1];
-								_bid2 = pd_Buf[0];
-								cpt2 = pd_Buf[4];
-							}
-							if (ph_Client[i] == ph_Client[w])
-							{
-								MagicNumber3 = pd_Buf[3];
-								_typ3 = pd_Buf[4];
-								_ask3 = pd_Buf[1];
-								_bid3 = pd_Buf[0];
-								cpt3 = pd_Buf[4];
-							}
-							if (ph_Client[i] == ph_Client[y])
-							{
-								MagicNumber4 = pd_Buf[3];
-								_typ4 = pd_Buf[4];
-								_ask4 = pd_Buf[1];
-								_bid4 = pd_Buf[0];
-								cpt4 = pd_Buf[4];
-							}
+						if (ph_Client[i] == ph_Client[q])
+						{
+							MagicNumber2 = pd_Buf[3];
+							_typ2 = pd_Buf[4];
+							_ask2 = pd_Buf[1];
+							_bid2 = pd_Buf[0];
+							cpt2 = pd_Buf[4];
+						}
+						if (ph_Client[i] == ph_Client[w])
+						{
+							MagicNumber3 = pd_Buf[3];
+							_typ3 = pd_Buf[4];
+							_ask3 = pd_Buf[1];
+							_bid3 = pd_Buf[0];
+							cpt3 = pd_Buf[4];
+						}
+						if (ph_Client[i] == ph_Client[y])
+						{
+							MagicNumber4 = pd_Buf[3];
+							_typ4 = pd_Buf[4];
+							_ask4 = pd_Buf[1];
+							_bid4 = pd_Buf[0];
+							cpt4 = pd_Buf[4];
 						}
 						close = true;
 					}
@@ -353,53 +347,53 @@ int main()
 
 			if (min == false)
 			{
-				if (x != 25)
+				if (x != 25 && cpt == 0)
 				{
 					Bid = _bid;
 					m = x;
 				}
-				if (_bid1 > Bid && z!=25)
+				if (_bid1 > Bid && z!=25 && cpt1 == 0)
 				{
 					Bid = _bid1;
 					m = z;
 				}
-				if (_bid2 > Bid && q!=25)
+				if (_bid2 > Bid && q!=25 && cpt2 == 0)
 				{
 					Bid = _bid2;
 					m = q;
 				}
-				if (_bid3 > Bid && w!=25)
+				if (_bid3 > Bid && w!=25 && cpt3 == 0)
 				{
 					Bid = _bid3;
 					m = w;
 				}
-				if (_bid4 > Bid && y!=25)
+				if (_bid4 > Bid && y!=25 && cpt4 == 0)
 				{
 					Bid = _bid4;
 					m = y;
 				}
 
-				if (x != m && x != 25 && _ask == 0)
+				if (x != m && x != 25 && _ask == 0 && cpt == 0)
 				{
 					Ask = _ask;
 					k = x;
 				}
-				if (((_ask1 < Ask && _ask1 != 0) || Ask == 0) && z != m && z != 25)
+				if (((_ask1 < Ask && _ask1 != 0) || Ask == 0) && z != m && z != 25 && cpt1 == 0)
 				{
 					Ask = _ask1;
 					k = z;
 				}
-				if (((_ask2 < Ask && _ask2 != 0) || Ask == 0) && q != m && q != 25)
+				if (((_ask2 < Ask && _ask2 != 0) || Ask == 0) && q != m && q != 25 && cpt2 == 0)
 				{
 					Ask = _ask2;
 					k = q;
 				}
-				if (((_ask3 < Ask && _ask3 != 0) || Ask == 0) && w != m && w != 25)
+				if (((_ask3 < Ask && _ask3 != 0) || Ask == 0) && w != m && w != 25 && cpt3 == 0)
 				{
 					Ask = _ask3;
 					k = w;
 				}
-				if (((_ask4 < Ask && _ask4 != 0) || Ask == 0) && y != m && y != 25)
+				if (((_ask4 < Ask && _ask4 != 0) || Ask == 0) && y != m && y != 25 && cpt4 == 0)
 				{
 					Ask = _ask4;
 					k = y;
