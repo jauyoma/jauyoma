@@ -585,6 +585,11 @@ int main()
 			f = 0;
 			m = ctrl + 35;
 			k = ctrl + 40;
+			cpt = 45;
+			cpt1 = 45;
+			cpt2 = 45;
+			cpt3 = 45;
+			cpt4 = 45;
 		}
 	}
 	system("pause");
