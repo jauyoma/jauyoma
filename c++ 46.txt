@@ -614,51 +614,72 @@ int main()
 
 					while (t<2)
 					{
-						if (min != true && t == 0)
+						u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[k], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+						if (!u32_Error)
 						{
-							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+							if (pd_Buf[4] > 0)
+							{
+						
+							if (min != true && t == 0)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+
+								if (u32_Error)
+								{
+									printf("Exit K instructions(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+									b = m;
+									ss_Buf[1] = 8;
+									u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
+									system("pause");
+									break;
+								}
+								else
+								{
+									printf("Successful K exit instructions(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
+									t++;
+								}
+							}
+							
+							}
+						
+						}
+						
+						u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[m], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+						if (!u32_Error)
+						{
+							if (pd_Buf[4] > 0)
+							{
+						
+							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
 
 							if (u32_Error)
 							{
-								printf("Exit K instructions(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+								printf("Exit M instructions(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
 								b = m;
 								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
 								system("pause");
 								break;
 							}
 							else
 							{
-								printf("Successful K exit instructions(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
-								clA = ph_Client[k];
+								printf("Successful M exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
+								hr = true;
+								clB = ph_Client[m];
 								t++;
+								if (min == true)
+								{
+									t = 2;
+								}
+								Sleep(3000);
+							}
+							
 							}
 						}
-
-						u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
-
-						if (u32_Error)
-						{
-							printf("Exit M instructions(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
-							b = m;
-							ss_Buf[1] = 8;
-							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
-							system("pause");
-							break;
+						
 						}
-						else
-						{
-							printf("Successful M exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
-							hr = true;
-							clB = ph_Client[m];
-							t++;
-							if (min == true)
-							{
-								t = 2;
-							}
-							Sleep(3000);
-						}
-					}
 				}
 			}
 			hr = false;
