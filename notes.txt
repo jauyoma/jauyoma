@@ -1,1 +1,1 @@
-unable to close orders after opening on mql4: investigate
+record clients that have been disconnected and monitor if they are still being read by the server
