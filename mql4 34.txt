@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -244,6 +244,11 @@ void OnTimer()
          {
             pd_Value[3] = 0;
             pd_Value[4] = 0;
+         }
+	 if(OrdersTotal()>0 && status==1)
+         {
+            pd_Value[3] = 0;
+            pd_Value[4] = 3;
          }
       
          if(_bid!=tick.bid || _ask!=tick.ask)
