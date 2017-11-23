@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -48,7 +48,7 @@ int main()
 	double _bid = 0, _bid1 = 0, _bid2 = 0, _bid3 = 0, _bid4 = 0, _ask = 0, _ask1 = 0, _ask2 = 0, _ask3 = 0, _ask4 = 0;
 	bool ok = false, ok1 = false, ok2 = false;
 	double _typ = 0, _typ1 = 0, _typ2 = 0, _typ3 = 0, _typ4 = 0, cpt = 0, cpt1 = 0, cpt2 = 0, cpt3 = 0, cpt4 = 0, f = 0;
-	DWORD start = 1, end;
+	DWORD start = 1, end, clA, clB;
 	WORD t = 0, b;
 
 	int ph_Client[62];
@@ -631,6 +631,24 @@ int main()
 								t = 2;
 							}
 							Sleep(3000);
+						}
+						if(t == 2 && clA<1 && clB<1 )
+						{
+							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
+
+							if (u32_Error)
+							{
+								printf("M client closed(%d...) successfully: %d\n", ph_Client[m], u32_Error);
+								clA++;
+							}
+							
+							u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+
+							if (u32_Error)
+							{
+								printf("K client closed(%d...) successfully: %d\n", ph_Client[k], u32_Error);
+								clB++;
+							}
 						}
 					}
 				}
