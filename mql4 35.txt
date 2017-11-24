@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -34,9 +34,9 @@ bool b_ConnectTo = false, close, exit, info = false;
 // for int SendToDouble(ph_Client[0], pd_Buf, s32_BufLen);  
 // for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
 
-double pd_Buf[5];
-int    s32_BufLen = 5;
-int    ps32_ReadLen[5];
+double pd_Buf[6];
+int    s32_BufLen = 6;
+int    ps32_ReadLen[6];
 double tickcount=0, buycount = 0.001, sellcount = 30;
 
 double _bid = 0, curr_bidpx;
@@ -44,9 +44,9 @@ double _ask = 0, curr_askpx;
 int openbuy, opensell, MagicNumber, Magic, typ;
 int min, hr, curr_min, curr_hr, curr_open, status;
 double len, price, type;
-uint begin = 0, end = 0;
+uint begin = 0, end = 0, start;
 
-double pd_Value[5];
+double pd_Value[6];
 
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
@@ -120,6 +120,7 @@ void OnTimer()
     int ss_Value[2];  
     status = 2;
     info = false;
+
     for(j=0; j<OrdersTotal(); j++)          
     {
      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
@@ -213,12 +214,13 @@ void OnTimer()
     status = 1;
     pd_Value[3] = 0;
     pd_Value[4] = 0;
+    pd_Value[5] = 0;
 
       s32_Error = ReadFromInt(ph_Client[0], ss_Buf, s32_BufLen, ps32_ReadLen); 
 
       if(ps32_ReadLen[0]>0 && ss_Buf[0]!=0)
       {
-         Print("ReadFromInt(",ph_Client[0],"...) No order opened");
+	 Print("ReadFromInt(",ph_Client[0],"...) No order opened");
          Comment(ss_Buf[0],"....",ss_Buf[1]);
           
          MagicNumber = ss_Buf[0];
@@ -226,11 +228,13 @@ void OnTimer()
          {
              openbuy = OrderSend(Symbol(),OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
              begin = GetTickCount();
+	     pd_Value[5] = begin;
          }
          if(ss_Buf[1]==1 && OrdersTotal()==0)
          {
              opensell = OrderSend(Symbol(),OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
              begin = GetTickCount();
+	     pd_Value[5] = begin;
          }
       }
    } 
@@ -245,7 +249,7 @@ void OnTimer()
             pd_Value[3] = 0;
             pd_Value[4] = 0;
          }
-	      if(OrdersTotal()>0 && status==1)
+	 if(OrdersTotal()>0 && status==1)
          {
             pd_Value[3] = 0;
             pd_Value[4] = 3;
