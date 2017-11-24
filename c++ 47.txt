@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -101,6 +101,7 @@ int main()
 				pd_Buf[2] = 0;
 				pd_Buf[3] = 0;
 				pd_Buf[4] = 0;
+				pd_Buf[5] = 0;
 
 				u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[i], pd_Buf, u32_BufLen, ps32_ReadLen);
 
@@ -439,8 +440,6 @@ int main()
 				}
 			}
 
-			end = (GetTickCount() - start) / 1000;
-
 			if (close == true)
 			{
 				std::cout << "min value..." << min << std::endl;
@@ -509,6 +508,16 @@ int main()
 					_bid2 = 0;
 					_bid3 = 0;
 					_bid4 = 0;
+					_typ = 0;
+					_typ1 = 0;
+					_typ2 = 0;
+					_typ3 = 0;
+					_typ4 = 0;
+					MagicNumber = 0;
+					MagicNumber1 = 0;
+					MagicNumber2 = 0;
+					MagicNumber3 = 0;
+					MagicNumber4 = 0;
 					if (m == x)
 					{
 						x = 30;
@@ -569,7 +578,7 @@ int main()
 						{
 							w = 30;
 						}
-						Sleep(5000);
+						Sleep(3000);
 					}
 
 				}
@@ -602,6 +611,7 @@ int main()
 								if (pd_Buf[4] > 0)
 								{
 									ok1 = true;
+									clA = pd_Buf[5];
 								}
 
 							}
@@ -615,6 +625,7 @@ int main()
 							if (pd_Buf[4] > 0)
 							{
 								ok2 = true;
+								clB = pd_Buf[5];
 							}
 						}
 
@@ -654,12 +665,13 @@ int main()
 								{
 									t = 2;
 								}
-								Sleep(3000);
+								Sleep(2000);
 							}
 						}
-
+						end = (GetTickCount() - start) / 1000;
 						count++;
-						if (t == 5)
+						
+						if (end>11.9)
 						{
 							if (ok1 == false && ok2 == true)
 							{
@@ -670,6 +682,12 @@ int main()
 							{
 								ss_Buf[1] = 8;
 								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+							}
+							if (ok2 == false && ok1 == false)
+							{
+								ss_Buf[1] = 8;
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ps32_ReadLen[0]);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ps32_ReadLen[0]);
 							}
 							break;
 						}
