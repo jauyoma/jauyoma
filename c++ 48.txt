@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -115,7 +115,7 @@ int main()
 
 					if (ps32_ReadLen[0] > 0)
 					{
-						if (i == 0 && (x == 25 || x == 30))
+						if (i == 0 && (x == 25 || x == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
 						{
 							if (x == 30 && pd_Buf[4] == 0)
 							{
@@ -125,7 +125,7 @@ int main()
 							x = i;
 						}
 
-						if (i == 1 && (z == 25 || z == 30))
+						if (i == 1 && (z == 25 || z == 30) && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
 						{
 							if (z == 30 && pd_Buf[4] == 0)
 							{
@@ -135,7 +135,7 @@ int main()
 							z = i;
 						}
 
-						if (i == 2 && (q == 25 || q == 30))
+						if (i == 2 && (q == 25 || q == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[x])
 						{
 							if (q == 30 && pd_Buf[4] == 0)
 							{
@@ -145,7 +145,7 @@ int main()
 							q = i;
 						}
 
-						if (i == 3 && (w == 25 || w == 30))
+						if (i == 3 && (w == 25 || w == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[q])
 						{
 							if (w == 30 && pd_Buf[4] == 0)
 							{
@@ -155,7 +155,7 @@ int main()
 							w = i;
 						}
 
-						if (i == 4 && (y == 25 || y == 30))
+						if (i == 4 && (y == 25 || y == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
 						{
 							if (y == 30 && pd_Buf[4] == 0)
 							{
