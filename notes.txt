@@ -1,3 +1,1 @@
-1. protocol for closing orders that have failed
-2. extend reading time for while loop to await confirmation from opened orders
-3. Factor in speed of execution and prototcol to guard against delayed execution
+client 540 appears twice after being closed
