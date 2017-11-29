@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
@@ -29,14 +29,14 @@ int    s32_Port = 2000;
 uchar  uc_ServerIP[];
 int    ph_Client[1];
 
-bool b_ConnectTo = false, close, exit, info = false;
+bool b_ConnectTo = false, close, exit, info = false, blacklist = false;
 
 // for int SendToDouble(ph_Client[0], pd_Buf, s32_BufLen);  
 // for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
 
-double pd_Buf[5];
-int    s32_BufLen = 5;
-int    ps32_ReadLen[5];
+double pd_Buf[6];
+int    s32_BufLen = 6;
+int    ps32_ReadLen[6];
 double tickcount=0, buycount = 0.001, sellcount = 30;
 
 double _bid = 0, curr_bidpx;
@@ -46,7 +46,7 @@ int min, hr, curr_min, curr_hr, curr_open, status;
 double len, price, type;
 uint begin = 0, end = 0;
 
-double pd_Value[5];
+double pd_Value[6];
 
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
@@ -112,7 +112,7 @@ void OnTimer()
         }
   }
   
-  if(b_ConnectTo == true)
+  if(b_ConnectTo == true && blacklist == false)
   {
    
    if(OrdersTotal()>0)
@@ -120,6 +120,7 @@ void OnTimer()
     int ss_Value[2];  
     status = 2;
     info = false;
+    
     for(j=0; j<OrdersTotal(); j++)          
     {
      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
@@ -150,14 +151,14 @@ void OnTimer()
          {
           Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
          
-          if(ss_Value[1]==8 && pd_Value[4] == 1)
+          if(ss_Value[1]==8 && typ == 1)
           {
              	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
              	Alert("Closed");
              	Comment("");
              	exit = true;
           }
-			 if(ss_Value[1]==8 && pd_Value[4] == 2)
+			 if(ss_Value[1]==8 && typ == 2)
           {
              	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
              	Alert("Closed");
@@ -171,6 +172,24 @@ void OnTimer()
             s32_Error = ConnectClose(ph_Client[0]);
             b_ConnectTo=false;
             exit = true;
+         }
+	 
+	 if(end > 20)
+         {
+            pd_Value[5] = 1;
+	    if(typ == 1)
+            {
+             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+            }
+			 if(typ == 2)
+            {
+             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+            }
+	    Alert("Client Blacklisted...");
+            s32_Error = ConnectClose(ph_Client[0]);
+            b_ConnectTo=false;
+            exit = true;
+	    blacklist = true;
          }
         }
        }
@@ -214,6 +233,7 @@ void OnTimer()
     status = 1;
     pd_Value[3] = 0;
     pd_Value[4] = 0;
+    pd_Value[5] = 0;
 
       s32_Error = ReadFromInt(ph_Client[0], ss_Buf, s32_BufLen, ps32_ReadLen); 
 
