@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -114,55 +114,30 @@ int main()
 				if (!u32_Error)
 				{
 
-					if (ps32_ReadLen[0] > 0 && pd_Buf[5] == 0)
+					if (ps32_ReadLen[0] > 0 && pd_Buf[5] > 0)
 					{
 						if (i == 0 && (x == 25 || x == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
 						{
-							if (x == 30 && pd_Buf[4] == 0)
-							{
-								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[b], ss_Buf, ss32_ReadLen);
-							}
 							x = i;
 						}
 
-						if (i == 1 && (z == 25 || z == 30) && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
+						if (i == 1 && (z == 25 || z == 30) && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && pd_Buf[5] > 0)
 						{
-							if (z == 30 && pd_Buf[4] == 0)
-							{
-								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[b], ss_Buf, ss32_ReadLen);
-							}
 							z = i;
 						}
 
 						if (i == 2 && (q == 25 || q == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[x])
 						{
-							if (q == 30 && pd_Buf[4] == 0)
-							{
-								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[b], ss_Buf, ss32_ReadLen);
-							}
 							q = i;
 						}
 
 						if (i == 3 && (w == 25 || w == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[q])
 						{
-							if (w == 30 && pd_Buf[4] == 0)
-							{
-								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[b], ss_Buf, ss32_ReadLen);
-							}
 							w = i;
 						}
 
 						if (i == 4 && (y == 25 || y == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q])
 						{
-							if (y == 30 && pd_Buf[4] == 0)
-							{
-								ss_Buf[1] = 8;
-								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[b], ss_Buf, ss32_ReadLen);
-							}
 							y = i;
 						}
 
