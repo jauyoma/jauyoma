@@ -1,1 +1,1 @@
-Change ps32_Readlen, add S32_Readlen
+1. client still reading data but opened order (536). Stop clients from being read by server if order has been opened
