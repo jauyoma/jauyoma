@@ -551,6 +551,32 @@ int main()
 				close = false;
 			}
 
+			if(x1 == 30 && x<=5 && _typ == 0)
+			{
+				system("pause");
+				break;
+			}
+			if(z1 == 30 && z<=5 && _typ1 == 0)
+			{
+				system("pause");
+				break;
+			}
+			if(q1 == 30 && q<=5 && _typ2 == 0)
+			{
+				system("pause");
+				break;
+			}
+			if(w1 == 30 && w<=5 && _typ3 == 0)
+			{
+				system("pause");
+				break;
+			}
+			if(y1 == 30 && y<=5 && _typ4 == 0)
+			{
+				system("pause");
+				break;
+			}
+
 			if (m != k && min == false && m <= ctrl && k <= ctrl && Bid != 0 && Ask != 0 && ph_Client[m] != ph_Client[k])
 			{
 				tickcount = tickcount + 1;
