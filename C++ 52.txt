@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
@@ -618,6 +618,7 @@ int main()
 				{
 					t = 0;
 					count = 0;
+					pd_Buf[4] = 0;
 
 					while (t<2)
 					{
