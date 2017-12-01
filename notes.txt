@@ -1,1 +1,1 @@
-1. client still reading data but opened order (536). Stop clients from being read by server if order has been opened
+1. Meta terminal :- Provide for scenario where an order passess all tests but no opposite order was opened. Close order after 4 minutes
