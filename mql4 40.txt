@@ -1,7 +1,7 @@
 //+---------------------------------------------------------------------------+
-//|                                            Client.mq4                     |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
-//|                                       tradertobe@gmail.com                |
+//|                      Client.mq4                                           |
+//|                      http://www.klein-hill.com                            |
+//|                      forex@klein-hill.com                                 |
 //+---------------------------------------------------------------------------+
 #include <ImportNetEventsProcDLL.mqh>
 /*int ConnectTo(string  ps8_ServerIP, // in - string ps8_ServerIP = "0123456789123456"
@@ -33,7 +33,7 @@ int    s32_Port = 2000;
 uchar  uc_ServerIP[];
 int    ph_Client[1];
 
-bool b_ConnectTo = false, close, exit, info = false, blacklist = false;
+bool b_ConnectTo = false, close, exit, info = false, info1 = false, info2 = false, info3 = false, blacklist = false;
 bool send = false, send1 = false, send2 = false, send3 = false;
 // for int SendToDouble(ph_Client[0], pd_Buf, s32_BufLen);  
 // for int ReadFromDouble(ph_Client[0], pd_Buf, s32_BufLen, ps32_ReadLen);
@@ -45,7 +45,7 @@ double tickcount=0, buycount = 0.001, sellcount = 30;
 
 double _bid = 0, _bid1 = 0, _bid2 = 0, _bid3 = 0, curr_bidpx;
 double _ask = 0, _ask1 = 0, _ask2 = 0, _ask3 = 0, curr_askpx;
-int openbuy, opensell, MagicNumber, Magic, typ, typ1, typ2, typ3;
+int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3;
 int min, hr, curr_min, curr_hr, curr_open, status, status1, status2, status3;
 int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0;
 double len, price, type;
@@ -121,204 +121,212 @@ void OnTimer()
         }
   }
   
-  if(b_ConnectTo == true && blacklist == false)
-  {
-   
-   if(sym1>0)
-   {
-    int ss_Value[2];  
-    status = 2;
-    info = false;
-    
-    for(j=0; j<OrdersTotal(); j++)          
+ if(b_ConnectTo == true && blacklist == false)
+ {  
+    if(sym1>0)
     {
-     if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
-     {
-      if(OrderSymbol()==Symbol_A)
-      {
-       Magic = NormalizeDouble(OrderMagicNumber(),0);
-       if(OrderType()==OP_BUY)
-       {
-         typ = 1;
-       }
-       else
-         typ = 2; 
-          
-      }    
-     }   
-    }
+        int ss_Value[10];  
+        status = 2;
+        info = false;
     
-    if(end<=120)
-    {
-        pd_Value[3] = 0;
-        pd_Value[4] = typ;
-        while(exit==false)
-        {          
-         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
-            
-         if(ps32_ReadLen[0]>0)
-         {
-          Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
-         
-          if(ss_Value[1]==8 && typ == 1)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
-             	Alert("Closed");
-             	Comment("");
-             	exit = true;
-		sym1 = 0;
-          }
-			 if(ss_Value[1]==8 && typ == 2)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
-             	Alert("Closed");
-             	Comment("");
-             	exit = true;
-		sym1 = 0;
-          }       
-	 
-         if(ss_Value[1]==7)
-         {
-            Alert("Disconnecting client...",typ);
-            s32_Error = ConnectClose(ph_Client[0]);
-            b_ConnectTo=false;
-            exit = true;
-         }
-	 
-	 if(end > 20)
-         {
-            pd_Value[5] = 1;
-	    if(typ == 1)
+        for(j=0; j<OrdersTotal(); j++)          
+        {
+            if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
             {
-             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
-            }
-			 if(typ == 2)
-            {
-             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
-            }
-	    Alert("Client Blacklisted...");
-            s32_Error = ConnectClose(ph_Client[0]);
-            b_ConnectTo=false;
-            exit = true;
-	    blacklist = true;
-         }
+                if(OrderSymbol()==Symbol_A)
+                {
+                    Magic = NormalizeDouble(OrderMagicNumber(),0);
+                    if(OrderType()==OP_BUY)
+                    {
+                        typ = 1;
+                    }
+                    else
+                    typ = 2;           
+                }    
+            }   
         }
-       }
-    }
+    
+        if(end<=120)
+        {
+            pd_Value[3] = 0;
+            pd_Value[4] = typ;
+            while(exit==false)
+            {          
+                s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
+            
+                if(ps32_ReadLen[0]>0)
+                {
+                    Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
+         
+                    if(ss_Value[1]==8 && typ == 1)
+                    {
+             	        close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+             	        Alert("Closed");
+             	        Comment("");
+             	        exit = true;
+		                sym1 = 0;
+                    }
+			        if(ss_Value[1]==8 && typ == 2)
+                    {
+             	        close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+             	        Alert("Closed");
+             	        Comment("");
+             	        exit = true;
+		                sym1 = 0;
+                    }       
+	 
+                    if(ss_Value[1]==7)
+                    {
+                        Alert("Disconnecting client...",typ);
+                        s32_Error = ConnectClose(ph_Client[0]);
+                        b_ConnectTo=false;
+                        exit = true;
+                    }
+	 
+	                if(end > 20)
+                    {
+                        pd_Value[5] = 1;
+	                    if(typ == 1)
+                        {
+             	            close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+                        }
+			            if(typ == 2)
+                        {
+             	            close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+                        }
+	                    Alert("Client Blacklisted...");
+                        s32_Error = ConnectClose(ph_Client[0]);
+                        b_ConnectTo=false;
+                        exit = true;
+	                    blacklist = true;
+                    }
+                }
+            }
+        }
    
-    if(end>240)
-    {  
-        pd_Value[3] = Magic;
-        pd_Value[4] = typ;
+        if(end>240)
+        {  
+            pd_Value[3] = Magic;
+            pd_Value[4] = typ;
         
-        if(b_ConnectTo==true)
-        {          
-         s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
+            if(b_ConnectTo==true)
+            {          
+                s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
             
-         if(ps32_ReadLen[0]>0)
-         {
-          Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
-          Print("Symbol_A...",ss_Value[0],"...",ss_Value[1]);
+                if(ps32_ReadLen[0]>0)
+                {
+                    Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
+                    Print("Symbol_A...",ss_Value[0],"...",ss_Value[1]);
          
-          if((ss_Value[0]==3 || end > 480) && typ == 1)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
-		sym1 = 0;
-          }
-			 if((ss_Value[0]==3 || end > 480) && typ == 2)
-          {
-             	close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
-		sym1 = 0;
-          }
-         }
+                    if((ss_Value[0]==3 || end > 480) && typ == 1)
+                    {
+             	        close = OrderClose(OrderTicket(),OrderLots(),Bid,1,Red);
+		                sym1 = 0;
+                    }
+			        if((ss_Value[0]==3 || end > 480) && typ == 2)
+                    {
+             	        close = OrderClose(OrderTicket(),OrderLots(),Ask,1,Red);
+		                sym1 = 0;
+                    }
+                }
+            }
         }
     }
-          
-  }
    
-  if(sym1==0 && status==0)
-  { 
-    typ = 0; 
-    exit = false;
-    status = 1;
-    pd_Value[3] = 0;
-    pd_Value[4] = 0;
-    pd_Value[5] = 0;
+    if(sym1==0 && status==0)
+    { 
+        typ = 0; 
+        exit = false;
+        status = 1;
+        pd_Value[3] = 0;
+        pd_Value[4] = 0;
+        pd_Value[5] = 0;
 
-      s32_Error = ReadFromInt(ph_Client[0], ss_Buf, s32_BufLen, ps32_ReadLen); 
+        s32_Error = ReadFromInt(ph_Client[0], ss_Buf, s32_BufLen, ps32_ReadLen); 
 
-      if(ps32_ReadLen[0]>0 && ss_Buf[0]!=0)
-      {
-         Print("ReadFromInt(",ph_Client[0],"...) No order opened");
-         Print("Symbol_A...",ss_Buf[0],"....",ss_Buf[1]);
+        if(ps32_ReadLen[0]>0 && ss_Buf[0]!=0)
+        {
+            Print("ReadFromInt(",ph_Client[0],"...) No order opened");
+            Print("Symbol_A...",ss_Buf[0],"....",ss_Buf[1]);
           
-         MagicNumber = ss_Buf[0];
-         if(ss_Buf[1]==2 && OrdersTotal()==0)
-         {
-             openbuy = OrderSend(Symbol(),OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-             begin = GetTickCount();
-	     sym1 = 1;
-         }
-         if(ss_Buf[1]==1 && OrdersTotal()==0)
-         {
-             opensell = OrderSend(Symbol(),OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-             begin = GetTickCount();
-	     sym1 = 1;
-         }
-      }
-   } 
+            MagicNumber = ss_Buf[0];
+            if(ss_Buf[1]==2 && OrdersTotal()==0)
+            {
+                openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                begin = GetTickCount();
+	            sym1 = 1;
+            }
+            if(ss_Buf[1]==1 && OrdersTotal()==0)
+            {
+                opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                begin = GetTickCount();
+	            sym1 = 1;
+            }
+        }
+    } 
    
-   if(SymbolInfoTick(Symbol(),tick) && b_ConnectTo==true)
-   {          
-         pd_Value[0] = NormalizeDouble(tick.bid,Digits);
-         pd_Value[1] = NormalizeDouble(tick.ask,Digits);
-         pd_Value[2] = AccountEquity();
-         if(sym1==0 && status==2)
-         {
+    if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
+    {          
+        pd_Value[0] = NormalizeDouble(tick.bid,Digits);
+        pd_Value[1] = NormalizeDouble(tick.ask,Digits);
+        if(sym1==0 && status==2)
+        {
             pd_Value[3] = 0;
             pd_Value[4] = 0;
-         }
-	      if(sym1>0 && status==1)
-         {
+        }
+	    if(sym1>0 && status==1)
+        {
             pd_Value[3] = 0;
             pd_Value[4] = 3;
             info = true;
-         }
+        }
       
-         if(_bid!=tick.bid || _ask!=tick.ask || info == true)
-         {         
-	  send = true;
-	  _bid = tick.bid;
-          _ask = tick.ask;
+        if(_bid!=tick.bid || _ask!=tick.ask || info == true)
+        {         
+	        send = true;
+	        _bid = tick.bid;
+            _ask = tick.ask;
         }    
     }
     
     if(send == true || send1 == true || send2 == true || send3 == true)
     {
+    	pd_Value[2] = AccountEquity();
     	s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
    
     	if (s32_Error != 0)
     	{
         	Print("SendToDouble(",ph_Client[0],"...) Return is: ",GetErrMsg(s32_Error));
-        	Print("Status is..",status);
-        	if((typ>1 && end<=120) || (typ1>1 && end1<=120) || (typ2>1 && end2<=120) || (typ3>1 && end3<=120))
+        	if((sym1==1 && end<=120) || (sym2==1 && end1<=120) || (sym3==1 && end2<=120) || (sym4==1 && end3<=120))
         	{
-             		Print("Client disconnected...");
+             		Print("Initial disconnect attepmpt failed...");
              		s32_Error = ConnectClose(ph_Client[0]);
              		b_ConnectTo = false;
         	}
     	}
     	else
     	{
-        	status = 0;
-		status1 = 0;
-		status2 = 0;
-		status3 = 0;
+        	if(send == true)
+        	{
+        	    status = 0;
+        	}
+        	if(send1 == true)
+        	{
+		        status1 = 0;
+        	}
+        	if(send2 == true)
+        	{
+		        status2 = 0;
+        	}
+        	if(send3 == true)
+        	{
+		        status3 = 0;
+        	}
         	if(info==true || info1==true || info2==true || info3==true)
         	{
             		Print("SendToDouble(",ph_Client[0],"...) Return is: ",GetErrMsg(s32_Error));
         	}
     	}
-    }
-    
+    }   
+ }
 }
