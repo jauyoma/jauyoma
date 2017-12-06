@@ -32,7 +32,8 @@ uint begin = 0, end = 0, begin1 = 0, end1 = 0, begin2 = 0, end2 = 0, begin3 = 0,
 double Lot_A, Lot_B, Lot_C, Lot_D;
 int Tick1, Tick2, Tick3, Tick4;
 
-int ss_Buf[2];
+int ss_Buf[10];
+int ss_Value[10];
 double pd_Value[22];
 
 //+------------------------------------------------------------------+
@@ -105,8 +106,7 @@ void OnTimer()
  if(b_ConnectTo == true && blacklist == false)
  {  
     if(sym1>0)
-    {
-        int ss_Value[10];  
+    {  
         status = 2;
         info = false;
     
@@ -218,8 +218,7 @@ void OnTimer()
     }
    
     if(sym2>0)
-    {
-        ss_Value[10];  
+    {  
         status1 = 2;
         info1 = false;
     
@@ -442,8 +441,7 @@ void OnTimer()
     }
    
     if(sym4>0)
-    {
-        ss_Value[10];  
+    {  
         status3 = 2;
         info3 = false;
     
@@ -480,19 +478,19 @@ void OnTimer()
          
                     if(ss_Value[7]==8 && typ3 == 1)
                     {
-             	        close = OrderClose(Tick3,Lot_C,Bid,1,Red);
+             	        close = OrderClose(Tick4,Lot_D,Bid,1,Red);
              	        Print("Order Closed; Failed pre-conditions");
              	        Comment("");
-             	        exit2 = true;
-		                 sym3 = 0;
+             	        exit3 = true;
+		                 sym4 = 0;
                     }
 			           if(ss_Value[7]==8 && typ3 == 2)
                     {
-             	        close = OrderClose(Tick3,Lot_C,Ask,1,Red);
+             	        close = OrderClose(Tick4,Lot_D,Ask,1,Red);
              	        Print("Order Closed; Failed pre-conditions");
              	        Comment("");
-             	        exit2 = true;
-		                 sym3 = 0;
+             	        exit3 = true;
+		                 sym4 = 0;
                     }       
 	 
                     if(ss_Value[7]==7)
@@ -510,7 +508,7 @@ void OnTimer()
                         {
              	            close = OrderClose(Tick4,Lot_D,Bid,1,Red);
                         }
-			               if(typ2 == 2)
+			               if(typ3 == 2)
                         {
              	            close = OrderClose(Tick4,Lot_D,Ask,1,Red);
                         }
@@ -605,13 +603,13 @@ void OnTimer()
             if(ss_Buf[3]==2 && sym2==0)
             {
                 openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-                begin = GetTickCount();
+                begin1 = GetTickCount();
 	            sym2 = 1;
             }
             if(ss_Buf[3]==1 && sym2==0)
             {
                 opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-                begin = GetTickCount();
+                begin1 = GetTickCount();
 	             sym2 = 1;
             }
         }
@@ -637,13 +635,13 @@ void OnTimer()
             if(ss_Buf[5]==2 && sym3==0)
             {
                 openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-                begin = GetTickCount();
+                begin2 = GetTickCount();
 	             sym3 = 1;
             }
             if(ss_Buf[5]==1 && sym3==0)
             {
                 opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-                begin = GetTickCount();
+                begin2 = GetTickCount();
 	             sym3 = 1;
             }
         }
@@ -797,18 +795,22 @@ void OnTimer()
         	if(send == true)
         	{
         	    status = 0;
+        	    send = false;
         	}
         	if(send1 == true)
         	{
 		        status1 = 0;
+		        send1 = false;
         	}
         	if(send2 == true)
         	{
 		        status2 = 0;
+		        send2 = false;
         	}
         	if(send3 == true)
         	{
 		        status3 = 0;
+		        send3 = false;
         	}
         	if(info==true || info1==true || info2==true || info3==true)
         	{
