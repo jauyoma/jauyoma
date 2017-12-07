@@ -1,0 +1,4985 @@
+//+---------------------------------------------------------------------------+
+//|                                            EchoServer.cpp                 |
+//|                      Copyright © 2018, http://klein-hill.com			  |
+//|                                       trader@klein-hill.com               |
+//+---------------------------------------------------------------------------+
+
+// EchoServer.cpp
+
+#include <winsock2.h>
+#pragma comment(lib, "NetEventsProcDLL") // NetEventsProcDLL.lib placed in ...\FastStart\EchoServer\ 
+#include <iostream>
+#include <conio.h>
+#include <cmath>
+#include  "cNetEventsProcDLL.h"
+
+BOOL FormatIP(DWORD u32_IP, char* s8_IP);
+
+int main()
+{
+	int s32_Port = 2000;
+
+	// Try to create server listening on port 2000
+	// You may change port.
+	DWORD u32_Error = cNetEventsProcDLL::ServerOpen(s32_Port);
+
+	if (u32_Error)
+	{
+		printf("\nServerOpen() failed with error: %d\n", u32_Error);
+		return 1;
+	}
+	else
+		printf("\nServerOpen() fine, we now are waiting for connections...\n");
+
+	DWORD u32_Count = 0, ctrl = 0;
+	DWORD u32_CountOld = 0;
+	bool close = false, min = false, min1 = false, min2 = false, min3 = false, hr = false, hr1 = false, hr2 = false, hr3 = false;
+
+	int ss_Buf[10];
+	double pd_Buf[45];
+	DWORD  u32_BufLen = 45;
+	int    ps32_ReadLen[22];
+	int    ss32_ReadLen = 10;
+	int m = ctrl + 35, k = ctrl + 40, m1 = ctrl + 35, k1 = ctrl + 40, m2 = ctrl + 35, k2 = ctrl + 40, m3 = ctrl + 35, k3 = ctrl + 40;
+	DWORD p = 0, x = 25, q = 25, z = 25, w = 25, y = 25, t1 = 25, t2 = 25, t3 = 25, t4 = 25, t5 = 25;
+	DWORD x1 = 20, q1 = 20, z1 = 20, w1 = 20, y1 = 20, t11 = 20, t22 = 20, t33 = 20, t44 = 20, t55 = 20;
+	DWORD x12 = 20, q12 = 20, z12 = 20, w12 = 20, y12 = 20, t112 = 20, t222 = 20, t332 = 20, t442 = 20, t552 = 20;
+	DWORD x13 = 20, q13 = 20, z13 = 20, w13 = 20, y13 = 20, t113 = 20, t223 = 20, t333 = 20, t443 = 20, t553 = 20;
+	DWORD x14 = 20, q14 = 20, z14 = 20, w14 = 20, y14 = 20, t114 = 20, t224 = 20, t334 = 20, t444 = 20, t554 = 20;
+	SYSTEMTIME tym;
+	int tickcount = 0;
+	double Bid = 0, Ask = 0, Bid1 = 0, Ask1 = 0, Bid2 = 0, Ask2 = 0, Bid3 = 0, Ask3 = 0, f = 0;
+	double MagicNumber = 0, MagicNumber1 = 0, MagicNumber2 = 0, MagicNumber3 = 0, MagicNumber4 = 0, MagicNumber5 = 0, MagicNumber6 = 0, MagicNumber7 = 0, MagicNumber8 = 0, MagicNumber9 = 0;
+	double MagicNumber10 = 0, MagicNumber11 = 0, MagicNumber12 = 0, MagicNumber13 = 0, MagicNumber14 = 0, MagicNumber15 = 0, MagicNumber16 = 0, MagicNumber17 = 0, MagicNumber18 = 0, MagicNumber19 = 0;
+	double MagicNumber20 = 0, MagicNumber21 = 0, MagicNumber22 = 0, MagicNumber23 = 0, MagicNumber24 = 0, MagicNumber25 = 0, MagicNumber26 = 0, MagicNumber27 = 0, MagicNumber28 = 0, MagicNumber29 = 0;
+	double MagicNumber30 = 0, MagicNumber31 = 0, MagicNumber32 = 0, MagicNumber33 = 0, MagicNumber34 = 0, MagicNumber35 = 0, MagicNumber36 = 0, MagicNumber37 = 0, MagicNumber38 = 0, MagicNumber39 = 0;
+	double _bid = 0, _bid1 = 0, _bid2 = 0, _bid3 = 0, _bid4 = 0, _bid5 = 0, _bid6 = 0, _bid7 = 0, _bid8 = 0, _bid9 = 0;
+	double _ask = 0, _ask1 = 0, _ask2 = 0, _ask3 = 0, _ask4 = 0, _ask5 = 0, _ask6 = 0, _ask7 = 0, _ask8 = 0, _ask9 = 0;
+	double _bid10 = 0, _bid11 = 0, _bid12 = 0, _bid13 = 0, _bid14 = 0, _bid15 = 0, _bid16 = 0, _bid17 = 0, _bid18 = 0, _bid19 = 0;
+	double _ask10 = 0, _ask11 = 0, _ask12 = 0, _ask13 = 0, _ask14 = 0, _ask15 = 0, _ask16 = 0, _ask17 = 0, _ask18 = 0, _ask19 = 0;
+	double _bid20 = 0, _bid21 = 0, _bid22 = 0, _bid23 = 0, _bid24 = 0, _bid25 = 0, _bid26 = 0, _bid27 = 0, _bid28 = 0, _bid29 = 0;
+	double _ask20 = 0, _ask21 = 0, _ask22 = 0, _ask23 = 0, _ask24 = 0, _ask25 = 0, _ask26 = 0, _ask27 = 0, _ask28 = 0, _ask29 = 0;
+	double _bid30 = 0, _bid31 = 0, _bid32 = 0, _bid33 = 0, _bid34 = 0, _bid35 = 0, _bid36 = 0, _bid37 = 0, _bid38 = 0, _bid39 = 0;
+	double _ask30 = 0, _ask31 = 0, _ask32 = 0, _ask33 = 0, _ask34 = 0, _ask35 = 0, _ask36 = 0, _ask37 = 0, _ask38 = 0, _ask39 = 0;
+	bool ok = false, ok1 = false, ok2 = false;
+	double _typ = 0, _typ1 = 0, _typ2 = 0, _typ3 = 0, _typ4 = 0, _typ5 = 0, _typ6 = 0, _typ7 = 0, _typ8 = 0, _typ9 = 0;
+	double cpt = 0, cpt1 = 0, cpt2 = 0, cpt3 = 0, cpt4 = 0, cpt5 = 0, cpt6 = 0, cpt7 = 0, cpt8 = 0, cpt9 = 0;
+	double _typ10 = 0, _typ11 = 0, _typ12 = 0, _typ13 = 0, _typ14 = 0, _typ15 = 0, _typ16 = 0, _typ17 = 0, _typ18 = 0, _typ19 = 0;
+	double cpt10 = 0, cpt11 = 0, cpt12 = 0, cpt13 = 0, cpt14 = 0, cpt15 = 0, cpt16 = 0, cpt17 = 0, cpt18 = 0, cpt19 = 0;
+	double _typ20 = 0, _typ21 = 0, _typ22 = 0, _typ23 = 0, _typ24 = 0, _typ25 = 0, _typ26 = 0, _typ27 = 0, _typ28 = 0, _typ29 = 0;
+	double cpt20 = 0, cpt21 = 0, cpt22 = 0, cpt23 = 0, cpt24 = 0, cpt25 = 0, cpt26 = 0, cpt27 = 0, cpt28 = 0, cpt29 = 0;
+	double _typ30 = 0, _typ31 = 0, _typ32 = 0, _typ33 = 0, _typ34 = 0, _typ35 = 0, _typ36 = 0, _typ37 = 0, _typ38 = 0, _typ39 = 0;
+	double cpt30 = 0, cpt31 = 0, cpt32 = 0, cpt33 = 0, cpt34 = 0, cpt35 = 0, cpt36 = 0, cpt37 = 0, cpt38 = 0, cpt39 = 0;
+	DWORD start = 1, end, start1 = 1, end1, start2 = 1, end2, start3 = 1, end3;
+	WORD t = 0, b, count;
+	bool enable = false, disable = false;
+
+	int ph_Client[12];
+	int ps32_ClientIP[12];
+	int ps32_ClientCount[1];
+
+	while (!_kbhit())
+	{
+		u32_Error = cNetEventsProcDLL::GetAllConnections(ph_Client, ps32_ClientIP, ps32_ClientCount);
+
+		if (u32_Error)
+		{
+			printf("\nGetAllConnections(...) failed with error: %d\n", u32_Error);
+			break;
+		}
+		else
+			u32_Count = ps32_ClientCount[0];
+
+
+		if (u32_Count != u32_CountOld)
+		{
+			u32_CountOld = u32_Count;
+
+			printf("\nNumber of connections now = %d\n", u32_Count);
+			printf("#     h_Connect   (peer IP)\n");
+
+			for (DWORD i = 0; i<u32_Count; i++)
+			{
+				char  s8_IP[20];
+				sprintf(s8_IP, "%s", "123456789012345");
+
+				FormatIP(ps32_ClientIP[i], s8_IP);
+
+				printf("%d      %d       (%s)\n", i, ph_Client[i], s8_IP);
+			}
+		}
+
+		if (ok == false)
+		{
+			ctrl = u32_Count;
+		}
+
+		if (ctrl == 10 && u32_Count>1)
+		{
+			ok = true;
+			for (DWORD i = 0; i < u32_Count; i++)
+			{
+				disable = false;
+				pd_Buf[0] = 0;
+				pd_Buf[1] = 0;
+				pd_Buf[2] = 0;
+				pd_Buf[3] = 0;
+				pd_Buf[4] = 0;
+				pd_Buf[5] = 0;
+				pd_Buf[6] = 0;
+				pd_Buf[7] = 0;
+				pd_Buf[8] = 0;
+				pd_Buf[9] = 0;
+				pd_Buf[10] = 0;
+				pd_Buf[11] = 0;
+				pd_Buf[12] = 0;
+				pd_Buf[13] = 0;
+				pd_Buf[14] = 0;
+				pd_Buf[15] = 0;
+				pd_Buf[16] = 0;
+				pd_Buf[17] = 0;
+				pd_Buf[18] = 0;
+				pd_Buf[19] = 0;
+				pd_Buf[20] = 0;
+				pd_Buf[21] = 0;
+				pd_Buf[22] = 0;
+
+				u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[i], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("ReadFromDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+				}
+
+				if (!u32_Error)
+				{
+
+					if (ps32_ReadLen[0] > 0 && pd_Buf[5] == 0)
+					{
+						if (i == 0 && (x == 25 || x == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							x = i;
+						}
+
+						if (i == 1 && (z == 25 || z == 30) && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							z = i;
+						}
+
+						if (i == 2 && (q == 25 || q == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							q = i;
+						}
+
+						if (i == 3 && (w == 25 || w == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							w = i;
+						}
+
+						if (i == 4 && (y == 25 || y == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							y = i;
+						}
+
+						if (i == 5 && (t1 == 25 || t1 == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							t1 = i;
+						}
+
+						if (i == 6 && (t2 == 25 || t2 == 30) && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							t2 = i;
+						}
+
+						if (i == 7 && (t3 == 25 || t3 == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[t5])
+						{
+							t3 = i;
+						}
+
+						if (i == 8 && (t4 == 25 || t4 == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[y] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[t5])
+						{
+							t4 = i;
+						}
+
+						if (i == 9 && (t5 == 25 || t5 == 30) && ph_Client[i] != ph_Client[z] && ph_Client[i] != ph_Client[x] && ph_Client[i] != ph_Client[w] && ph_Client[i] != ph_Client[q] && ph_Client[i] != ph_Client[t1] && ph_Client[i] != ph_Client[t2] && ph_Client[i] != ph_Client[t3] && ph_Client[i] != ph_Client[t4] && ph_Client[i] != ph_Client[y])
+						{
+							t5 = i;
+						}
+
+						printf("ReadFromDouble(%d...) read %d double values\n", ph_Client[i], ps32_ReadLen[0]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[2]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[0]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[1]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[7]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[8]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[12]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[13]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[17]);
+						printf("\nReadFromDouble(%d...) Read Data: %9.5f\n", ph_Client[i], pd_Buf[18]);
+
+						if (ph_Client[i] == ph_Client[x])
+						{
+							MagicNumber = pd_Buf[3];
+							_typ = pd_Buf[4];
+							_ask = pd_Buf[1];
+							_bid = pd_Buf[0];
+							cpt = pd_Buf[5];
+							MagicNumber10 = pd_Buf[9];
+							_typ10 = pd_Buf[10];
+							_ask10 = pd_Buf[8];
+							_bid10 = pd_Buf[7];
+							MagicNumber20 = pd_Buf[14];
+							_typ20 = pd_Buf[15];
+							_ask20 = pd_Buf[13];
+							_bid20 = pd_Buf[12];
+							MagicNumber30 = pd_Buf[19];
+							_typ30 = pd_Buf[20];
+							_ask30 = pd_Buf[18];
+							_bid30 = pd_Buf[17];
+						}
+
+						if (ph_Client[i] == ph_Client[z])
+						{
+							MagicNumber1 = pd_Buf[3];
+							_typ1 = pd_Buf[4];
+							_ask1 = pd_Buf[1];
+							_bid1 = pd_Buf[0];
+							cpt1 = pd_Buf[5];
+							MagicNumber11 = pd_Buf[9];
+							_typ11 = pd_Buf[10];
+							_ask11 = pd_Buf[8];
+							_bid11 = pd_Buf[7];
+							MagicNumber21 = pd_Buf[14];
+							_typ21 = pd_Buf[15];
+							_ask21 = pd_Buf[13];
+							_bid21 = pd_Buf[12];
+							MagicNumber31 = pd_Buf[19];
+							_typ31 = pd_Buf[20];
+							_ask31 = pd_Buf[18];
+							_bid31 = pd_Buf[17];
+						}
+
+						if (ph_Client[i] == ph_Client[q])
+						{
+							MagicNumber2 = pd_Buf[3];
+							_typ2 = pd_Buf[4];
+							_ask2 = pd_Buf[1];
+							_bid2 = pd_Buf[0];
+							cpt2 = pd_Buf[5];
+							MagicNumber12 = pd_Buf[9];
+							_typ12 = pd_Buf[10];
+							_ask12 = pd_Buf[8];
+							_bid12 = pd_Buf[7];
+							MagicNumber22 = pd_Buf[14];
+							_typ22 = pd_Buf[15];
+							_ask22 = pd_Buf[13];
+							_bid22 = pd_Buf[12];
+							MagicNumber32 = pd_Buf[19];
+							_typ32 = pd_Buf[20];
+							_ask32 = pd_Buf[18];
+							_bid32 = pd_Buf[17];
+						}
+						if (ph_Client[i] == ph_Client[w])
+						{
+							MagicNumber3 = pd_Buf[3];
+							_typ3 = pd_Buf[4];
+							_ask3 = pd_Buf[1];
+							_bid3 = pd_Buf[0];
+							cpt3 = pd_Buf[5];
+							MagicNumber13 = pd_Buf[9];
+							_typ13 = pd_Buf[10];
+							_ask13 = pd_Buf[8];
+							_bid13 = pd_Buf[7];
+							MagicNumber23 = pd_Buf[14];
+							_typ23 = pd_Buf[15];
+							_ask23 = pd_Buf[13];
+							_bid23 = pd_Buf[12];
+							MagicNumber33 = pd_Buf[19];
+							_typ33 = pd_Buf[20];
+							_ask33 = pd_Buf[18];
+							_bid33 = pd_Buf[17];
+						}
+						if (ph_Client[i] == ph_Client[y])
+						{
+							MagicNumber4 = pd_Buf[3];
+							_typ4 = pd_Buf[4];
+							_ask4 = pd_Buf[1];
+							_bid4 = pd_Buf[0];
+							cpt4 = pd_Buf[5];
+							MagicNumber14 = pd_Buf[9];
+							_typ14 = pd_Buf[10];
+							_ask14 = pd_Buf[8];
+							_bid14 = pd_Buf[7];
+							MagicNumber24 = pd_Buf[14];
+							_typ24 = pd_Buf[15];
+							_ask24 = pd_Buf[13];
+							_bid24 = pd_Buf[12];
+							MagicNumber34 = pd_Buf[19];
+							_typ34 = pd_Buf[20];
+							_ask34 = pd_Buf[18];
+							_bid34 = pd_Buf[17];
+						}
+						if (ph_Client[i] == ph_Client[t1])
+						{
+							MagicNumber5 = pd_Buf[3];
+							_typ5 = pd_Buf[4];
+							_ask5 = pd_Buf[1];
+							_bid5 = pd_Buf[0];
+							cpt5 = pd_Buf[5];
+							MagicNumber15 = pd_Buf[9];
+							_typ15 = pd_Buf[10];
+							_ask15 = pd_Buf[8];
+							_bid15 = pd_Buf[7];
+							MagicNumber25 = pd_Buf[14];
+							_typ25 = pd_Buf[15];
+							_ask25 = pd_Buf[13];
+							_bid25 = pd_Buf[12];
+							MagicNumber35 = pd_Buf[19];
+							_typ35 = pd_Buf[20];
+							_ask35 = pd_Buf[18];
+							_bid35 = pd_Buf[17];
+						}
+
+						if (ph_Client[i] == ph_Client[t2])
+						{
+							MagicNumber6 = pd_Buf[3];
+							_typ6 = pd_Buf[4];
+							_ask6 = pd_Buf[1];
+							_bid6 = pd_Buf[0];
+							cpt6 = pd_Buf[5];
+							MagicNumber16 = pd_Buf[9];
+							_typ16 = pd_Buf[10];
+							_ask16 = pd_Buf[8];
+							_bid16 = pd_Buf[7];
+							MagicNumber26 = pd_Buf[14];
+							_typ26 = pd_Buf[15];
+							_ask26 = pd_Buf[13];
+							_bid26 = pd_Buf[12];
+							MagicNumber36 = pd_Buf[19];
+							_typ36 = pd_Buf[20];
+							_ask36 = pd_Buf[18];
+							_bid36 = pd_Buf[17];
+						}
+
+						if (ph_Client[i] == ph_Client[t3])
+						{
+							MagicNumber7 = pd_Buf[3];
+							_typ7 = pd_Buf[4];
+							_ask7 = pd_Buf[1];
+							_bid7 = pd_Buf[0];
+							cpt7 = pd_Buf[5];
+							MagicNumber17 = pd_Buf[9];
+							_typ17 = pd_Buf[10];
+							_ask17 = pd_Buf[8];
+							_bid17 = pd_Buf[7];
+							MagicNumber27 = pd_Buf[14];
+							_typ27 = pd_Buf[15];
+							_ask27 = pd_Buf[13];
+							_bid27 = pd_Buf[12];
+							MagicNumber37 = pd_Buf[19];
+							_typ37 = pd_Buf[20];
+							_ask37 = pd_Buf[18];
+							_bid37 = pd_Buf[17];
+						}
+						if (ph_Client[i] == ph_Client[t4])
+						{
+							MagicNumber8 = pd_Buf[3];
+							_typ8 = pd_Buf[4];
+							_ask8 = pd_Buf[1];
+							_bid8 = pd_Buf[0];
+							cpt8 = pd_Buf[5];
+							MagicNumber18 = pd_Buf[9];
+							_typ18 = pd_Buf[10];
+							_ask18 = pd_Buf[8];
+							_bid18 = pd_Buf[7];
+							MagicNumber28 = pd_Buf[14];
+							_typ28 = pd_Buf[15];
+							_ask28 = pd_Buf[13];
+							_bid28 = pd_Buf[12];
+							MagicNumber38 = pd_Buf[19];
+							_typ38 = pd_Buf[20];
+							_ask38 = pd_Buf[18];
+							_bid38 = pd_Buf[17];
+						}
+						if (ph_Client[i] == ph_Client[t5])
+						{
+							MagicNumber9 = pd_Buf[3];
+							_typ9 = pd_Buf[4];
+							_ask9 = pd_Buf[1];
+							_bid9 = pd_Buf[0];
+							cpt9 = pd_Buf[5];
+							MagicNumber10 = pd_Buf[9];
+							_typ19 = pd_Buf[10];
+							_ask19 = pd_Buf[8];
+							_bid19 = pd_Buf[7];
+							MagicNumber29 = pd_Buf[14];
+							_typ29 = pd_Buf[15];
+							_ask29 = pd_Buf[13];
+							_bid29 = pd_Buf[12];
+							MagicNumber39 = pd_Buf[19];
+							_typ39 = pd_Buf[20];
+							_ask39 = pd_Buf[18];
+							_bid39 = pd_Buf[17];
+						}
+						close = true;
+					}
+
+					if (pd_Buf[3] != 0)
+					{
+						printf("\nReadFromDouble(%d...) Read Data: %9.1f\n", ph_Client[i], pd_Buf[3]);
+						ss_Buf[0] = 3;
+						ss_Buf[1] = 4;
+
+						if (MagicNumber == pd_Buf[3] && ph_Client[i] != ph_Client[x])
+						{
+							if ((_typ == 1 && _bid<pd_Buf[1]) || (_typ == 2 && _ask>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[x], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[x], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[x] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber = 0;
+									_typ = 0;
+									_bid = 0;
+									_ask = 0;
+									x1 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber1 == pd_Buf[3] && ph_Client[i] != ph_Client[z])
+						{
+							if ((_typ1 == 1 && _bid1<pd_Buf[1]) || (_typ1 == 2 && _ask1>pd_Buf[0]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[z], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[z], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[z] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber1 = 0;
+									_typ1 = 0;
+									_bid1 = 0;
+									_ask1 = 0;
+									z1 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber2 == pd_Buf[3] && ph_Client[i] != ph_Client[q])
+						{
+							if ((_typ2 == 1 && _bid2<pd_Buf[1]) || (_typ2 == 2 && _ask2>pd_Buf[0]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[q], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[q], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[q] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber2 = 0;
+									_typ2 = 0;
+									_bid2 = 0;
+									_ask2 = 0;
+									q1 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber3 == pd_Buf[3] && ph_Client[i] != ph_Client[w])
+						{
+							if ((_typ3 == 1 && _bid3<pd_Buf[1]) || (_typ3 == 2 && _ask3>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[w], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[w], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[w] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber3 = 0;
+									_typ3 = 0;
+									_bid3 = 0;
+									_ask3 = 0;
+									w1 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber4 == pd_Buf[3] && ph_Client[i] != ph_Client[y])
+						{
+							if ((_typ4 == 1 && _bid4<pd_Buf[1]) || (_typ4 == 2 && _ask4>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[y], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[y], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[y] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber4 = 0;
+									_typ4 = 0;
+									_bid4 = 0;
+									_ask4 = 0;
+									y1 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber5 == pd_Buf[3] && ph_Client[i] != ph_Client[t1])
+						{
+							if ((_typ5 == 1 && _bid5<pd_Buf[1]) || (_typ5 == 2 && _ask5>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t1], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t1], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t1] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber5 = 0;
+									_typ5 = 0;
+									_bid5 = 0;
+									_ask5 = 0;
+									t11 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber6 == pd_Buf[3] && ph_Client[i] != ph_Client[t2])
+						{
+							if ((_typ6 == 1 && _bid6<pd_Buf[1]) || (_typ6 == 2 && _ask6>pd_Buf[0]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t2], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t2], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t2] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber6 = 0;
+									_typ6 = 0;
+									_bid6 = 0;
+									_ask6 = 0;
+									t22 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber7 == pd_Buf[3] && ph_Client[i] != ph_Client[t3])
+						{
+							if ((_typ7 == 1 && _bid7<pd_Buf[1]) || (_typ7 == 2 && _ask7>pd_Buf[0]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t3], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t3], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t3] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber7 = 0;
+									_typ7 = 0;
+									_bid7 = 0;
+									_ask7 = 0;
+									t33 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber8 == pd_Buf[3] && ph_Client[i] != ph_Client[t4])
+						{
+							if ((_typ8 == 1 && _bid8<pd_Buf[1]) || (_typ8 == 2 && _ask8>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == y)
+									{
+										y1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t5)
+									{
+										t55 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t4], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t4], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t4] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber8 = 0;
+									_typ8 = 0;
+									_bid8 = 0;
+									_ask8 = 0;
+									t44 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber9 == pd_Buf[3] && ph_Client[i] != ph_Client[t5])
+						{
+							if ((_typ9 == 1 && _bid9<pd_Buf[1]) || (_typ9 == 2 && _ask9>pd_Buf[0]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[0] << std::endl;
+									if (i == x)
+									{
+										x1 = 20;
+									}
+									if (i == z)
+									{
+										z1 = 20;
+									}
+									if (i == q)
+									{
+										q1 = 20;
+									}
+									if (i == w)
+									{
+										w1 = 20;
+									}
+									if (i == t1)
+									{
+										t11 = 20;
+									}
+									if (i == t2)
+									{
+										t22 = 20;
+									}
+									if (i == t3)
+									{
+										t33 = 20;
+									}
+									if (i == t4)
+									{
+										t44 = 20;
+									}
+									if (i == y)
+									{
+										y1 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t5], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t5], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t5] << "..." << ss_Buf[0] << std::endl;
+									MagicNumber9 = 0;
+									_typ9 = 0;
+									_bid9 = 0;
+									_ask9 = 0;
+									t55 = 20;
+								}
+							}
+						}
+					}
+
+					if (pd_Buf[9] != 0)
+					{
+						printf("\nReadFromDouble(%d...) Read Data: %9.1f\n", ph_Client[i], pd_Buf[9]);
+						ss_Buf[2] = 3;
+						ss_Buf[3] = 4;
+
+						if (MagicNumber10 == pd_Buf[9] && ph_Client[i] != ph_Client[x])
+						{
+							if ((_typ10 == 1 && _bid10<pd_Buf[8]) || (_typ10 == 2 && _ask10>pd_Buf[7]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[x], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[x], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[x] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber10 = 0;
+									_typ10 = 0;
+									_bid10 = 0;
+									_ask10 = 0;
+									x12 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber11 == pd_Buf[9] && ph_Client[i] != ph_Client[z])
+						{
+							if ((_typ11 == 1 && _bid11<pd_Buf[8]) || (_typ11 == 2 && _ask11>pd_Buf[7]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[z], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[z], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[z] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber11 = 0;
+									_typ11 = 0;
+									_bid11 = 0;
+									_ask11 = 0;
+									z12 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber12 == pd_Buf[9] && ph_Client[i] != ph_Client[q])
+						{
+							if ((_typ12 == 1 && _bid12<pd_Buf[8]) || (_typ12 == 2 && _ask12>pd_Buf[7]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[q], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[q], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[q] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber12 = 0;
+									_typ12 = 0;
+									_bid12 = 0;
+									_ask12 = 0;
+									q12 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber13 == pd_Buf[9] && ph_Client[i] != ph_Client[w])
+						{
+							if ((_typ13 == 1 && _bid13<pd_Buf[8]) || (_typ13 == 2 && _ask13 > pd_Buf[7]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[w], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[w], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[w] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber13 = 0;
+									_typ13 = 0;
+									_bid13 = 0;
+									_ask13 = 0;
+									w12 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber14 == pd_Buf[9] && ph_Client[i] != ph_Client[y])
+						{
+							if ((_typ14 == 1 && _bid14<pd_Buf[8]) || (_typ14 == 2 && _ask14>pd_Buf[7]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[y], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[y], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[y] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber14 = 0;
+									_typ14 = 0;
+									_bid14 = 0;
+									_ask14 = 0;
+									y12 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber15 == pd_Buf[9] && ph_Client[i] != ph_Client[t1])
+						{
+							if ((_typ15 == 1 && _bid15<pd_Buf[8]) || (_typ15 == 2 && _ask15>pd_Buf[7]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t1], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t1], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t1] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber15 = 0;
+									_typ15 = 0;
+									_bid15 = 0;
+									_ask15 = 0;
+									t112 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber16 == pd_Buf[9] && ph_Client[i] != ph_Client[t2])
+						{
+							if ((_typ16 == 1 && _bid16<pd_Buf[8]) || (_typ16 == 2 && _ask16>pd_Buf[7]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t2], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t2], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t2] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber16 = 0;
+									_typ16 = 0;
+									_bid16 = 0;
+									_ask16 = 0;
+									t222 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber17 == pd_Buf[9] && ph_Client[i] != ph_Client[t3])
+						{
+							if ((_typ17 == 1 && _bid17<pd_Buf[8]) || (_typ17 == 2 && _ask17>pd_Buf[7]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t3], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t3], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t3] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber17 = 0;
+									_typ17 = 0;
+									_bid17 = 0;
+									_ask17 = 0;
+									t332 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber18 == pd_Buf[9] && ph_Client[i] != ph_Client[t4])
+						{
+							if ((_typ18 == 1 && _bid18<pd_Buf[8]) || (_typ18 == 2 && _ask18>pd_Buf[7]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == y)
+									{
+										y12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t5)
+									{
+										t552 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t4], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t4], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t4] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber18 = 0;
+									_typ18 = 0;
+									_bid18 = 0;
+									_ask18 = 0;
+									t442 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber19 == pd_Buf[9] && ph_Client[i] != ph_Client[t5])
+						{
+							if ((_typ19 == 1 && _bid19<pd_Buf[8]) || (_typ19 == 2 && _ask19>pd_Buf[7]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[2] << std::endl;
+									if (i == x)
+									{
+										x12 = 20;
+									}
+									if (i == z)
+									{
+										z12 = 20;
+									}
+									if (i == q)
+									{
+										q12 = 20;
+									}
+									if (i == w)
+									{
+										w12 = 20;
+									}
+									if (i == t1)
+									{
+										t112 = 20;
+									}
+									if (i == t2)
+									{
+										t222 = 20;
+									}
+									if (i == t3)
+									{
+										t332 = 20;
+									}
+									if (i == t4)
+									{
+										t442 = 20;
+									}
+									if (i == y)
+									{
+										y12 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t5], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t5], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t5] << "..." << ss_Buf[2] << std::endl;
+									MagicNumber19 = 0;
+									_typ19 = 0;
+									_bid19 = 0;
+									_ask19 = 0;
+									t552 = 20;
+								}
+							}
+						}
+					}
+
+					if (pd_Buf[14] != 0)
+					{
+						printf("\nReadFromDouble(%d...) Read Data: %9.1f\n", ph_Client[i], pd_Buf[14]);
+						ss_Buf[4] = 3;
+						ss_Buf[5] = 4;
+
+						if (MagicNumber20 == pd_Buf[14] && ph_Client[i] != ph_Client[x])
+						{
+							if ((_typ20 == 1 && _bid20<pd_Buf[13]) || (_typ20 == 2 && _ask20>pd_Buf[12]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[x], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[x], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[x] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber20 = 0;
+									_typ20 = 0;
+									_bid20 = 0;
+									_ask20 = 0;
+									x13 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber21 == pd_Buf[14] && ph_Client[i] != ph_Client[z])
+						{
+							if ((_typ21 == 1 && _bid21<pd_Buf[13]) || (_typ21 == 2 && _ask21>pd_Buf[12]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[z], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[z], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[z] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber21 = 0;
+									_typ21 = 0;
+									_bid21 = 0;
+									_ask21 = 0;
+									z13 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber22 == pd_Buf[14] && ph_Client[i] != ph_Client[q])
+						{
+							if ((_typ22 == 1 && _bid22<pd_Buf[13]) || (_typ22 == 2 && _ask22>pd_Buf[12]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[q], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[q], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[q] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber22 = 0;
+									_typ22 = 0;
+									_bid22 = 0;
+									_ask22 = 0;
+									q13 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber23 == pd_Buf[14] && ph_Client[i] != ph_Client[w])
+						{
+							if ((_typ23 == 1 && _bid23<pd_Buf[13]) || (_typ23 == 2 && _ask23 > pd_Buf[12]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[w], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[w], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[w] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber23 = 0;
+									_typ23 = 0;
+									_bid23 = 0;
+									_ask23 = 0;
+									w13 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber24 == pd_Buf[14] && ph_Client[i] != ph_Client[y])
+						{
+							if ((_typ24 == 1 && _bid24<pd_Buf[13]) || (_typ24 == 2 && _ask24>pd_Buf[12]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[y], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[y], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[y] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber24 = 0;
+									_typ24 = 0;
+									_bid24 = 0;
+									_ask24 = 0;
+									y13 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber25 == pd_Buf[14] && ph_Client[i] != ph_Client[t1])
+						{
+							if ((_typ25 == 1 && _bid25<pd_Buf[13]) || (_typ25 == 2 && _ask25>pd_Buf[12]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t1], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t1], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t1] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber25 = 0;
+									_typ25 = 0;
+									_bid25 = 0;
+									_ask25 = 0;
+									t113 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber26 == pd_Buf[14] && ph_Client[i] != ph_Client[t2])
+						{
+							if ((_typ26 == 1 && _bid26<pd_Buf[13]) || (_typ26 == 2 && _ask26>pd_Buf[12]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t2], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t2], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t2] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber26 = 0;
+									_typ26 = 0;
+									_bid26 = 0;
+									_ask26 = 0;
+									t223 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber27 == pd_Buf[14] && ph_Client[i] != ph_Client[t3])
+						{
+							if ((_typ27 == 1 && _bid27<pd_Buf[13]) || (_typ27 == 2 && _ask27>pd_Buf[12]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t3], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t3], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t3] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber27 = 0;
+									_typ27 = 0;
+									_bid27 = 0;
+									_ask27 = 0;
+									t333 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber28 == pd_Buf[14] && ph_Client[i] != ph_Client[t4])
+						{
+							if ((_typ28 == 1 && _bid28<pd_Buf[13]) || (_typ28 == 2 && _ask28>pd_Buf[12]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t5)
+									{
+										t553 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t4], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t4], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t4] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber28 = 0;
+									_typ28 = 0;
+									_bid28 = 0;
+									_ask28 = 0;
+									t443 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber29 == pd_Buf[14] && ph_Client[i] != ph_Client[t5])
+						{
+							if ((_typ29 == 1 && _bid29<pd_Buf[13]) || (_typ19 == 2 && _ask19>pd_Buf[12]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == x)
+									{
+										x13 = 20;
+									}
+									if (i == z)
+									{
+										z13 = 20;
+									}
+									if (i == q)
+									{
+										q13 = 20;
+									}
+									if (i == w)
+									{
+										w13 = 20;
+									}
+									if (i == t1)
+									{
+										t113 = 20;
+									}
+									if (i == t2)
+									{
+										t223 = 20;
+									}
+									if (i == t3)
+									{
+										t333 = 20;
+									}
+									if (i == t4)
+									{
+										t443 = 20;
+									}
+									if (i == y)
+									{
+										y13 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t5], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t5], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t5] << "..." << ss_Buf[4] << std::endl;
+									MagicNumber29 = 0;
+									_typ29 = 0;
+									_bid29 = 0;
+									_ask29 = 0;
+									t553 = 20;
+								}
+							}
+						}
+					}
+
+					if (pd_Buf[19] != 0)
+					{
+						printf("\nReadFromDouble(%d...) Read Data: %9.1f\n", ph_Client[i], pd_Buf[19]);
+						ss_Buf[6] = 3;
+						ss_Buf[7] = 4;
+
+						if (MagicNumber30 == pd_Buf[19] && ph_Client[i] != ph_Client[x])
+						{
+							if ((_typ30 == 1 && _bid30<pd_Buf[18]) || (_typ30 == 2 && _ask30>pd_Buf[17]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[x], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[x], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[x] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber30 = 0;
+									_typ30 = 0;
+									_bid30 = 0;
+									_ask30 = 0;
+									x14 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber31 == pd_Buf[19] && ph_Client[i] != ph_Client[z])
+						{
+							if ((_typ31 == 1 && _bid31<pd_Buf[18]) || (_typ31 == 2 && _ask31>pd_Buf[17]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[z], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[z], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[z] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber31 = 0;
+									_typ31 = 0;
+									_bid31 = 0;
+									_ask31 = 0;
+									z14 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber32 == pd_Buf[19] && ph_Client[i] != ph_Client[q])
+						{
+							if ((_typ32 == 1 && _bid32<pd_Buf[18]) || (_typ32 == 2 && _ask32>pd_Buf[17]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[q], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[q], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[q] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber32 = 0;
+									_typ32 = 0;
+									_bid32 = 0;
+									_ask32 = 0;
+									q14 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber33 == pd_Buf[19] && ph_Client[i] != ph_Client[w])
+						{
+							if ((_typ33 == 1 && _bid33<pd_Buf[18]) || (_typ33 == 2 && _ask33 > pd_Buf[17]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[w], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[w], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[w] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber33 = 0;
+									_typ33 = 0;
+									_bid33 = 0;
+									_ask33 = 0;
+									w14 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber34 == pd_Buf[19] && ph_Client[i] != ph_Client[y])
+						{
+							if ((_typ34 == 1 && _bid34<pd_Buf[18]) || (_typ34 == 2 && _ask34>pd_Buf[17]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[4] << std::endl;
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[y], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[y], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[y] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber34 = 0;
+									_typ34 = 0;
+									_bid34 = 0;
+									_ask34 = 0;
+									y14 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber35 == pd_Buf[19] && ph_Client[i] != ph_Client[t1])
+						{
+							if ((_typ35 == 1 && _bid35<pd_Buf[18]) || (_typ35 == 2 && _ask35>pd_Buf[17]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t1], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t1], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t1] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber35 = 0;
+									_typ35 = 0;
+									_bid35 = 0;
+									_ask35 = 0;
+									t114 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber36 == pd_Buf[19] && ph_Client[i] != ph_Client[t2])
+						{
+							if ((_typ36 == 1 && _bid36<pd_Buf[18]) || (_typ36 == 2 && _ask36>pd_Buf[17]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t2], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t2], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t2] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber36 = 0;
+									_typ36 = 0;
+									_bid36 = 0;
+									_ask36 = 0;
+									t224 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber37 == pd_Buf[19] && ph_Client[i] != ph_Client[t3])
+						{
+							if ((_typ37 == 1 && _bid37<pd_Buf[18]) || (_typ37 == 2 && _ask37>pd_Buf[17]))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t3], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t3], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t3] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber37 = 0;
+									_typ37 = 0;
+									_bid37 = 0;
+									_ask37 = 0;
+									t334 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber38 == pd_Buf[19] && ph_Client[i] != ph_Client[t4])
+						{
+							if ((_typ38 == 1 && _bid38<pd_Buf[18]) || (_typ38 == 2 && _ask38>pd_Buf[17]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == y)
+									{
+										y14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t5)
+									{
+										t554 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t4], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t4], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t4] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber38 = 0;
+									_typ38 = 0;
+									_bid38 = 0;
+									_ask38 = 0;
+									t444 = 20;
+								}
+							}
+						}
+
+						if (MagicNumber39 == pd_Buf[19] && ph_Client[i] != ph_Client[t5])
+						{
+							if ((_typ39 == 1 && _bid39<pd_Buf[18]) || (_typ39 == 2 && _ask39>pd_Buf[17]))
+							{
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[i] << "..." << ss_Buf[6] << std::endl;
+									if (i == x)
+									{
+										x14 = 20;
+									}
+									if (i == z)
+									{
+										z14 = 20;
+									}
+									if (i == q)
+									{
+										q14 = 20;
+									}
+									if (i == w)
+									{
+										w14 = 20;
+									}
+									if (i == t1)
+									{
+										t114 = 20;
+									}
+									if (i == t2)
+									{
+										t224 = 20;
+									}
+									if (i == t3)
+									{
+										t334 = 20;
+									}
+									if (i == t4)
+									{
+										t444 = 20;
+									}
+									if (i == y)
+									{
+										y14 = 20;
+									}
+								}
+
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[t5], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("SendToInt(%d...) failed with error: %d\n", ph_Client[t5], u32_Error);
+								}
+								else
+								{
+									std::cout << "Sent close instructions for..." << ph_Client[t5] << "..." << ss_Buf[6] << std::endl;
+									MagicNumber39 = 0;
+									_typ39 = 0;
+									_bid39 = 0;
+									_ask39 = 0;
+									t554 = 20;
+								}
+							}
+						}
+					}
+
+				}
+
+			}
+
+			if (min == false)
+			{
+				if (x != 25 && _typ == 0 && x1 == 20)
+				{
+					Bid = _bid;
+					m = x;
+				}
+				if (_bid1 > Bid && z != 25 && _typ1 == 0 && z1 == 20)
+				{
+					Bid = _bid1;
+					m = z;
+				}
+				if (_bid2 > Bid && q != 25 && _typ2 == 0 && q1 == 20)
+				{
+					Bid = _bid2;
+					m = q;
+				}
+				if (_bid3 > Bid && w != 25 && _typ3 == 0 && w1 == 20)
+				{
+					Bid = _bid3;
+					m = w;
+				}
+				if (_bid4 > Bid && y != 25 && _typ4 == 0 && y1 == 20)
+				{
+					Bid = _bid4;
+					m = y;
+				}
+				if (_bid5 > Bid && t1 != 25 && _typ5 == 0 && t11 == 20)
+				{
+					Bid = _bid5;
+					m = t1;
+				}
+				if (_bid6 > Bid && t2 != 25 && _typ6 == 0 && t22 == 20)
+				{
+					Bid = _bid6;
+					m = t2;
+				}
+				if (_bid7 > Bid && t3 != 25 && _typ7 == 0 && t33 == 20)
+				{
+					Bid = _bid7;
+					m = t3;
+				}
+				if (_bid8 > Bid && t4 != 25 && _typ8 == 0 && t44 == 20)
+				{
+					Bid = _bid8;
+					m = t4;
+				}
+				if (_bid9 > Bid && t5 != 25 && _typ9 == 0 && t55 == 20)
+				{
+					Bid = _bid9;
+					m = t5;
+				}
+
+				if (x != m && x != 25 && _ask == 0 && _typ == 0 && x1 == 20)
+				{
+					Ask = _ask;
+					k = x;
+				}
+				if (((_ask1 < Ask && _ask1 != 0) || Ask == 0) && z != m && z != 25 && _typ1 == 0 && z1 == 20)
+				{
+					Ask = _ask1;
+					k = z;
+				}
+				if (((_ask2 < Ask && _ask2 != 0) || Ask == 0) && q != m && q != 25 && _typ2 == 0 && q1 == 20)
+				{
+					Ask = _ask2;
+					k = q;
+				}
+				if (((_ask3 < Ask && _ask3 != 0) || Ask == 0) && w != m && w != 25 && _typ3 == 0 && w1 == 20)
+				{
+					Ask = _ask3;
+					k = w;
+				}
+				if (((_ask4 < Ask && _ask4 != 0) || Ask == 0) && y != m && y != 25 && _typ4 == 0 && y1 == 20)
+				{
+					Ask = _ask4;
+					k = y;
+				}
+				if (((_ask5 < Ask && _ask5 != 0) || Ask == 0) && t1 != m && t1 != 25 && _typ5 == 0 && t11 == 20)
+				{
+					Ask = _ask5;
+					k = t1;
+				}
+				if (((_ask6 < Ask && _ask6 != 0) || Ask == 0) && t2 != m && t2 != 25 && _typ6 == 0 && t22 == 20)
+				{
+					Ask = _ask6;
+					k = t2;
+				}
+				if (((_ask7 < Ask && _ask7 != 0) || Ask == 0) && t3 != m && t3 != 25 && _typ7 == 0 && t33 == 20)
+				{
+					Ask = _ask7;
+					k = t3;
+				}
+				if (((_ask8 < Ask && _ask8 != 0) || Ask == 0) && t4 != m && t4 != 25 && _typ8 == 0 && t44 == 20)
+				{
+					Ask = _ask8;
+					k = t4;
+				}
+				if (((_ask9 < Ask && _ask9 != 0) || Ask == 0) && t5 != m && t5 != 25 && _typ9 == 0 && t55 == 20)
+				{
+					Ask = _ask9;
+					k = t5;
+				}
+			}
+
+			if (min1 == false)
+			{
+				if (x != 25 && _typ10 == 0 && x12 == 20)
+				{
+					Bid1 = _bid10;
+					m1 = x;
+				}
+				if (_bid11 > Bid1 && z != 25 && _typ11 == 0 && z12 == 20)
+				{
+					Bid1 = _bid11;
+					m1 = z;
+				}
+				if (_bid12 > Bid1 && q != 25 && _typ12 == 0 && q12 == 20)
+				{
+					Bid1 = _bid12;
+					m1 = q;
+				}
+				if (_bid13 > Bid1 && w != 25 && _typ13 == 0 && w12 == 20)
+				{
+					Bid1 = _bid13;
+					m1 = w;
+				}
+				if (_bid14 > Bid1 && y != 25 && _typ14 == 0 && y12 == 20)
+				{
+					Bid1 = _bid14;
+					m1 = y;
+				}
+				if (_bid15 > Bid1 && t1 != 25 && _typ15 == 0 && t112 == 20)
+				{
+					Bid1 = _bid15;
+					m1 = t1;
+				}
+				if (_bid16 > Bid1 && t2 != 25 && _typ16 == 0 && t222 == 20)
+				{
+					Bid1 = _bid16;
+					m1 = t2;
+				}
+				if (_bid17 > Bid1 && t3 != 25 && _typ17 == 0 && t332 == 20)
+				{
+					Bid1 = _bid17;
+					m1 = t3;
+				}
+				if (_bid18 > Bid1 && t4 != 25 && _typ18 == 0 && t442 == 20)
+				{
+					Bid1 = _bid18;
+					m1 = t4;
+				}
+				if (_bid19 > Bid1 && t5 != 25 && _typ19 == 0 && t552 == 20)
+				{
+					Bid1 = _bid19;
+					m1 = t5;
+				}
+
+				if (x != m1 && x != 25 && _ask10 == 0 && _typ10 == 0 && x12 == 20)
+				{
+					Ask1 = _ask10;
+					k1 = x;
+				}
+				if (((_ask11 < Ask1 && _ask11 != 0) || Ask1 == 0) && z != m1 && z != 25 && _typ11 == 0 && z12 == 20)
+				{
+					Ask1 = _ask11;
+					k1 = z;
+				}
+				if (((_ask12 < Ask1 && _ask12 != 0) || Ask1 == 0) && q != m1 && q != 25 && _typ12 == 0 && q12 == 20)
+				{
+					Ask1 = _ask12;
+					k1 = q;
+				}
+				if (((_ask13 < Ask1 && _ask13 != 0) || Ask1 == 0) && w != m1 && w != 25 && _typ13 == 0 && w12 == 20)
+				{
+					Ask1 = _ask13;
+					k1 = w;
+				}
+				if (((_ask14 < Ask1 && _ask14 != 0) || Ask1 == 0) && y != m1 && y != 25 && _typ14 == 0 && y12 == 20)
+				{
+					Ask1 = _ask14;
+					k1 = y;
+				}
+				if (((_ask15 < Ask1 && _ask15 != 0) || Ask1 == 0) && t1 != m1 && t1 != 25 && _typ15 == 0 && t112 == 20)
+				{
+					Ask1 = _ask15;
+					k1 = t1;
+				}
+				if (((_ask16 < Ask1 && _ask16 != 0) || Ask1 == 0) && t2 != m1 && t2 != 25 && _typ16 == 0 && t222 == 20)
+				{
+					Ask1 = _ask16;
+					k1 = t2;
+				}
+				if (((_ask17 < Ask1 && _ask17 != 0) || Ask1 == 0) && t3 != m1 && t3 != 25 && _typ17 == 0 && t332 == 20)
+				{
+					Ask1 = _ask17;
+					k1 = t3;
+				}
+				if (((_ask18 < Ask1 && _ask18 != 0) || Ask1 == 0) && t4 != m1 && t4 != 25 && _typ18 == 0 && t442 == 20)
+				{
+					Ask1 = _ask18;
+					k1 = t4;
+				}
+				if (((_ask19 < Ask1 && _ask19 != 0) || Ask1 == 0) && t5 != m1 && t5 != 25 && _typ19 == 0 && t552 == 20)
+				{
+					Ask1 = _ask19;
+					k1 = t5;
+				}
+			}
+
+			if (min2 == false)
+			{
+				if (x != 25 && _typ20 == 0 && x13 == 20)
+				{
+					Bid2 = _bid20;
+					m2 = x;
+				}
+				if (_bid21 > Bid2 && z != 25 && _typ21 == 0 && z13 == 20)
+				{
+					Bid2 = _bid21;
+					m2 = z;
+				}
+				if (_bid22 > Bid2 && q != 25 && _typ22 == 0 && q13 == 20)
+				{
+					Bid2 = _bid22;
+					m2 = q;
+				}
+				if (_bid23 > Bid2 && w != 25 && _typ23 == 0 && w13 == 20)
+				{
+					Bid2 = _bid23;
+					m2 = w;
+				}
+				if (_bid24 > Bid2 && y != 25 && _typ24 == 0 && y13 == 20)
+				{
+					Bid2 = _bid24;
+					m2 = y;
+				}
+				if (_bid25 > Bid2 && t1 != 25 && _typ25 == 0 && t113 == 20)
+				{
+					Bid2 = _bid25;
+					m2 = t1;
+				}
+				if (_bid26 > Bid2 && t2 != 25 && _typ26 == 0 && t223 == 20)
+				{
+					Bid2 = _bid26;
+					m2 = t2;
+				}
+				if (_bid27 > Bid2 && t3 != 25 && _typ27 == 0 && t333 == 20)
+				{
+					Bid2 = _bid27;
+					m2 = t3;
+				}
+				if (_bid28 > Bid2 && t4 != 25 && _typ28 == 0 && t443 == 20)
+				{
+					Bid2 = _bid28;
+					m2 = t4;
+				}
+				if (_bid29 > Bid2 && t5 != 25 && _typ29 == 0 && t553 == 20)
+				{
+					Bid2 = _bid29;
+					m2 = t5;
+				}
+
+				if (x != m2 && x != 25 && _ask20 == 0 && _typ20 == 0 && x13 == 20)
+				{
+					Ask2 = _ask20;
+					k2 = x;
+				}
+				if (((_ask21 < Ask2 && _ask21 != 0) || Ask2 == 0) && z != m2 && z != 25 && _typ21 == 0 && z13 == 20)
+				{
+					Ask2 = _ask21;
+					k2 = z;
+				}
+				if (((_ask22 < Ask2 && _ask22 != 0) || Ask2 == 0) && q != m2 && q != 25 && _typ22 == 0 && q13 == 20)
+				{
+					Ask2 = _ask22;
+					k2 = q;
+				}
+				if (((_ask23 < Ask2 && _ask23 != 0) || Ask2 == 0) && w != m2 && w != 25 && _typ23 == 0 && w13 == 20)
+				{
+					Ask2 = _ask23;
+					k2 = w;
+				}
+				if (((_ask24 < Ask2 && _ask24 != 0) || Ask2 == 0) && y != m2 && y != 25 && _typ24 == 0 && y13 == 20)
+				{
+					Ask2 = _ask24;
+					k2 = y;
+				}
+				if (((_ask25 < Ask2 && _ask25 != 0) || Ask2 == 0) && t1 != m2 && t1 != 25 && _typ25 == 0 && t113 == 20)
+				{
+					Ask2 = _ask25;
+					k2 = t1;
+				}
+				if (((_ask26 < Ask2 && _ask26 != 0) || Ask2 == 0) && t2 != m2 && t2 != 25 && _typ26 == 0 && t223 == 20)
+				{
+					Ask2 = _ask26;
+					k2 = t2;
+				}
+				if (((_ask27 < Ask2 && _ask27 != 0) || Ask2 == 0) && t3 != m2 && t3 != 25 && _typ27 == 0 && t333 == 20)
+				{
+					Ask2 = _ask27;
+					k2 = t3;
+				}
+				if (((_ask28 < Ask2 && _ask28 != 0) || Ask2 == 0) && t4 != m2 && t4 != 25 && _typ28 == 0 && t443 == 20)
+				{
+					Ask2 = _ask28;
+					k2 = t4;
+				}
+				if (((_ask29 < Ask2 && _ask29 != 0) || Ask2 == 0) && t5 != m2 && t5 != 25 && _typ29 == 0 && t553 == 20)
+				{
+					Ask2 = _ask29;
+					k2 = t5;
+				}
+			}
+
+			if (min3 == false)
+			{
+				if (x != 25 && _typ30 == 0 && x14 == 20)
+				{
+					Bid3 = _bid30;
+					m3 = x;
+				}
+				if (_bid31 > Bid3 && z != 25 && _typ31 == 0 && z14 == 20)
+				{
+					Bid3 = _bid31;
+					m3 = z;
+				}
+				if (_bid32 > Bid3 && q != 25 && _typ32 == 0 && q14 == 20)
+				{
+					Bid3 = _bid32;
+					m3 = q;
+				}
+				if (_bid33 > Bid3 && w != 25 && _typ33 == 0 && w14 == 20)
+				{
+					Bid3 = _bid33;
+					m3 = w;
+				}
+				if (_bid34 > Bid3 && y != 25 && _typ34 == 0 && y14 == 20)
+				{
+					Bid3 = _bid34;
+					m3 = y;
+				}
+				if (_bid35 > Bid3 && t1 != 25 && _typ35 == 0 && t114 == 20)
+				{
+					Bid3 = _bid35;
+					m3 = t1;
+				}
+				if (_bid36 > Bid3 && t2 != 25 && _typ36 == 0 && t224 == 20)
+				{
+					Bid3 = _bid36;
+					m3 = t2;
+				}
+				if (_bid37 > Bid3 && t3 != 25 && _typ37 == 0 && t334 == 20)
+				{
+					Bid3 = _bid37;
+					m3 = t3;
+				}
+				if (_bid38 > Bid3 && t4 != 25 && _typ38 == 0 && t444 == 20)
+				{
+					Bid3 = _bid38;
+					m3 = t4;
+				}
+				if (_bid39 > Bid3 && t5 != 25 && _typ39 == 0 && t554 == 20)
+				{
+					Bid3 = _bid39;
+					m3 = t5;
+				}
+
+				if (x != m3 && x != 25 && _ask30 == 0 && _typ30 == 0 && x14 == 20)
+				{
+					Ask3 = _ask30;
+					k3 = x;
+				}
+				if (((_ask31 < Ask3 && _ask31 != 0) || Ask3 == 0) && z != m3 && z != 25 && _typ31 == 0 && z14 == 20)
+				{
+					Ask3 = _ask31;
+					k3 = z;
+				}
+				if (((_ask32 < Ask3 && _ask32 != 0) || Ask3 == 0) && q != m3 && q != 25 && _typ32 == 0 && q14 == 20)
+				{
+					Ask3 = _ask32;
+					k3 = q;
+				}
+				if (((_ask33 < Ask3 && _ask33 != 0) || Ask3 == 0) && w != m3 && w != 25 && _typ33 == 0 && w14 == 20)
+				{
+					Ask3 = _ask33;
+					k3 = w;
+				}
+				if (((_ask34 < Ask3 && _ask34 != 0) || Ask3 == 0) && y != m3 && y != 25 && _typ34 == 0 && y14 == 20)
+				{
+					Ask3 = _ask34;
+					k3 = y;
+				}
+				if (((_ask35 < Ask3 && _ask35 != 0) || Ask3 == 0) && t1 != m3 && t1 != 25 && _typ35 == 0 && t114 == 20)
+				{
+					Ask3 = _ask35;
+					k3 = t1;
+				}
+				if (((_ask36 < Ask3 && _ask36 != 0) || Ask3 == 0) && t2 != m3 && t2 != 25 && _typ36 == 0 && t224 == 20)
+				{
+					Ask3 = _ask36;
+					k3 = t2;
+				}
+				if (((_ask37 < Ask3 && _ask37 != 0) || Ask3 == 0) && t3 != m3 && t3 != 25 && _typ37 == 0 && t334 == 20)
+				{
+					Ask3 = _ask37;
+					k3 = t3;
+				}
+				if (((_ask38 < Ask3 && _ask38 != 0) || Ask3 == 0) && t4 != m3 && t4 != 25 && _typ38 == 0 && t444 == 20)
+				{
+					Ask3 = _ask38;
+					k3 = t4;
+				}
+				if (((_ask39 < Ask3 && _ask39 != 0) || Ask3 == 0) && t5 != m3 && t5 != 25 && _typ39 == 0 && t554 == 20)
+				{
+					Ask3 = _ask39;
+					k3 = t5;
+				}
+			}
+
+			if (close == true)
+			{
+				std::cout << "min value..." << min << std::endl;
+				std::cout << "Client" << std::endl;
+				std::cout << x << "..." << ph_Client[x] << std::endl;
+				std::cout << z << "..." << ph_Client[z] << std::endl;
+				std::cout << q << "..." << ph_Client[q] << std::endl;
+				std::cout << w << "..." << ph_Client[w] << std::endl;
+				std::cout << y << "..." << ph_Client[y] << std::endl;
+				std::cout << t1 << "..." << ph_Client[t1] << std::endl;
+				std::cout << t2 << "..." << ph_Client[t2] << std::endl;
+				std::cout << t3 << "..." << ph_Client[t3] << std::endl;
+				std::cout << t4 << "..." << ph_Client[t4] << std::endl;
+				std::cout << t5 << "..." << ph_Client[t5] << std::endl;
+				std::cout << "2nd Client" << std::endl;
+				std::cout << x1 << "..." << ph_Client[x] << std::endl;
+				std::cout << z1 << "..." << ph_Client[z] << std::endl;
+				std::cout << q1 << "..." << ph_Client[q] << std::endl;
+				std::cout << w1 << "..." << ph_Client[w] << std::endl;
+				std::cout << y1 << "..." << ph_Client[y] << std::endl;
+				std::cout << t11 << "..." << ph_Client[t1] << std::endl;
+				std::cout << t22 << "..." << ph_Client[t2] << std::endl;
+				std::cout << t33 << "..." << ph_Client[t3] << std::endl;
+				std::cout << t44 << "..." << ph_Client[t4] << std::endl;
+				std::cout << t55 << "..." << ph_Client[t5] << std::endl;
+				std::cout << "Derived" << std::endl;
+				std::cout << Bid << std::endl;
+				std::cout << Ask << std::endl;
+				std::cout << "Hold" << std::endl;
+				std::cout << m << std::endl;
+				std::cout << k << std::endl;
+				std::cout << "Magic" << std::endl;
+				std::cout << tickcount << std::endl;
+				std::cout << "Bid" << std::endl;
+				std::cout << _bid << std::endl;
+				std::cout << _bid1 << std::endl;
+				std::cout << _bid2 << std::endl;
+				std::cout << _bid3 << std::endl;
+				std::cout << _bid4 << std::endl;
+				std::cout << _bid5 << std::endl;
+				std::cout << _bid6 << std::endl;
+				std::cout << _bid7 << std::endl;
+				std::cout << _bid8 << std::endl;
+				std::cout << _bid9 << std::endl;
+				std::cout << "Ask" << std::endl;
+				std::cout << _ask << std::endl;
+				std::cout << _ask1 << std::endl;
+				std::cout << _ask2 << std::endl;
+				std::cout << _ask3 << std::endl;
+				std::cout << _ask4 << std::endl;
+				std::cout << _ask5 << std::endl;
+				std::cout << _ask6 << std::endl;
+				std::cout << _ask7 << std::endl;
+				std::cout << _ask8 << std::endl;
+				std::cout << _ask9 << std::endl;
+				std::cout << "pd_4" << std::endl;
+				std::cout << _typ << std::endl;
+				std::cout << _typ1 << std::endl;
+				std::cout << _typ2 << std::endl;
+				std::cout << _typ3 << std::endl;
+				std::cout << _typ4 << std::endl;
+				std::cout << _typ5 << std::endl;
+				std::cout << _typ6 << std::endl;
+				std::cout << _typ7 << std::endl;
+				std::cout << _typ8 << std::endl;
+				std::cout << _typ9 << std::endl;
+				close = false;
+			}
+
+			if (m != k && min == false && m <= ctrl && k <= ctrl && Bid != 0 && Ask != 0 && ph_Client[m] != ph_Client[k])
+			{
+				tickcount = tickcount + 1;
+				ss_Buf[0] = tickcount;
+				ss_Buf[1] = 1;
+				std::cout << "First reading:" << ph_Client[m] << std::endl;
+				std::cout << ss_Buf[1] << std::endl;
+
+				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ss32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("M SendToInt(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
+					hr = true;
+				}
+				else
+				{
+					printf("M SendToInt(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
+					std::cout << ss_Buf[1] << "..Client..:" << ph_Client[m] << std::endl;
+					_ask = 0;
+					_ask1 = 0;
+					_ask2 = 0;
+					_ask3 = 0;
+					_ask4 = 0;
+					_ask5 = 0;
+					_ask6 = 0;
+					_ask7 = 0;
+					_ask8 = 0;
+					_ask9 = 0;
+					_bid = 0;
+					_bid1 = 0;
+					_bid2 = 0;
+					_bid3 = 0;
+					_bid4 = 0;
+					_bid5 = 0;
+					_bid6 = 0;
+					_bid7 = 0;
+					_bid8 = 0;
+					_bid9 = 0;
+					_typ = 0;
+					_typ1 = 0;
+					_typ2 = 0;
+					_typ3 = 0;
+					_typ4 = 0;
+					_typ5 = 0;
+					_typ6 = 0;
+					_typ7 = 0;
+					_typ8 = 0;
+					_typ9 = 0;
+					MagicNumber = 0;
+					MagicNumber1 = 0;
+					MagicNumber2 = 0;
+					MagicNumber3 = 0;
+					MagicNumber4 = 0;
+					MagicNumber5 = 0;
+					MagicNumber6 = 0;
+					MagicNumber7 = 0;
+					MagicNumber8 = 0;
+					MagicNumber9 = 0;
+					start = GetTickCount();
+				}
+
+				ss_Buf[1] = 2;
+
+				if (hr == false)
+				{
+					std::cout << "Second reading:" << ph_Client[k] << std::endl;
+					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ss32_ReadLen);
+
+					if (u32_Error)
+					{
+						printf("K SendToInt(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+						min = true;
+					}
+					else
+					{
+						printf("K SendToInt(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
+						std::cout << ss_Buf[1] << "..Client..:" << ph_Client[k] << std::endl;
+						Sleep(5000);
+					}
+
+				}
+
+				if (hr == false)
+				{
+					t = 0;
+					count = 0;
+					pd_Buf[4] = 0;
+
+					while (t<2)
+					{
+						if (min != true)
+						{
+							if (ok1 == false)
+							{
+								u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[k], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+								if (!u32_Error)
+								{
+									if (pd_Buf[4] > 0)
+									{
+										ok1 = true;
+									}
+
+								}
+							}
+
+						}
+
+						if (ok2 == false)
+						{
+							u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[m], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+							if (!u32_Error)
+							{
+								if (pd_Buf[4] > 0)
+								{
+									ok2 = true;
+								}
+							}
+						}
+
+						if (ok1 == true && ok2 == true)
+						{
+							Sleep(50);
+							ss_Buf[0] = 0;
+							if (min == false)
+							{
+								ss_Buf[1] = 7;
+							}
+
+							if (min == true)
+							{
+								ss_Buf[1] = 8;
+							}
+							if (enable == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("Exit M instructions(%d...) failed with error: %d\n", ph_Client[m], u32_Error);
+								}
+								else
+								{
+									printf("Successful M exit instructions(%d...) sent %d int values\n", ph_Client[m], ps32_ReadLen[0]);
+								}
+							}
+
+							hr = true;
+							t++;
+							if (m == x)
+							{
+								x = 30;
+								x1 = 30;
+							}
+							if (m == y)
+							{
+								y = 30;
+								y1 = 30;
+							}
+							if (m == z)
+							{
+								z = 30;
+								z1 = 30;
+							}
+							if (m == q)
+							{
+								q = 30;
+								q1 = 30;
+							}
+							if (m == w)
+							{
+								w = 30;
+								w1 = 30;
+							}
+							if (m == t1)
+							{
+								t1 = 30;
+								t11 = 30;
+							}
+							if (m == t2)
+							{
+								t2 = 30;
+								t22 = 30;
+							}
+							if (m == t3)
+							{
+								t3 = 30;
+								t33 = 30;
+							}
+							if (m == t4)
+							{
+								t4 = 30;
+								t44 = 30;
+							}
+							if (m == t5)
+							{
+								t5 = 30;
+								t55 = 30;
+							}
+
+							if (min != true)
+							{
+								if (enable == true)
+								{
+									u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ss32_ReadLen);
+
+									if (u32_Error)
+									{
+										printf("Exit K instructions(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+									}
+									else
+									{
+										printf("Successful K exit instructions(%d...) sent %d int values\n", ph_Client[k], ps32_ReadLen[0]);
+									}
+								}
+								t++;
+								if (k == x)
+								{
+									x = 30;
+									x1 = 30;
+								}
+								if (k == y)
+								{
+									y = 30;
+									y1 = 30;
+								}
+								if (k == z)
+								{
+									z = 30;
+									z1 = 30;
+								}
+								if (k == q)
+								{
+									q = 30;
+									q1 = 30;
+								}
+								if (k == w)
+								{
+									w = 30;
+									w1 = 30;
+								}
+								if (k == t1)
+								{
+									t1 = 30;
+									t11 = 30;
+								}
+								if (k == t2)
+								{
+									t2 = 30;
+									t22 = 30;
+								}
+								if (k == t3)
+								{
+									t3 = 30;
+									t33 = 30;
+								}
+								if (k == t4)
+								{
+									t4 = 30;
+									t44 = 30;
+								}
+								if (k == t5)
+								{
+									t5 = 30;
+									t55 = 30;
+								}
+							}
+						}
+						end = (GetTickCount() - start) / 1000;
+
+						if (min == true || end > 119)
+						{
+							t = 2;
+							ss_Buf[0] = 9;
+							ss_Buf[1] = 8;
+							if (ok1 == false && ok2 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ss32_ReadLen);
+							}
+							if (ok2 == false && ok1 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ss32_ReadLen);
+							}
+							if ((ok2 == false && ok1 == false) || (ok2 == true && ok1 == true))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k], ss_Buf, ss32_ReadLen);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m], ss_Buf, ss32_ReadLen);
+							}
+							std::cout << "..end reached..:" << std::endl;
+							system("pause");
+							break;
+						}
+					}
+				}
+				std::cout << "..OK1..:" << ok1 << std::endl;
+				std::cout << "..OK2..:" << ok2 << std::endl;
+				disable = true;
+			}
+			
+			if (m1 != k1 && min1 == false && m1 <= ctrl && k1 <= ctrl && Bid1 != 0 && Ask1 != 0 && ph_Client[m1] != ph_Client[k1] && disable == false)
+			{
+				tickcount = tickcount + 1;
+				ss_Buf[2] = tickcount;
+				ss_Buf[3] = 3;
+				std::cout << "Third reading:" << ph_Client[m1] << std::endl;
+				std::cout << ss_Buf[3] << std::endl;
+
+				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m1], ss_Buf, ss32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("M1 SendToInt(%d...) failed with error: %d\n", ph_Client[m1], u32_Error);
+					hr1 = true;
+				}
+				else
+				{
+					printf("M1 SendToInt(%d...) sent %d int values\n", ph_Client[m1], ps32_ReadLen[0]);
+					std::cout << ss_Buf[3] << "..Client..:" << ph_Client[m1] << std::endl;
+					_ask10 = 0;
+					_ask11 = 0;
+					_ask12 = 0;
+					_ask13 = 0;
+					_ask14 = 0;
+					_ask15 = 0;
+					_ask16 = 0;
+					_ask17 = 0;
+					_ask18 = 0;
+					_ask19 = 0;
+					_bid10 = 0;
+					_bid11 = 0;
+					_bid12 = 0;
+					_bid13 = 0;
+					_bid14 = 0;
+					_bid15 = 0;
+					_bid16 = 0;
+					_bid17 = 0;
+					_bid18 = 0;
+					_bid19 = 0;
+					_typ10 = 0;
+					_typ11 = 0;
+					_typ12 = 0;
+					_typ13 = 0;
+					_typ14 = 0;
+					_typ15 = 0;
+					_typ16 = 0;
+					_typ17 = 0;
+					_typ18 = 0;
+					_typ19 = 0;
+					MagicNumber10 = 0;
+					MagicNumber11 = 0;
+					MagicNumber12 = 0;
+					MagicNumber13 = 0;
+					MagicNumber14 = 0;
+					MagicNumber15 = 0;
+					MagicNumber16 = 0;
+					MagicNumber17 = 0;
+					MagicNumber18 = 0;
+					MagicNumber19 = 0;
+					start1 = GetTickCount();
+				}
+
+				ss_Buf[3] = 4;
+
+				if (hr1 == false)
+				{
+					std::cout << "Fourth reading:" << ph_Client[k1] << std::endl;
+					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k1], ss_Buf, ss32_ReadLen);
+
+					if (u32_Error)
+					{
+						printf("K1 SendToInt(%d...) failed with error: %d\n", ph_Client[k], u32_Error);
+						min1 = true;
+					}
+					else
+					{
+						printf("K1 SendToInt(%d...) sent %d int values\n", ph_Client[k1], ps32_ReadLen[0]);
+						std::cout << ss_Buf[3] << "..Client..:" << ph_Client[k1] << std::endl;
+						Sleep(5000);
+					}
+
+				}
+
+				if (hr1 == false)
+				{
+					t = 0;
+					count = 0;
+					pd_Buf[10] = 0;
+
+					while (t<2)
+					{
+						if (min1 != true)
+						{
+							if (ok1 == false)
+							{
+								u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[k1], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+								if (!u32_Error)
+								{
+									if (pd_Buf[10] > 0)
+									{
+										ok1 = true;
+									}
+
+								}
+							}
+
+						}
+
+						if (ok2 == false)
+						{
+							u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[m1], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+							if (!u32_Error)
+							{
+								if (pd_Buf[10] > 0)
+								{
+									ok2 = true;
+								}
+							}
+						}
+
+						if (ok1 == true && ok2 == true)
+						{
+							Sleep(50);
+							ss_Buf[2] = 0;
+							if (min1 == false)
+							{
+								ss_Buf[3] = 7;
+							}
+
+							if (min1 == true)
+							{
+								ss_Buf[3] = 8;
+							}
+							if (enable == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m1], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("Exit M1 instructions(%d...) failed with error: %d\n", ph_Client[m1], u32_Error);
+								}
+								else
+								{
+									printf("Successful M1 exit instructions(%d...) sent %d int values\n", ph_Client[m1], ps32_ReadLen[0]);
+								}
+							}
+
+							hr1 = true;
+							t++;
+							if (m1 == x)
+							{
+								x = 30;
+								x12 = 30;
+							}
+							if (m1 == y)
+							{
+								y = 30;
+								y12 = 30;
+							}
+							if (m1 == z)
+							{
+								z = 30;
+								z12 = 30;
+							}
+							if (m1 == q)
+							{
+								q = 30;
+								q12 = 30;
+							}
+							if (m1 == w)
+							{
+								w = 30;
+								w12 = 30;
+							}
+							if (m1 == t1)
+							{
+								t1 = 30;
+								t112 = 30;
+							}
+							if (m1 == t2)
+							{
+								t2 = 30;
+								t222 = 30;
+							}
+							if (m1 == t3)
+							{
+								t3 = 30;
+								t332 = 30;
+							}
+							if (m1 == t4)
+							{
+								t4 = 30;
+								t442 = 30;
+							}
+							if (m1 == t5)
+							{
+								t5 = 30;
+								t552 = 30;
+							}
+
+							if (min1 != true)
+							{
+								if (enable == true)
+								{
+									u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k1], ss_Buf, ss32_ReadLen);
+
+									if (u32_Error)
+									{
+										printf("Exit K1 instructions(%d...) failed with error: %d\n", ph_Client[k1], u32_Error);
+									}
+									else
+									{
+										printf("Successful K1 exit instructions(%d...) sent %d int values\n", ph_Client[k1], ps32_ReadLen[0]);
+									}
+								}
+								t++;
+								if (k1 == x)
+								{
+									x = 30;
+									x12 = 30;
+								}
+								if (k1 == y)
+								{
+									y = 30;
+									y12 = 30;
+								}
+								if (k1 == z)
+								{
+									z = 30;
+									z12 = 30;
+								}
+								if (k1 == q)
+								{
+									q = 30;
+									q12 = 30;
+								}
+								if (k1 == w)
+								{
+									w = 30;
+									w12 = 30;
+								}
+								if (k1 == t1)
+								{
+									t1 = 30;
+									t112 = 30;
+								}
+								if (k1 == t2)
+								{
+									t2 = 30;
+									t222 = 30;
+								}
+								if (k1 == t3)
+								{
+									t3 = 30;
+									t332 = 30;
+								}
+								if (k1 == t4)
+								{
+									t4 = 30;
+									t442 = 30;
+								}
+								if (k1 == t5)
+								{
+									t5 = 30;
+									t552 = 30;
+								}
+							}
+						}
+						end1 = (GetTickCount() - start1) / 1000;
+
+						if (min1 == true || end1 > 119)
+						{
+							t = 2;
+							ss_Buf[2] = 9;
+							ss_Buf[3] = 8;
+							if (ok1 == false && ok2 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m1], ss_Buf, ss32_ReadLen);
+							}
+							if (ok2 == false && ok1 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k1], ss_Buf, ss32_ReadLen);
+							}
+							if ((ok2 == false && ok1 == false) || (ok2 == true && ok1 == true))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k1], ss_Buf, ss32_ReadLen);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m1], ss_Buf, ss32_ReadLen);
+							}
+							std::cout << "..end reached..:" << std::endl;
+							system("pause");
+							break;
+						}
+					}
+				}
+				std::cout << "..OK1..:" << ok1 << std::endl;
+				std::cout << "..OK2..:" << ok2 << std::endl;
+				disable = true;
+			}
+
+			if (m2 != k2 && min2 == false && m2 <= ctrl && k2 <= ctrl && Bid2 != 0 && Ask2 != 0 && ph_Client[m2] != ph_Client[k2] && disable == false)
+			{
+				tickcount = tickcount + 1;
+				ss_Buf[4] = tickcount;
+				ss_Buf[5] = 3;
+				std::cout << "Fifth reading:" << ph_Client[m2] << std::endl;
+				std::cout << ss_Buf[5] << std::endl;
+
+				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m2], ss_Buf, ss32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("M2 SendToInt(%d...) failed with error: %d\n", ph_Client[m2], u32_Error);
+					hr2 = true;
+				}
+				else
+				{
+					printf("M2 SendToInt(%d...) sent %d int values\n", ph_Client[m2], ps32_ReadLen[0]);
+					std::cout << ss_Buf[5] << "..Client..:" << ph_Client[m2] << std::endl;
+					_ask20 = 0;
+					_ask21 = 0;
+					_ask22 = 0;
+					_ask23 = 0;
+					_ask24 = 0;
+					_ask25 = 0;
+					_ask26 = 0;
+					_ask27 = 0;
+					_ask28 = 0;
+					_ask29 = 0;
+					_bid20 = 0;
+					_bid21 = 0;
+					_bid22 = 0;
+					_bid23 = 0;
+					_bid24 = 0;
+					_bid25 = 0;
+					_bid26 = 0;
+					_bid27 = 0;
+					_bid28 = 0;
+					_bid29 = 0;
+					_typ20 = 0;
+					_typ21 = 0;
+					_typ22 = 0;
+					_typ23 = 0;
+					_typ24 = 0;
+					_typ25 = 0;
+					_typ26 = 0;
+					_typ27 = 0;
+					_typ28 = 0;
+					_typ29 = 0;
+					MagicNumber20 = 0;
+					MagicNumber21 = 0;
+					MagicNumber22 = 0;
+					MagicNumber23 = 0;
+					MagicNumber24 = 0;
+					MagicNumber25 = 0;
+					MagicNumber26 = 0;
+					MagicNumber27 = 0;
+					MagicNumber28 = 0;
+					MagicNumber29 = 0;
+					start2 = GetTickCount();
+				}
+
+				ss_Buf[5] = 4;
+
+				if (hr2 == false)
+				{
+					std::cout << "Sixth reading:" << ph_Client[k2] << std::endl;
+					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k2], ss_Buf, ss32_ReadLen);
+
+					if (u32_Error)
+					{
+						printf("K2 SendToInt(%d...) failed with error: %d\n", ph_Client[k2], u32_Error);
+						min2 = true;
+					}
+					else
+					{
+						printf("K2 SendToInt(%d...) sent %d int values\n", ph_Client[k2], ps32_ReadLen[0]);
+						std::cout << ss_Buf[5] << "..Client..:" << ph_Client[k2] << std::endl;
+						Sleep(5000);
+					}
+
+				}
+
+				if (hr2 == false)
+				{
+					t = 0;
+					count = 0;
+					pd_Buf[15] = 0;
+
+					while (t<2)
+					{
+						if (min2 != true)
+						{
+							if (ok1 == false)
+							{
+								u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[k2], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+								if (!u32_Error)
+								{
+									if (pd_Buf[15] > 0)
+									{
+										ok1 = true;
+									}
+
+								}
+							}
+
+						}
+
+						if (ok2 == false)
+						{
+							u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[m2], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+							if (!u32_Error)
+							{
+								if (pd_Buf[15] > 0)
+								{
+									ok2 = true;
+								}
+							}
+						}
+
+						if (ok1 == true && ok2 == true)
+						{
+							Sleep(50);
+							ss_Buf[4] = 0;
+							if (min2 == false)
+							{
+								ss_Buf[5] = 7;
+							}
+
+							if (min2 == true)
+							{
+								ss_Buf[5] = 8;
+							}
+							if (enable == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m2], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("Exit M2 instructions(%d...) failed with error: %d\n", ph_Client[m2], u32_Error);
+								}
+								else
+								{
+									printf("Successful M2 exit instructions(%d...) sent %d int values\n", ph_Client[m2], ps32_ReadLen[0]);
+								}
+							}
+
+							hr2 = true;
+							t++;
+							if (m2 == x)
+							{
+								x = 30;
+								x13 = 30;
+							}
+							if (m2 == y)
+							{
+								y = 30;
+								y13 = 30;
+							}
+							if (m2 == z)
+							{
+								z = 30;
+								z13 = 30;
+							}
+							if (m2 == q)
+							{
+								q = 30;
+								q13 = 30;
+							}
+							if (m2 == w)
+							{
+								w = 30;
+								w13 = 30;
+							}
+							if (m2 == t1)
+							{
+								t1 = 30;
+								t113 = 30;
+							}
+							if (m2 == t2)
+							{
+								t2 = 30;
+								t223 = 30;
+							}
+							if (m2 == t3)
+							{
+								t3 = 30;
+								t333 = 30;
+							}
+							if (m2 == t4)
+							{
+								t4 = 30;
+								t443 = 30;
+							}
+							if (m2 == t5)
+							{
+								t5 = 30;
+								t553 = 30;
+							}
+
+							if (min2 != true)
+							{
+								if (enable == true)
+								{
+									u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k2], ss_Buf, ss32_ReadLen);
+
+									if (u32_Error)
+									{
+										printf("Exit K2 instructions(%d...) failed with error: %d\n", ph_Client[k2], u32_Error);
+									}
+									else
+									{
+										printf("Successful K2 exit instructions(%d...) sent %d int values\n", ph_Client[k2], ps32_ReadLen[0]);
+									}
+								}
+								t++;
+								if (k2 == x)
+								{
+									x = 30;
+									x13 = 30;
+								}
+								if (k2 == y)
+								{
+									y = 30;
+									y13 = 30;
+								}
+								if (k2 == z)
+								{
+									z = 30;
+									z13 = 30;
+								}
+								if (k2 == q)
+								{
+									q = 30;
+									q13 = 30;
+								}
+								if (k2 == w)
+								{
+									w = 30;
+									w13 = 30;
+								}
+								if (k2 == t1)
+								{
+									t1 = 30;
+									t113 = 30;
+								}
+								if (k2 == t2)
+								{
+									t2 = 30;
+									t223 = 30;
+								}
+								if (k2 == t3)
+								{
+									t3 = 30;
+									t333 = 30;
+								}
+								if (k2 == t4)
+								{
+									t4 = 30;
+									t443 = 30;
+								}
+								if (k2 == t5)
+								{
+									t5 = 30;
+									t553 = 30;
+								}
+							}
+						}
+						end2 = (GetTickCount() - start2) / 1000;
+
+						if (min2 == true || end2 > 119)
+						{
+							t = 2;
+							ss_Buf[4] = 9;
+							ss_Buf[5] = 8;
+							if (ok1 == false && ok2 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m2], ss_Buf, ss32_ReadLen);
+							}
+							if (ok2 == false && ok1 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k2], ss_Buf, ss32_ReadLen);
+							}
+							if ((ok2 == false && ok1 == false) || (ok2 == true && ok1 == true))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k2], ss_Buf, ss32_ReadLen);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m2], ss_Buf, ss32_ReadLen);
+							}
+							std::cout << "..end 3 reached..:" << std::endl;
+							system("pause");
+							break;
+						}
+					}
+				}
+				std::cout << "..OK1..:" << ok1 << std::endl;
+				std::cout << "..OK2..:" << ok2 << std::endl;
+				disable = true;
+			}
+
+			if (m3 != k3 && min3 == false && m3 <= ctrl && k3 <= ctrl && Bid3 != 0 && Ask3 != 0 && ph_Client[m3] != ph_Client[k3] && disable == false)
+			{
+				tickcount = tickcount + 1;
+				ss_Buf[6] = tickcount;
+				ss_Buf[7] = 3;
+				std::cout << "Seventh reading:" << ph_Client[m3] << std::endl;
+				std::cout << ss_Buf[7] << std::endl;
+
+				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m3], ss_Buf, ss32_ReadLen);
+
+				if (u32_Error)
+				{
+					printf("M3 SendToInt(%d...) failed with error: %d\n", ph_Client[m3], u32_Error);
+					hr3 = true;
+				}
+				else
+				{
+					printf("M3 SendToInt(%d...) sent %d int values\n", ph_Client[m3], ps32_ReadLen[0]);
+					std::cout << ss_Buf[7] << "..Client..:" << ph_Client[m3] << std::endl;
+					_ask30 = 0;
+					_ask31 = 0;
+					_ask32 = 0;
+					_ask33 = 0;
+					_ask34 = 0;
+					_ask35 = 0;
+					_ask36 = 0;
+					_ask37 = 0;
+					_ask38 = 0;
+					_ask39 = 0;
+					_bid30 = 0;
+					_bid31 = 0;
+					_bid32 = 0;
+					_bid33 = 0;
+					_bid34 = 0;
+					_bid35 = 0;
+					_bid36 = 0;
+					_bid37 = 0;
+					_bid38 = 0;
+					_bid39 = 0;
+					_typ30 = 0;
+					_typ31 = 0;
+					_typ32 = 0;
+					_typ33 = 0;
+					_typ34 = 0;
+					_typ35 = 0;
+					_typ36 = 0;
+					_typ37 = 0;
+					_typ38 = 0;
+					_typ39 = 0;
+					MagicNumber30 = 0;
+					MagicNumber31 = 0;
+					MagicNumber32 = 0;
+					MagicNumber33 = 0;
+					MagicNumber34 = 0;
+					MagicNumber35 = 0;
+					MagicNumber36 = 0;
+					MagicNumber37 = 0;
+					MagicNumber38 = 0;
+					MagicNumber39 = 0;
+					start3 = GetTickCount();
+				}
+
+				ss_Buf[7] = 4;
+
+				if (hr3 == false)
+				{
+					std::cout << "Eigth reading:" << ph_Client[k3] << std::endl;
+					u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k3], ss_Buf, ss32_ReadLen);
+
+					if (u32_Error)
+					{
+						printf("K3 SendToInt(%d...) failed with error: %d\n", ph_Client[k3], u32_Error);
+						min3 = true;
+					}
+					else
+					{
+						printf("K3 SendToInt(%d...) sent %d int values\n", ph_Client[k3], ps32_ReadLen[0]);
+						std::cout << ss_Buf[7] << "..Client..:" << ph_Client[k3] << std::endl;
+						Sleep(5000);
+					}
+
+				}
+
+				if (hr3 == false)
+				{
+					t = 0;
+					count = 0;
+					pd_Buf[30] = 0;
+
+					while (t<2)
+					{
+						if (min3 != true)
+						{
+							if (ok1 == false)
+							{
+								u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[k3], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+								if (!u32_Error)
+								{
+									if (pd_Buf[20] > 0)
+									{
+										ok1 = true;
+									}
+
+								}
+							}
+
+						}
+
+						if (ok2 == false)
+						{
+							u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[m3], pd_Buf, u32_BufLen, ps32_ReadLen);
+
+							if (!u32_Error)
+							{
+								if (pd_Buf[20] > 0)
+								{
+									ok2 = true;
+								}
+							}
+						}
+
+						if (ok1 == true && ok2 == true)
+						{
+							Sleep(50);
+							ss_Buf[4] = 0;
+							if (min3 == false)
+							{
+								ss_Buf[7] = 7;
+							}
+
+							if (min3 == true)
+							{
+								ss_Buf[7] = 8;
+							}
+							if (enable == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m3], ss_Buf, ss32_ReadLen);
+
+								if (u32_Error)
+								{
+									printf("Exit M3 instructions(%d...) failed with error: %d\n", ph_Client[m3], u32_Error);
+								}
+								else
+								{
+									printf("Successful M3 exit instructions(%d...) sent %d int values\n", ph_Client[m3], ps32_ReadLen[0]);
+								}
+							}
+
+							hr3 = true;
+							t++;
+							if (m3 == x)
+							{
+								x = 30;
+								x14 = 30;
+							}
+							if (m3 == y)
+							{
+								y = 30;
+								y14 = 30;
+							}
+							if (m3 == z)
+							{
+								z = 30;
+								z14 = 30;
+							}
+							if (m3 == q)
+							{
+								q = 30;
+								q14 = 30;
+							}
+							if (m3 == w)
+							{
+								w = 30;
+								w14 = 30;
+							}
+							if (m3 == t1)
+							{
+								t1 = 30;
+								t114 = 30;
+							}
+							if (m3 == t2)
+							{
+								t2 = 30;
+								t224 = 30;
+							}
+							if (m3 == t3)
+							{
+								t3 = 30;
+								t334 = 30;
+							}
+							if (m3 == t4)
+							{
+								t4 = 30;
+								t444 = 30;
+							}
+							if (m3 == t5)
+							{
+								t5 = 30;
+								t554 = 30;
+							}
+
+							if (min3 != true)
+							{
+								if (enable == true)
+								{
+									u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k3], ss_Buf, ss32_ReadLen);
+
+									if (u32_Error)
+									{
+										printf("Exit K3 instructions(%d...) failed with error: %d\n", ph_Client[k3], u32_Error);
+									}
+									else
+									{
+										printf("Successful K3 exit instructions(%d...) sent %d int values\n", ph_Client[k3], ps32_ReadLen[0]);
+									}
+								}
+								t++;
+								if (k3 == x)
+								{
+									x = 30;
+									x14 = 30;
+								}
+								if (k3 == y)
+								{
+									y = 30;
+									y14 = 30;
+								}
+								if (k3 == z)
+								{
+									z = 30;
+									z14 = 30;
+								}
+								if (k3 == q)
+								{
+									q = 30;
+									q14 = 30;
+								}
+								if (k3 == w)
+								{
+									w = 30;
+									w14 = 30;
+								}
+								if (k3 == t1)
+								{
+									t1 = 30;
+									t114 = 30;
+								}
+								if (k3 == t2)
+								{
+									t2 = 30;
+									t224 = 30;
+								}
+								if (k3 == t3)
+								{
+									t3 = 30;
+									t334 = 30;
+								}
+								if (k3 == t4)
+								{
+									t4 = 30;
+									t444 = 30;
+								}
+								if (k3 == t5)
+								{
+									t5 = 30;
+									t554 = 30;
+								}
+							}
+						}
+						end3 = (GetTickCount() - start3) / 1000;
+
+						if (min3 == true || end3 > 119)
+						{
+							t = 2;
+							ss_Buf[6] = 9;
+							ss_Buf[7] = 8;
+							if (ok1 == false && ok2 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m3], ss_Buf, ss32_ReadLen);
+							}
+							if (ok2 == false && ok1 == true)
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k3], ss_Buf, ss32_ReadLen);
+							}
+							if ((ok2 == false && ok1 == false) || (ok2 == true && ok1 == true))
+							{
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[k3], ss_Buf, ss32_ReadLen);
+								u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[m3], ss_Buf, ss32_ReadLen);
+							}
+							std::cout << "..end 4 reached..:" << std::endl;
+							system("pause");
+							break;
+						}
+					}
+				}
+				std::cout << "..OK1..:" << ok1 << std::endl;
+				std::cout << "..OK2..:" << ok2 << std::endl;
+				disable = true;
+			}
+
+			ok1 = false;
+			ok2 = false;
+			hr = false;
+			hr1 = false;
+			hr2 = false;
+			hr3 = false;
+			p = 0;
+			Bid = 0;
+			Ask = 0;
+			Bid1 = 0;
+			Ask1 = 0;
+			Bid2 = 0;
+			Ask2 = 0;
+			Bid3 = 0;
+			Ask3 = 0;
+			f = 0;
+			m = ctrl + 35;
+			k = ctrl + 40;
+			m1 = ctrl + 35;
+			k1 = ctrl + 40;
+			m2 = ctrl + 35;
+			k2 = ctrl + 40;
+			m3 = ctrl + 35;
+			k3 = ctrl + 40;
+		}
+	}
+	system("pause");
+	u32_Error = cNetEventsProcDLL::ServerClose();
+
+	if (u32_Error)
+	{
+		printf("\nServerClose() failed with error: %d\n", u32_Error);
+		return 1;
+	}
+	else
+		printf("\nServerClose() fine...\n");
+
+	Sleep(10000);
+	return 0;
+}
+
+BOOL FormatIP(DWORD u32_IP, char* s8_IP)
+{
+	DWORD u32_Len = strlen(s8_IP);
+
+	if (u32_Len < 15)
+		return FALSE;
+
+	BYTE* pu8_Addr = (BYTE*)&u32_IP;
+	sprintf(s8_IP, "%d.%d.%d.%d", pu8_Addr[0], pu8_Addr[1], pu8_Addr[2], pu8_Addr[3]);
+
+	return TRUE;
+}
