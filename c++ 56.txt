@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2018, http://klein-hill.com			  |
+//|                      Copyright Â© 2018, http://klein-hill.com			  |
 //|                                       trader@klein-hill.com               |
 //+---------------------------------------------------------------------------+
 
@@ -48,7 +48,7 @@ int main()
 	DWORD x14 = 20, q14 = 20, z14 = 20, w14 = 20, y14 = 20, t114 = 20, t224 = 20, t334 = 20, t444 = 20, t554 = 20;
 	SYSTEMTIME tym;
 	int tickcount = 0;
-	double Bid = 0, Ask = 0, Bid1 = 0, Ask1 = 0, Bid2 = 0, Ask2 = 0, Bid3 = 0, Ask3 = 0, f = 0;
+	double Bid = 0, Ask = 0, Bid1 = 0, Ask1 = 0, Bid2 = 0, Ask2 = 0, Bid3 = 0, Ask3 = 0, Diff = 0, Diff1 = 0, Diff2 = 0, Diff3 = 0, f = 0;
 	double MagicNumber = 0, MagicNumber1 = 0, MagicNumber2 = 0, MagicNumber3 = 0, MagicNumber4 = 0, MagicNumber5 = 0, MagicNumber6 = 0, MagicNumber7 = 0, MagicNumber8 = 0, MagicNumber9 = 0;
 	double MagicNumber10 = 0, MagicNumber11 = 0, MagicNumber12 = 0, MagicNumber13 = 0, MagicNumber14 = 0, MagicNumber15 = 0, MagicNumber16 = 0, MagicNumber17 = 0, MagicNumber18 = 0, MagicNumber19 = 0;
 	double MagicNumber20 = 0, MagicNumber21 = 0, MagicNumber22 = 0, MagicNumber23 = 0, MagicNumber24 = 0, MagicNumber25 = 0, MagicNumber26 = 0, MagicNumber27 = 0, MagicNumber28 = 0, MagicNumber29 = 0;
@@ -72,7 +72,7 @@ int main()
 	double cpt30 = 0, cpt31 = 0, cpt32 = 0, cpt33 = 0, cpt34 = 0, cpt35 = 0, cpt36 = 0, cpt37 = 0, cpt38 = 0, cpt39 = 0;
 	DWORD start = 1, end, start1 = 1, end1, start2 = 1, end2, start3 = 1, end3;
 	WORD t = 0, b, count;
-	bool enable = false, disable = false;
+	bool enable = false, disable = false, jump = false;
 
 	int ph_Client[12];
 	int ps32_ClientIP[12];
@@ -120,6 +120,7 @@ int main()
 			for (DWORD i = 0; i < u32_Count; i++)
 			{
 				disable = false;
+				jump = false;
 				pd_Buf[0] = 0;
 				pd_Buf[1] = 0;
 				pd_Buf[2] = 0;
@@ -3340,9 +3341,14 @@ int main()
 					Ask = _ask9;
 					k = t5;
 				}
+				Diff = Bid - Ask;
+				if(Diff > 0)
+				{
+					jump = true;
+				}
 			}
 
-			if (min1 == false)
+			if (min1 == false && jump == false)
 			{
 				if (x != 25 && _typ10 == 0 && x12 == 20)
 				{
@@ -3445,9 +3451,14 @@ int main()
 					Ask1 = _ask19;
 					k1 = t5;
 				}
+				Diff1 = Bid1 - Ask1;
+				if(Diff1 > 0)
+				{
+					jump = true;
+				}
 			}
 
-			if (min2 == false)
+			if (min2 == false && jump = false)
 			{
 				if (x != 25 && _typ20 == 0 && x13 == 20)
 				{
@@ -3550,9 +3561,14 @@ int main()
 					Ask2 = _ask29;
 					k2 = t5;
 				}
+				Diff2 = Bid2 - Ask2;
+				if(Diff2 > 0)
+				{
+					jump = true;
+				}
 			}
 
-			if (min3 == false)
+			if (min3 == false && jump = false)
 			{
 				if (x != 25 && _typ30 == 0 && x14 == 20)
 				{
@@ -3655,12 +3671,13 @@ int main()
 					Ask3 = _ask39;
 					k3 = t5;
 				}
+				Diff3 = Bid3 - Ask3;
 			}
 
 			if (close == true)
 			{
 				std::cout << "min value..." << min << std::endl;
-				std::cout << "Client" << std::endl;
+				std::cout << "Symbol A Client" << std::endl;
 				std::cout << x << "..." << ph_Client[x] << std::endl;
 				std::cout << z << "..." << ph_Client[z] << std::endl;
 				std::cout << q << "..." << ph_Client[q] << std::endl;
@@ -3723,6 +3740,165 @@ int main()
 				std::cout << _typ7 << std::endl;
 				std::cout << _typ8 << std::endl;
 				std::cout << _typ9 << std::endl;
+				std::cout << "Symbol B Client" << std::endl;
+				std::cout << "2nd Client" << std::endl;
+				std::cout << x12 << "..." << ph_Client[x] << std::endl;
+				std::cout << z12 << "..." << ph_Client[z] << std::endl;
+				std::cout << q12 << "..." << ph_Client[q] << std::endl;
+				std::cout << w12 << "..." << ph_Client[w] << std::endl;
+				std::cout << y12 << "..." << ph_Client[y] << std::endl;
+				std::cout << t112 << "..." << ph_Client[t1] << std::endl;
+				std::cout << t222 << "..." << ph_Client[t2] << std::endl;
+				std::cout << t332 << "..." << ph_Client[t3] << std::endl;
+				std::cout << t442 << "..." << ph_Client[t4] << std::endl;
+				std::cout << t552 << "..." << ph_Client[t5] << std::endl;
+				std::cout << "Derived" << std::endl;
+				std::cout << Bid1 << std::endl;
+				std::cout << Ask1 << std::endl;
+				std::cout << "Hold" << std::endl;
+				std::cout << m1 << std::endl;
+				std::cout << k1 << std::endl;
+				std::cout << "Magic" << std::endl;
+				std::cout << tickcount << std::endl;
+				std::cout << "Bid" << std::endl;
+				std::cout << _bid10 << std::endl;
+				std::cout << _bid11 << std::endl;
+				std::cout << _bid12 << std::endl;
+				std::cout << _bid13 << std::endl;
+				std::cout << _bid14 << std::endl;
+				std::cout << _bid15 << std::endl;
+				std::cout << _bid16 << std::endl;
+				std::cout << _bid17 << std::endl;
+				std::cout << _bid18 << std::endl;
+				std::cout << _bid19 << std::endl;
+				std::cout << "Ask" << std::endl;
+				std::cout << _ask10 << std::endl;
+				std::cout << _ask11 << std::endl;
+				std::cout << _ask12 << std::endl;
+				std::cout << _ask13 << std::endl;
+				std::cout << _ask14 << std::endl;
+				std::cout << _ask15 << std::endl;
+				std::cout << _ask16 << std::endl;
+				std::cout << _ask17 << std::endl;
+				std::cout << _ask18 << std::endl;
+				std::cout << _ask19 << std::endl;
+				std::cout << "pd_4" << std::endl;
+				std::cout << _typ10 << std::endl;
+				std::cout << _typ11 << std::endl;
+				std::cout << _typ12 << std::endl;
+				std::cout << _typ13 << std::endl;
+				std::cout << _typ14 << std::endl;
+				std::cout << _typ15 << std::endl;
+				std::cout << _typ16 << std::endl;
+				std::cout << _typ17 << std::endl;
+				std::cout << _typ18 << std::endl;
+				std::cout << _typ19 << std::endl;
+				std::cout << "Symbol C Client" << std::endl;
+				std::cout << "2nd Client" << std::endl;
+				std::cout << x13 << "..." << ph_Client[x] << std::endl;
+				std::cout << z13 << "..." << ph_Client[z] << std::endl;
+				std::cout << q13 << "..." << ph_Client[q] << std::endl;
+				std::cout << w13 << "..." << ph_Client[w] << std::endl;
+				std::cout << y13 << "..." << ph_Client[y] << std::endl;
+				std::cout << t113 << "..." << ph_Client[t1] << std::endl;
+				std::cout << t223 << "..." << ph_Client[t2] << std::endl;
+				std::cout << t333 << "..." << ph_Client[t3] << std::endl;
+				std::cout << t443 << "..." << ph_Client[t4] << std::endl;
+				std::cout << t553 << "..." << ph_Client[t5] << std::endl;
+				std::cout << "Derived" << std::endl;
+				std::cout << Bid2 << std::endl;
+				std::cout << Ask2 << std::endl;
+				std::cout << "Hold" << std::endl;
+				std::cout << m2 << std::endl;
+				std::cout << k2 << std::endl;
+				std::cout << "Magic" << std::endl;
+				std::cout << tickcount << std::endl;
+				std::cout << "Bid" << std::endl;
+				std::cout << _bid20 << std::endl;
+				std::cout << _bid21 << std::endl;
+				std::cout << _bid22 << std::endl;
+				std::cout << _bid23 << std::endl;
+				std::cout << _bid24 << std::endl;
+				std::cout << _bid25 << std::endl;
+				std::cout << _bid26 << std::endl;
+				std::cout << _bid27 << std::endl;
+				std::cout << _bid28 << std::endl;
+				std::cout << _bid29 << std::endl;
+				std::cout << "Ask" << std::endl;
+				std::cout << _ask20 << std::endl;
+				std::cout << _ask21 << std::endl;
+				std::cout << _ask22 << std::endl;
+				std::cout << _ask23 << std::endl;
+				std::cout << _ask24 << std::endl;
+				std::cout << _ask25 << std::endl;
+				std::cout << _ask26 << std::endl;
+				std::cout << _ask27 << std::endl;
+				std::cout << _ask28 << std::endl;
+				std::cout << _ask29 << std::endl;
+				std::cout << "pd_4" << std::endl;
+				std::cout << _typ20 << std::endl;
+				std::cout << _typ21 << std::endl;
+				std::cout << _typ22 << std::endl;
+				std::cout << _typ23 << std::endl;
+				std::cout << _typ24 << std::endl;
+				std::cout << _typ25 << std::endl;
+				std::cout << _typ26 << std::endl;
+				std::cout << _typ27 << std::endl;
+				std::cout << _typ28 << std::endl;
+				std::cout << _typ29 << std::endl;
+				std::cout << "Symbol D Client" << std::endl;
+				std::cout << "2nd Client" << std::endl;
+				std::cout << x14 << "..." << ph_Client[x] << std::endl;
+				std::cout << z14 << "..." << ph_Client[z] << std::endl;
+				std::cout << q14 << "..." << ph_Client[q] << std::endl;
+				std::cout << w14 << "..." << ph_Client[w] << std::endl;
+				std::cout << y14 << "..." << ph_Client[y] << std::endl;
+				std::cout << t114 << "..." << ph_Client[t1] << std::endl;
+				std::cout << t224 << "..." << ph_Client[t2] << std::endl;
+				std::cout << t334 << "..." << ph_Client[t3] << std::endl;
+				std::cout << t444 << "..." << ph_Client[t4] << std::endl;
+				std::cout << t554 << "..." << ph_Client[t5] << std::endl;
+				std::cout << "Derived" << std::endl;
+				std::cout << Bid3 << std::endl;
+				std::cout << Ask3 << std::endl;
+				std::cout << "Hold" << std::endl;
+				std::cout << m3 << std::endl;
+				std::cout << k3 << std::endl;
+				std::cout << "Magic" << std::endl;
+				std::cout << tickcount << std::endl;
+				std::cout << "Bid" << std::endl;
+				std::cout << _bid30 << std::endl;
+				std::cout << _bid31 << std::endl;
+				std::cout << _bid32 << std::endl;
+				std::cout << _bid33 << std::endl;
+				std::cout << _bid34 << std::endl;
+				std::cout << _bid35 << std::endl;
+				std::cout << _bid36 << std::endl;
+				std::cout << _bid37 << std::endl;
+				std::cout << _bid38 << std::endl;
+				std::cout << _bid39 << std::endl;
+				std::cout << "Ask" << std::endl;
+				std::cout << _ask30 << std::endl;
+				std::cout << _ask31 << std::endl;
+				std::cout << _ask32 << std::endl;
+				std::cout << _ask33 << std::endl;
+				std::cout << _ask34 << std::endl;
+				std::cout << _ask35 << std::endl;
+				std::cout << _ask36 << std::endl;
+				std::cout << _ask37 << std::endl;
+				std::cout << _ask38 << std::endl;
+				std::cout << _ask39 << std::endl;
+				std::cout << "pd_4" << std::endl;
+				std::cout << _typ30 << std::endl;
+				std::cout << _typ31 << std::endl;
+				std::cout << _typ32 << std::endl;
+				std::cout << _typ33 << std::endl;
+				std::cout << _typ34 << std::endl;
+				std::cout << _typ35 << std::endl;
+				std::cout << _typ36 << std::endl;
+				std::cout << _typ37 << std::endl;
+				std::cout << _typ38 << std::endl;
+				std::cout << _typ39 << std::endl;
 				close = false;
 			}
 
