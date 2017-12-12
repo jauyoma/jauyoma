@@ -29,11 +29,12 @@ int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, ty
 int status, status1, status2, status3, sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0;
 double len, price, type;
 uint begin = 0, end = 0, begin1 = 0, end1 = 0, begin2 = 0, end2 = 0, begin3 = 0, end3 = 0;
-double Lot_A, Lot_B, Lot_C, Lot_D;
+double Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 int Tick1, Tick2, Tick3, Tick4;
 
-int ss_Buf[2];
+int ss_Buf[10];
 double pd_Value[22];
+int ss_Value[10];
 
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
@@ -105,8 +106,7 @@ void OnTimer()
  if(b_ConnectTo == true && blacklist == false)
  {  
     if(sym1>0)
-    {
-        int ss_Value[10];  
+    {  
         status = 2;
         info = false;
     
@@ -119,6 +119,7 @@ void OnTimer()
                     Magic = NormalizeDouble(OrderMagicNumber(),0);
                     Tick1 = OrderTicket();
                     Lot_A = OrderLots();
+		    Price1 = OrderOpenPrice();
                     if(OrderType()==OP_BUY)
                     {
                         typ = 1;
@@ -128,11 +129,13 @@ void OnTimer()
                 }    
             }   
         }
+	
+	pd_Value[4] = typ;
+	pd_Value[6] = Price1;
     
-        if(end<=120)
+        if(end<=180)
         {
             pd_Value[3] = 0;
-            pd_Value[4] = typ;
             while(exit==false)
             {          
                 s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
@@ -144,7 +147,7 @@ void OnTimer()
                     if(ss_Value[1]==8 && typ == 1)
                     {
              	        close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-             	        Alert("Closed");
+             	        Print("Closed...",Symbol_A,");
              	        Comment("");
              	        exit = true;
 		                sym1 = 0;
@@ -153,7 +156,7 @@ void OnTimer()
 			           if(ss_Value[1]==8 && typ == 2)
                     {
              	        close = OrderClose(Tick1,Lot_A,Ask,1,Red);
-             	        Alert("Closed");
+             	        Print("Closed...",Symbol_A);
              	        Comment("");
              	        exit = true;
 		                 sym1 = 0;
@@ -161,9 +164,7 @@ void OnTimer()
 	 
                     if(ss_Value[1]==7)
                     {
-                        Alert("Disconnecting client...",typ);
-                        s32_Error = ConnectClose(ph_Client[0]);
-                        b_ConnectTo=false;
+                        Print("Hedging..",Symbol_A,"..OK, waiting for close instructions...");
                         exit = true;
                     }
 	 
@@ -178,7 +179,7 @@ void OnTimer()
                        {
              	            close = OrderClose(Tick1,Lot_A,Ask,1,Red);
                        }
-	                    Alert("Client Blacklisted...");
+	                    Print("Client Blacklisted...");
                         s32_Error = ConnectClose(ph_Client[0]);
                         b_ConnectTo=false;
                         exit = true;
@@ -188,10 +189,9 @@ void OnTimer()
             }
         }
    
-        if(end>240)
+        if(end>180)
         {  
             pd_Value[3] = Magic;
-            pd_Value[4] = typ;
         
             if(b_ConnectTo==true)
             {          
@@ -219,7 +219,6 @@ void OnTimer()
    
     if(sym2>0)
     {
-        ss_Value[10];  
         status1 = 2;
         info1 = false;
     
@@ -232,6 +231,7 @@ void OnTimer()
                     Magic1 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick2 = OrderTicket();
                     Lot_B = OrderLots();
+		    Price2 = OrderOpenPrice();
                     if(OrderType()==OP_BUY)
                     {
                         typ1 = 1;
@@ -241,11 +241,14 @@ void OnTimer()
                 }    
             }   
         }
+	
+	pd_Value[10] = typ1;
+	pd_Value[11] = Price2;
     
-        if(end1<=120)
+        if(end1<=180)
         {
             pd_Value[9] = 0;
-            pd_Value[10] = typ1;
+            
             while(exit1==false)
             {          
                 s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
@@ -257,7 +260,7 @@ void OnTimer()
                     if(ss_Value[3]==8 && typ1 == 1)
                     {
              	        close = OrderClose(Tick2,Lot_B,Bid,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	        Print("Closed..",Symbol_B,"...Failed pre-conditions");
              	        Comment("");
              	        exit1 = true;
 		                 sym2 = 0;
@@ -265,7 +268,7 @@ void OnTimer()
 			           if(ss_Value[3]==8 && typ1 == 2)
                     {
              	        close = OrderClose(Tick2,Lot_B,Ask,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	        Print("Closed..",Symbol_B,"...Failed pre-conditions");
              	        Comment("");
              	        exit1 = true;
 		                 sym2 = 0;
@@ -273,10 +276,8 @@ void OnTimer()
 	 
                     if(ss_Value[3]==7)
                     {
-                        Alert("Disconnecting client...",typ1);
-                        s32_Error = ConnectClose(ph_Client[0]);
-                        b_ConnectTo=false;
-                        exit1 = true;
+                        Print("Hedging..",Symbol_B,"..OK, waiting for close instructions...");
+                        exit = true;
                     }
 	 
 	                 if(end1 > 20)
@@ -290,7 +291,7 @@ void OnTimer()
                         {
              	            close = OrderClose(Tick2,Lot_B,Ask,1,Red);
                         }
-	                     Alert("Client Blacklisted...");
+	                     Print("Client Blacklisted...");
                         s32_Error = ConnectClose(ph_Client[0]);
                         b_ConnectTo=false;
                         exit1 = true;
@@ -300,10 +301,9 @@ void OnTimer()
             }
         }
    
-        if(end1>240)
+        if(end1>180)
         {  
             pd_Value[9] = Magic1;
-            pd_Value[10] = typ1;
         
             if(b_ConnectTo==true)
             {          
@@ -330,8 +330,7 @@ void OnTimer()
     }
    
     if(sym3>0)
-    {
-        ss_Value[10];  
+    { 
         status2 = 2;
         info2 = false;
     
@@ -344,6 +343,7 @@ void OnTimer()
                     Magic2 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick3 = OrderTicket();
                     Lot_C = OrderLots();
+		    Price3 = OrderOpenPrice();
                     if(OrderType()==OP_BUY)
                     {
                         typ2 = 1;
@@ -353,11 +353,14 @@ void OnTimer()
                 }    
             }   
         }
+	
+	pd_Value[15] = typ2;
+	pd_Value[16] = Price3;
     
-        if(end2<=120)
+        if(end2<=180)
         {
             pd_Value[14] = 0;
-            pd_Value[15] = typ2;
+            
             while(exit2==false)
             {          
                 s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
@@ -369,7 +372,7 @@ void OnTimer()
                     if(ss_Value[5]==8 && typ2 == 1)
                     {
              	        close = OrderClose(Tick3,Lot_C,Bid,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	        Print("Closed..",Symbol_C,"...Failed pre-conditions");
              	        Comment("");
              	        exit2 = true;
 		                 sym3 = 0;
@@ -377,7 +380,7 @@ void OnTimer()
 			           if(ss_Value[5]==8 && typ2 == 2)
                     {
              	        close = OrderClose(Tick3,Lot_C,Ask,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	       Print("Closed..",Symbol_C,"...Failed pre-conditions");
              	        Comment("");
              	        exit2 = true;
 		                 sym3 = 0;
@@ -385,10 +388,8 @@ void OnTimer()
 	 
                     if(ss_Value[5]==7)
                     {
-                        Alert("Disconnecting client...",typ2);
-                        s32_Error = ConnectClose(ph_Client[0]);
-                        b_ConnectTo=false;
-                        exit2 = true;
+                        Print("Hedging..",Symbol_C,"..OK, waiting for close instructions...");
+                        exit = true;
                     }
 	 
 	                 if(end2 > 20)
@@ -412,10 +413,9 @@ void OnTimer()
             }
         }
    
-        if(end2>240)
+        if(end2>180)
         {  
             pd_Value[14] = Magic2;
-            pd_Value[15] = typ2;
         
             if(b_ConnectTo==true)
             {          
@@ -442,8 +442,7 @@ void OnTimer()
     }
    
     if(sym4>0)
-    {
-        ss_Value[10];  
+    {  
         status3 = 2;
         info3 = false;
     
@@ -456,6 +455,7 @@ void OnTimer()
                     Magic3 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick4 = OrderTicket();
                     Lot_D = OrderLots();
+		    Price4 = OrderOpenPrice();
                     if(OrderType()==OP_BUY)
                     {
                         typ3 = 1;
@@ -465,11 +465,13 @@ void OnTimer()
                 }    
             }   
         }
+	
+	pd_Value[20] = typ3;
+	pd_Value[21] = Price4;
     
-        if(end3<=120)
+        if(end3<=180)
         {
             pd_Value[19] = 0;
-            pd_Value[20] = typ3;
             while(exit3==false)
             {          
                 s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
@@ -481,7 +483,7 @@ void OnTimer()
                     if(ss_Value[7]==8 && typ3 == 1)
                     {
              	        close = OrderClose(Tick3,Lot_C,Bid,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	        Print("Closed..",Symbol_D,"...Failed pre-conditions");
              	        Comment("");
              	        exit2 = true;
 		                 sym3 = 0;
@@ -489,7 +491,7 @@ void OnTimer()
 			           if(ss_Value[7]==8 && typ3 == 2)
                     {
              	        close = OrderClose(Tick3,Lot_C,Ask,1,Red);
-             	        Print("Order Closed; Failed pre-conditions");
+             	        Print("Closed..",Symbol_D,"...Failed pre-conditions");
              	        Comment("");
              	        exit2 = true;
 		                 sym3 = 0;
@@ -497,10 +499,8 @@ void OnTimer()
 	 
                     if(ss_Value[7]==7)
                     {
-                        Alert("Disconnecting client...",typ3);
-                        s32_Error = ConnectClose(ph_Client[0]);
-                        b_ConnectTo=false;
-                        exit3 = true;
+                        Print("Hedging..",Symbol_D,"..OK, waiting for close instructions...");
+                        exit = true;
                     }
 	 
 	                 if(end3 > 20)
@@ -514,7 +514,7 @@ void OnTimer()
                         {
              	            close = OrderClose(Tick4,Lot_D,Ask,1,Red);
                         }
-	                     Alert("Client Blacklisted...");
+	                     Print("Client Blacklisted...");
                         s32_Error = ConnectClose(ph_Client[0]);
                         b_ConnectTo=false;
                         exit3 = true;
@@ -524,10 +524,9 @@ void OnTimer()
             }
         }
    
-        if(end3>240)
+        if(end3>180)
         {  
             pd_Value[19] = Magic3;
-            pd_Value[20] = typ3;
         
             if(b_ConnectTo==true)
             {          
@@ -663,7 +662,7 @@ void OnTimer()
         if(ps32_ReadLen[0]>0 && ss_Buf[6]!=0)
         {
             Print("ReadFromInt(",ph_Client[0],"...) No order opened");
-            Print("Symbol_D...",ss_Buf[6],"....",ss_Buf[5]);
+            Print("Symbol_D...",ss_Buf[6],"....",ss_Buf[7]);
           
             MagicNumber = ss_Buf[6];
             if(ss_Buf[7]==2 && sym4==0)
