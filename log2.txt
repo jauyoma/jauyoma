@@ -1,0 +1,300 @@
+ReadFromDouble(668...) Read Data:   1.34323
+
+ReadFromDouble(668...) Read Data:   1.34328
+
+ReadFromDouble(668...) Read Data:   0.76659
+
+ReadFromDouble(668...) Read Data:   0.76662
+
+ReadFromDouble(668...) Read Data:   0.70064
+
+ReadFromDouble(668...) Read Data:   0.70068
+ReadFromDouble(712...) read 22 double values
+
+ReadFromDouble(712...) Read Data: 49990.51000
+
+ReadFromDouble(712...) Read Data:   1.18230
+
+ReadFromDouble(712...) Read Data:   1.18230
+
+ReadFromDouble(712...) Read Data:   1.34260
+
+ReadFromDouble(712...) Read Data:   1.34290
+
+ReadFromDouble(712...) Read Data:   0.76640
+
+ReadFromDouble(712...) Read Data:   0.76650
+
+ReadFromDouble(712...) Read Data:   0.00000
+
+ReadFromDouble(712...) Read Data:   0.00000
+ReadFromDouble(748...) read 6 double values
+
+ReadFromDouble(748...) Read Data: 2008.05000
+
+ReadFromDouble(748...) Read Data:   1.18242
+
+ReadFromDouble(748...) Read Data:   1.18247
+
+ReadFromDouble(748...) Read Data:   0.00000
+
+ReadFromDouble(748...) Read Data:   0.00000
+
+ReadFromDouble(748...) Read Data:   0.00000
+
+ReadFromDouble(748...) Read Data:   0.00000
+
+ReadFromDouble(748...) Read Data:   0.00000
+
+ReadFromDouble(748...) Read Data:   0.00000
+ReadFromDouble(792...) read 6 double values
+
+ReadFromDouble(792...) Read Data: 25010.03000
+
+ReadFromDouble(792...) Read Data:   1.18250
+
+ReadFromDouble(792...) Read Data:   1.18257
+
+ReadFromDouble(792...) Read Data:   0.00000
+
+ReadFromDouble(792...) Read Data:   0.00000
+
+ReadFromDouble(792...) Read Data:   0.00000
+
+ReadFromDouble(792...) Read Data:   0.00000
+
+ReadFromDouble(792...) Read Data:   0.00000
+
+ReadFromDouble(792...) Read Data:   0.00000
+min value...0
+Symbol A Client
+0...420
+1...456
+2...504
+3...552
+4...592
+5...352
+6...668
+7...712
+8...748
+9...792
+2nd Client
+20...420
+30...456
+20...504
+20...552
+20...592
+20...352
+30...668
+30...712
+20...748
+30...792
+Derived
+1.18255
+1.18247
+Hold
+4
+2
+Magic
+2
+Bid
+1.18229
+1.18223
+1.18232
+1.18231
+1.18255
+1.18249
+1.18253
+1.1823
+1.18242
+1.1825
+Ask
+1.18243
+1.18223
+1.18247
+1.18248
+1.18261
+1.18264
+1.18255
+1.1823
+1.18247
+1.18257
+pd_4
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Symbol B Client
+2nd Client
+20...420
+20...456
+20...504
+20...552
+20...592
+20...352
+20...668
+20...712
+20...748
+20...792
+Derived
+0
+0
+Hold
+45
+50
+Magic
+2
+Bid
+1.34311
+1.343
+1.34315
+1.34307
+1.34316
+1.34297
+1.34323
+1.3426
+0
+0
+Ask
+1.3433
+1.34306
+1.34335
+1.34329
+1.34325
+1.34315
+1.34328
+1.3429
+0
+0
+pd_4
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Symbol C Client
+2nd Client
+20...420
+20...456
+20...504
+20...552
+20...592
+20...352
+20...668
+20...712
+20...748
+20...792
+Derived
+0
+0
+Hold
+45
+50
+Magic
+2
+Bid
+0.76652
+0.76648
+0.76646
+0.76645
+0.7665
+0.76648
+0.76659
+0.7664
+0
+0
+Ask
+0.76666
+0.76653
+0.76668
+0.76663
+0.7666
+0.76664
+0.76662
+0.7665
+0
+0
+pd_4
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Symbol D Client
+2nd Client
+20...420
+20...456
+20...504
+20...552
+20...592
+20...352
+20...668
+20...712
+20...748
+20...792
+Derived
+0
+0
+Hold
+45
+50
+Magic
+2
+Bid
+0.70059
+0.70051
+0.70057
+0.70051
+0.70056
+0.70057
+0.70064
+0
+0
+0
+Ask
+0.70076
+0.70057
+0.70081
+0.70076
+0.70076
+0.70076
+0.70068
+0
+0
+0
+pd_4
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+First reading:592
+1
+M SendToInt(592...) sent 6 int values
+1..Client..:592
+Second reading:504
+K SendToInt(504...) sent 6 int values
+2..Client..:504
+..end reached..:
+Press any key to continue . . .
