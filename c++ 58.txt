@@ -5093,6 +5093,7 @@ int main()
 				server << _typ38  \n;
 				server << _typ39  \n;
 				}
+				server.close();
 				close = false;
 			}
 
