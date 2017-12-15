@@ -1,1 +1,2 @@
-resume at line 4330
+explore how to hold digits data for each symbol
+pd_Buf[5] to be explored on what data it can parse to the server
