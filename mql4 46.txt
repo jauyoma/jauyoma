@@ -520,7 +520,7 @@ void OnTimer()
         pd_Value[4] = 0;
         pd_Value[5] = 0;
 
-        if(ss_Buf[0]!=0)
+        if(ss_Buf[1]==1||ss_Buf[1]==2)
         {
             Print("ReadFromInt(",ph_Client[0],"...) No order opened");
             Print("Symbol_A...",ss_Buf[0],"....",ss_Buf[1]);
@@ -550,7 +550,7 @@ void OnTimer()
         pd_Value[10] = 0;
         pd_Value[5] = 0;
 
-        if(ss_Buf[2]!=0)
+        if(ss_Buf[3]==2||ss_Buf[3]==1)
         {
             Print("ReadFromInt(",ph_Client[0],"...) No order opened");
             Print("Symbol_B...",ss_Buf[2],"....",ss_Buf[3]);
@@ -580,7 +580,7 @@ void OnTimer()
         pd_Value[15] = 0;
         pd_Value[5] = 0;
 
-        if(ss_Buf[4]!=0)
+        if(ss_Buf[5]==2||ss_Buf[5]==1)
         {
             Print("ReadFromInt(",ph_Client[0],"...) No order opened");
             Print("Symbol_C...",ss_Buf[4],"....",ss_Buf[5]);
@@ -610,7 +610,7 @@ void OnTimer()
         pd_Value[20] = 0;
         pd_Value[5] = 0; 
 
-        if(ss_Buf[6]!=0)
+        if(ss_Buf[7]==2||ss_Buf[7]==1)
         {
             Print("ReadFromInt(",ph_Client[0],"...) No order opened");
             Print("Symbol_D...",ss_Buf[6],"....",ss_Buf[7]);
