@@ -1,2 +1,2 @@
-explore how to hold digits data for each symbol
-pd_Buf[5] to be explored on what data it can parse to the server
+1. Seperate closing orders from opening orders by only opening orders if there isnt any attempt to close existing orders
+2. Limit access by creating an alert that indicates if an opening condition has been met
