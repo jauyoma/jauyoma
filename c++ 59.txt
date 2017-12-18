@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2018, http://klein-hill.com			  |
+//|                      Copyright Â© 2018, http://klein-hill.com			  |
 //|                                       trader@klein-hill.com               |
 //+---------------------------------------------------------------------------+
 
@@ -3342,7 +3342,7 @@ int main()
 					k = t5;
 				}
 				Diff = Bid - Ask;
-				if (Diff > 0)
+				if (Diff > 0.00039)
 				{
 					jump = true;
 				}
@@ -3452,7 +3452,7 @@ int main()
 					k1 = t5;
 				}
 				Diff1 = Bid1 - Ask1;
-				if (Diff1 > 0)
+				if (Diff1 > 0.039)
 				{
 					jump = true;
 				}
@@ -3562,7 +3562,7 @@ int main()
 					k2 = t5;
 				}
 				Diff2 = Bid2 - Ask2;
-				if (Diff2 > 0)
+				if (Diff2 > 0.59)
 				{
 					jump = true;
 				}
@@ -3902,7 +3902,7 @@ int main()
 				close = false;
 			}
 
-			if (m != k && Ask < Bid && min == false && m <= ctrl && k <= ctrl && Bid != 0 && Ask != 0 && ph_Client[m] != ph_Client[k])
+			if (m != k && Diff > 0.00039 && min == false && m <= ctrl && k <= ctrl && Bid != 0 && Ask != 0 && ph_Client[m] != ph_Client[k])
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[0] = tickcount;
@@ -3997,12 +3997,12 @@ int main()
 						{
 							Sleep(5000);
 							ss_Buf[0] = 0;
-							if (min == false && Ask<Bid)
+							if (min == false && (Bid-Ask)>3.4)
 							{
 								ss_Buf[1] = 7;
 							}
 
-							if (min == true || (Ask >= Bid))
+							if (min == true || (Bid-Ask)<=3.4)
 							{
 								ss_Buf[1] = 8;
 							}
@@ -4166,7 +4166,7 @@ int main()
 				disable = true;
 			}
 
-			if (m1 != k1 && Bid1 > Ask1 && min1 == false && m1 <= ctrl && k1 <= ctrl && Bid1 != 0 && Ask1 != 0 && ph_Client[m1] != ph_Client[k1] && disable == false)
+			if (m1 != k1 && Diff > 0.039 && min1 == false && m1 <= ctrl && k1 <= ctrl && Bid1 != 0 && Ask1 != 0 && ph_Client[m1] != ph_Client[k1] && disable == false)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[2] = tickcount;
@@ -4261,12 +4261,12 @@ int main()
 						{
 							Sleep(1000);
 							ss_Buf[2] = 0;
-							if (min1 == false && Ask1<Bid1)
+							if (min1 == false && (Bid-Ask)>3.4)
 							{
 								ss_Buf[3] = 7;
 							}
 
-							if (min1 == true || (Ask1 >= Bid1))
+							if (min1 == true || (Bid-Ask)<=3.4)
 							{
 								ss_Buf[3] = 8;
 							}
@@ -4430,7 +4430,7 @@ int main()
 				disable = true;
 			}
 
-			if (m2 != k2 && Bid2 > Ask2 && min2 == false && m2 <= ctrl && k2 <= ctrl && Bid2 != 0 && Ask2 != 0 && ph_Client[m2] != ph_Client[k2] && disable == false)
+			if (m2 != k2 && Diff > 0.59 && min2 == false && m2 <= ctrl && k2 <= ctrl && Bid2 != 0 && Ask2 != 0 && ph_Client[m2] != ph_Client[k2] && disable == false)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[4] = tickcount;
@@ -4525,12 +4525,12 @@ int main()
 						{
 							Sleep(1000);
 							ss_Buf[4] = 0;
-							if (min2 == false && Ask2 < Bid2)
+							if (min2 == false && (Bid-Ask)>3.4)
 							{
 								ss_Buf[5] = 7;
 							}
 
-							if (min2 == true || (Ask2 >= Bid2))
+							if (min2 == true || (Bid-Ask)<=3.4)
 							{
 								ss_Buf[5] = 8;
 							}
@@ -4694,7 +4694,7 @@ int main()
 				disable = true;
 			}
 
-			if (m3 != k3 && Bid3 > Ask3 && min3 == false && m3 <= ctrl && k3 <= ctrl && Bid3 != 0 && Ask3 != 0 && ph_Client[m3] != ph_Client[k3] && disable == false)
+			if (m3 != k3 && Diff > 0.59 && min3 == false && m3 <= ctrl && k3 <= ctrl && Bid3 != 0 && Ask3 != 0 && ph_Client[m3] != ph_Client[k3] && disable == false)
 			{
 				tickcount = tickcount + 1;
 				ss_Buf[6] = tickcount;
@@ -4789,12 +4789,12 @@ int main()
 						{
 							Sleep(1000);
 							ss_Buf[4] = 0;
-							if (min3 == false && Ask3 < Bid3)
+							if (min3 == false && (Bid-Ask)>3.4)
 							{
 								ss_Buf[7] = 7;
 							}
 
-							if (min3 == true || (Ask3 >= Bid3))
+							if (min3 == true || (Bid-Ask)<=3.4)
 							{
 								ss_Buf[7] = 8;
 							}
