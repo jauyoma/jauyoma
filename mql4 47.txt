@@ -6,9 +6,13 @@
 #include <ImportNetEventsProcDLL.mqh>
 
 extern string Symbol_A = "EURUSD";
+extern int Decimals_A = 10000;
 extern string Symbol_B = "GBPUSD";
+extern int Decimals_B = 10000;
 extern string Symbol_C = "AUDUSD";
+extern int Decimals_C = 10000;
 extern string Symbol_D = "NZDUSD";
+extern int Decimals_D = 10000;
 extern string ps8_ServerIP = "192.168.1.106";  // mine local IP
 
 int i, j, s32_Error=1, s32_Port = 2000;
@@ -123,7 +127,7 @@ void OnTimer()
                     Magic = NormalizeDouble(OrderMagicNumber(),0);
                     Tick1 = OrderTicket();
                     Lot_A = OrderLots();
-		              Price1 = OrderOpenPrice();
+		    Price1 = OrderOpenPrice()*Decimals_A;
                     if(OrderType()==OP_BUY)
                     {
                         typ = 1;
@@ -222,7 +226,7 @@ void OnTimer()
                     Magic1 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick2 = OrderTicket();
                     Lot_B = OrderLots();
-		              Price2 = OrderOpenPrice();
+		    Price2 = OrderOpenPrice()*Decimals_B;
                     if(OrderType()==OP_BUY)
                     {
                         typ1 = 1;
@@ -321,7 +325,7 @@ void OnTimer()
                     Magic2 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick3 = OrderTicket();
                     Lot_C = OrderLots();
-		    Price3 = OrderOpenPrice();
+		    Price3 = OrderOpenPrice()*Decimals_C;
                     if(OrderType()==OP_BUY)
                     {
                         typ2 = 1;
@@ -420,7 +424,7 @@ void OnTimer()
                     Magic3 = NormalizeDouble(OrderMagicNumber(),0);
                     Tick4 = OrderTicket();
                     Lot_D = OrderLots();
-		              Price4 = OrderOpenPrice();
+		    Price4 = OrderOpenPrice()*Decimals_D;
                     if(OrderType()==OP_BUY)
                     {
                         typ3 = 1;
