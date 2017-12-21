@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2018, http://klein-hill.com			  |
+//|                      Copyright Â© 2018, http://klein-hill.com			  |
 //|                                       trader@klein-hill.com               |
 //+---------------------------------------------------------------------------+
 
@@ -201,11 +201,8 @@ int main()
 					printf("ReadFromDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
 				}
 
-				if (!u32_Error)
+				if (ps32_ReadLen[0] > 0)
 				{
-
-					if (ps32_ReadLen[0] > 0 && pd_Buf[5] == 0)
-					{
 						if (ph_Client[i] == ph_Client[x])
 						{
 							bal = pd_Buf[2];
@@ -421,9 +418,13 @@ int main()
 							_bid39 = pd_Buf[17];
 						}
 						close = true;
-					}
-
 				}
+				
+				ss_Buf[8] = 1;
+				
+				u32_Error = cNetEventsProcDLL::SendToInt(ph_Client[i], ss_Buf, ss32_ReadLen);
+				
+				ss_Buf[8] = 0;
 
 			}
 
