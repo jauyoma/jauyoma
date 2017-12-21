@@ -754,6 +754,7 @@ void OnTimer()
     	pd_Value[2] = AccountEquity();
     	s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
 	connect = false;
+	ss_Value[8] = 0;
    
     	if (s32_Error != 0)
     	{
