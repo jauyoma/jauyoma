@@ -19,7 +19,7 @@ int i, j, s32_Error=1, s32_Port = 2000;
 uchar  uc_ServerIP[];
 int    ph_Client[1];
 
-bool b_ConnectTo = false, close, info = false, info1 = false, info2 = false, info3 = false, blacklist = false;
+bool b_ConnectTo = false, close, info = false, info1 = false, info2 = false, info3 = false, blacklist = false, connect = false;
 bool send = false, send1 = false, send2 = false, send3 = false, exit = false, exit1 = false, exit2 = false, exit3 = false;
 
 double pd_Buf[22];
@@ -46,6 +46,7 @@ void OnInit()
 //----
   EventSetMillisecondTimer(10);
   StringToCharArray(ps8_ServerIP,uc_ServerIP);
+  connect = true;
    
    if(!b_ConnectTo)
    {
@@ -113,6 +114,10 @@ void OnTimer()
     
    if(ps32_ReadLen[0]>0)
    {
+    if(ss_Value[8] == 1)
+    {
+    	connect = true;
+    }
     if(OrdersTotal()>0)
     {
     if(sym1>0)
@@ -744,10 +749,11 @@ void OnTimer()
         }    
     }
     
-    if(send == true || send1 == true || send2 == true || send3 == true)
+    if((send == true || send1 == true || send2 == true || send3 == true) && connect == true)
     {
     	pd_Value[2] = AccountEquity();
     	s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen); 
+	connect = false;
    
     	if (s32_Error != 0)
     	{
