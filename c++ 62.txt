@@ -1,6 +1,6 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2018, http://klein-hill.com			  |
+//|                      Copyright Â© 2018, http://klein-hill.com			  |
 //|                                       trader@klein-hill.com               |
 //+---------------------------------------------------------------------------+
 
@@ -649,7 +649,7 @@ int main()
 				}
 			}
 
-			if (min2 == false && jump == false)
+			if (min2 == false && jump == false && jump1 == false)
 			{
 				if (x != 25 && _typ20 == 0 && x13 == 20)
 				{
@@ -759,7 +759,7 @@ int main()
 				}
 			}
 
-			if (min3 == false && jump == false)
+			if (min3 == false && jump == false && jump1 == false && jump2 == false)
 			{
 				if (x != 25 && _typ30 == 0 && x14 == 20)
 				{
@@ -1112,7 +1112,7 @@ int main()
 				continue;
 			}
 
-			if (jump = true)
+			if (jump == true)
 			{
 				if (m != k && min == false && m <= ctrl && k <= ctrl && Bid != 0 && Ask != 0 && ph_Client[m] != ph_Client[k])
 				{
@@ -1379,7 +1379,7 @@ int main()
 				jump = false;
 			}
 
-			if (jump1 = true)
+			if (jump1 == true)
 			{
 				if (m1 != k1 && Diff > 0.039 && min1 == false && m1 <= ctrl && k1 <= ctrl && Bid1 != 0 && Ask1 != 0 && ph_Client[m1] != ph_Client[k1] && disable == false)
 				{
@@ -1646,7 +1646,7 @@ int main()
 				jump1 = false;
 			}
 
-			if (jump2 = true)
+			if (jump2 == true)
 			{
 				if (m2 != k2 && Diff > 0.59 && min2 == false && m2 <= ctrl && k2 <= ctrl && Bid2 != 0 && Ask2 != 0 && ph_Client[m2] != ph_Client[k2] && disable == false)
 				{
@@ -1913,7 +1913,7 @@ int main()
 				jump2 = false;
 			}
 
-			if (jump3 = true)
+			if (jump3 == true)
 			{
 				if (m3 != k3 && Diff > 0.59 && min3 == false && m3 <= ctrl && k3 <= ctrl && Bid3 != 0 && Ask3 != 0 && ph_Client[m3] != ph_Client[k3] && disable == false)
 				{
