@@ -1095,10 +1095,15 @@ int main()
 				std::cout << _typ37 << std::endl;
 				std::cout << _typ38 << std::endl;
 				std::cout << _typ39 << std::endl;
+				std::cout << "Jump Values" << std::endl;
+				std::cout << jump << std::endl;
+				std::cout << jump1 << std::endl;
+				std::cout << jump2 << std::endl;
+				std::cout << jump3 << std::endl;
 				close = false;
 			}
 
-			if ((jump == false && jump1 == false && jump2 == false && jump3 == false) || ok == false)
+			if ((jump == false && jump1 == false && jump2 == false && jump3 == false) || ok == false || close == false)
 			{
 				Bid = 0;
 				Ask = 0;
