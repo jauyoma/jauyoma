@@ -8,6 +8,8 @@ cert = stunnel.pem
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 debug = 7
+output = stunnel.log
+engine = capi
 
 fips = yes
 
@@ -18,13 +20,15 @@ connect = fix-order.london-demo.lmax.com:443
 sslVersion = TLSv1
 options = NO_SSLv2
 options = NO_SSLv3
+engineId = capi
 
-[Demo – Market Data]
+[Demo â€“ Market Data]
 client = yes
 accept = 127.0.0.1:40003
 connect = fix-marketdata.london-demo.lmax.com:443
 sslVersion = TLSv1
 options = NO_SSLv2
 options = NO_SSLv3
+engineId = capi
 
 
