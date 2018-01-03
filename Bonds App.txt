@@ -86,6 +86,12 @@ void Application::onLogout( const FIX::SessionID& sessionID )
 void Application::toAdmin( FIX::Message& message, const FIX::SessionID& )
 {
 	//std::cout << std::endl << "ADMIN OUT: " << message << std::endl;
+	if(msg_type == "A"){
+		string data = 112A04B0-5AAF-42F4-994E-FA7CB959C60B;
+		string datalen = 36;
+		message.setField(RawData(data));
+		message.setField(RawDataLength(datalen));
+	}
 }
 void Application::fromAdmin( const FIX::Message& message, const FIX::SessionID& )
   throw( FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::RejectLogon ) 
