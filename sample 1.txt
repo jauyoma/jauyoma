@@ -65,7 +65,7 @@ BOOL FormatIP(DWORD u32_IP, char* s8_IP);
 DWORD u32_Count = 0;
 DWORD u32_Error;
 int ph_Client[15];
-bool g_bMdLoginComplete = false;
+bool g_bMdLoginComplete = false, serveropen = false;
 double Bid = 0, Ask = 0;
 
 int main(int      argc,
@@ -142,7 +142,13 @@ void send()
 	DWORD  u32_BufLen = 16;
 	int    ps32_ReadLen[2];
 	int send = 1;
-
+	
+	if(u32_Count < 1)
+	{
+		u32_Count = GetConnections();
+		std::cout << "Failed to send; Make sure MT4 Client is running..." << std::endl;
+	}
+	else
 	for (DWORD i = 0; i<u32_Count; i++)
 	{
 		pd_Buf[0] = 0;
@@ -171,8 +177,8 @@ void send()
 		}
 		else
 		{
-			std::cout << "Failed to read; Get all connections..." << std::endl;
-			send = 0;
+			std::cout << "Failed to read; Getting all connections..." << std::endl;
+			u32_Count = GetConnections();
 		}
 
 	}
@@ -1407,6 +1413,13 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
+	
+	if(!OpenMT4Server() && serveropen == false)
+	{
+		cout << "Error opening MT4 server: " << endl;
+	}
+	else
+	    serveropen = true;
 
 	try
 	{
