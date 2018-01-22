@@ -36,7 +36,8 @@ uint begin = 0, end = 0, begin1 = 0, end1 = 0, begin2 = 0, end2 = 0, begin3 = 0,
 double Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 int Tick1, Tick2, Tick3, Tick4;
 
-double pd_Value[22];
+double pd_Value[1];
+pd_Value[0] = 1.1;
 
 //+------------------------------------------------------------------+
 //| expert initialization function                                   |
@@ -56,7 +57,8 @@ void OnInit()
       
       if (s32_Error == OK)
       {
-         b_ConnectTo = true;
+	 b_ConnectTo = true;
+	 s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen);
          Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
       }
    }
@@ -106,128 +108,78 @@ void OnTimer()
         }
   }
   
+  for(j=0; j<OrdersTotal(); j++)          
+  {
+            if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+            {
+                    Tick = OrderTicket();
+	    }
+ }   
+	    
  if(b_ConnectTo == true && blacklist == false)
  {  
-   int ss_Value[10];
+   int ss_Value[16];
     
    s32_Error = ReadFromInt(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);
     
    if(ps32_ReadLen[0]>0)
    {
-    if(ss_Value[8] == 1)
-    {
-    	connect = true;
-    }
-    if(OrdersTotal()>0)
-    {
-    if(sym1>0)
-    {      
-        status = 2;
-        info = false;
+    s32_Error = SendToDouble(ph_Client[0], pd_Value, s32_BufLen);
     
-        for(j=0; j<OrdersTotal(); j++)          
-        {
-            if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
-            {
-                if(OrderSymbol()==Symbol_A)
-                {
-                    Magic = NormalizeDouble(OrderMagicNumber(),0);
-                    Tick1 = OrderTicket();
-                    Lot_A = OrderLots();
-		    Price1 = OrderOpenPrice()*Decimals_A;
-                    if(OrderType()==OP_BUY)
-                    {
-                        typ = 1;
-                    }
-                    else
-                    typ = 2;           
-                }    
-            }   
-        }
-	
-	pd_Value[4] = typ;
-	pd_Value[6] = Price1;
-    
-        if(end<=180)
-        {
-            pd_Value[3] = 0;
-            while(exit==false)
-            {          
-                    Print("ReadFromInt(",ph_Client[0],"...) opened..",Symbol_A,"..with live order");
-         
-                    if(ss_Value[1]==8 && typ == 1)
-                    {
-             	        close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-             	        Print("Closed...",Symbol_A,"...Failed pre-conditions");
-             	        Comment("");
-             	        exit = true;
-		                 sym1 = 0;
-                    }
-                    
-		              if(ss_Value[1]==8 && typ == 2)
-                    {
-             	        close = OrderClose(Tick1,Lot_A,Ask,1,Red);
-             	        Print("Closed...",Symbol_A,"...Failed pre-conditions");
-             	        Comment("");
-             	        exit = true;
-		                 sym1 = 0;
-                    }       
-	 
-                    if(ss_Value[1]==7 && typ == 1)
-                    {
-                        close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-                        Print("Hedging..",Symbol_A,"..OK, Closed successfully...");
-                        exit = true;
-                        sym1 = 0;
-                    }
-                    
-                    if(ss_Value[1]==7 && typ == 2)
-                    {
-                        close = OrderClose(Tick1,Lot_A,Ask,1,Red);
-                        Print("Hedging..",Symbol_A,"..OK, Closed successfully...");
-                        exit = true;
-                        sym1 = 0;
-                    }
-	 
-	                 if(end > 20)
-                    {
-                       pd_Value[5] = 1;
-	                 if(typ == 1)
-                       {
-             	            close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-                       }
-		       if(typ == 2)
-                       {
-             	            close = OrderClose(Tick1,Lot_A,Ask,1,Red);
-                       }
-	                Print("Client Blacklisted...");
-                        s32_Error = ConnectClose(ph_Client[0]);
-                        b_ConnectTo=false;
-                        exit = true;
-	                blacklist = true;
-                    }
-            }
-        }
+    Bid_A = ss_Value[1];
+    Ask_A = ss_Value[2];
+    Bid_B = ss_Value[3];
+    Ask_B = ss_Value[4];
+    Bid_C = ss_Value[5];
+    Ask_C = ss_Value[6];
+    Bid_D = ss_Value[7];
+    Ask_D = ss_Value[8];
    
-        if(end>180 && b_ConnectTo==true)
-        {  
-            pd_Value[3] = Magic;
-         
-            Print("ReadFromInt(",ph_Client[0],"...) opened with live order");
-            Print("Symbol_A...",ss_Value[0],"...",ss_Value[1]);
-         
-            if((ss_Value[0]==3 || end > 480) && typ == 1)
-            {
-                  close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-	          sym1 = 0;
-            }
-	    if((ss_Value[0]==3 || end > 480) && typ == 2)
-            {
-                  close = OrderClose(Tick1,Lot_A,Ask,1,Red);
-	          sym1 = 0;
-            }
-        }
+    if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
+    {      
+	if(Sym1 > 0)
+    	{
+		if(tick.ask > Bid_A)
+		{
+			OrderDelete(Tick);
+			openbuy = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                	begin = GetTickCount();
+	        	sym1 = 0;
+		}
+		else
+		{
+			openbuy = OrderSend(Symbol_A,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                	begin = GetTickCount();
+	        	sym1 = 0;
+		}
+	}
+    
+    	if(sym1_A > 0)
+    	{      
+		if(tick.bid < Ask_A)
+		{
+			OrderDelete(Tick);
+			openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                	begin = GetTickCount();
+	        	sym1_A = 0;
+		}
+		else
+		{
+			openbuy = OrderSend(Symbol_A,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+                	begin = GetTickCount();
+	        	sym1_A = 0;
+		}
+	}
+	
+	if(Sym1 == 0 && ((Ask_A - tick.bid)*Decimals_A) >= 4)
+	{
+		close = OrderClose(Tick2,Lot_B,Bid,1,Red);
+             	Print("Closed..",Symbol_A,"...Conditions met");
+             	Comment("");
+		Sym1 = 1;
+       }
     }
+  
    
     if(sym2>0)
     {
@@ -653,29 +605,7 @@ void OnTimer()
   }
  }
    
-    if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
-    {          
-        pd_Value[0] = NormalizeDouble(tick.bid,Digits);
-        pd_Value[1] = NormalizeDouble(tick.ask,Digits);
-        if(sym1==0 && status==2)
-        {
-            pd_Value[3] = 0;
-            pd_Value[4] = 0;
-        }
-	    if(sym1>0 && status==1)
-        {
-            pd_Value[3] = 0;
-            pd_Value[4] = 3;
-            info = true;
-        }
-      
-        if(_bid!=tick.bid || _ask!=tick.ask || info == true)
-        {         
-	        send = true;
-	        _bid = tick.bid;
-            _ask = tick.ask;
-        }    
-    }
+    
     
     if(SymbolInfoTick(Symbol_B,tick) && b_ConnectTo==true)
     {          
