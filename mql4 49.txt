@@ -22,7 +22,7 @@ int    ph_Client[1];
 int monitor = 0;
 
 bool b_ConnectTo = false, close, info = false, info1 = false, info2 = false, info3 = false, blacklist = false, connect = false;
-bool send = false, send1 = false, send2 = false, send3 = false, exit = false, exit1 = false, exit2 = false, exit3 = false;
+bool send = false, send1 = false, send2 = false, send3 = false, exit = false, exit1 = false, exit2 = false, exit3 = false, del;
 
 double pd_Buf[22];
 int    s32_BufLen = 22;
@@ -125,9 +125,16 @@ void OnTimer()
                {     
                     Magic = NormalizeDouble(OrderMagicNumber(),0);              
                     Lot_A = OrderLots();
-		              Price1 = OrderOpenPrice()*Decimals_B;
+		    Price1 = OrderOpenPrice()*Decimals_B;
+		    typ = OrderType(); 
+		    if(OrderType() == OP_BUY)
+		    {
                     Tick1 = OrderTicket();
-                    typ = OrderType();  
+		    }
+		    if(OrderType() == OP_SELL)
+		    {
+                    Tick1S = OrderTicket();
+		    } 
                 }
                 else
                 {
@@ -144,8 +151,15 @@ void OnTimer()
                     Magic1 = NormalizeDouble(OrderMagicNumber(),0);                   
                     Lot_B = OrderLots();
 		              Price2 = OrderOpenPrice()*Decimals_B;
+                    typ1 = OrderType();    
+		    if(OrderType() == OP_BUY)
+		    {
                     Tick2 = OrderTicket();
-                    typ1 = OrderType();          
+		    }
+		    if(OrderType() == OP_SELL)
+		    {
+                    Tick2S = OrderTicket();
+		    } 
                }
                else
                {
@@ -163,8 +177,15 @@ void OnTimer()
                     Magic2 = NormalizeDouble(OrderMagicNumber(),0);
                     Lot_C = OrderLots();
 		              Price3 = OrderOpenPrice()*Decimals_C;
-                    Tick3 = OrderTicket();
                     typ2 = OrderType();
+		    if(OrderType() == OP_BUY)
+		    {
+                    Tick3 = OrderTicket();
+		    }
+		    if(OrderType() == OP_SELL)
+		    {
+                    Tick3S = OrderTicket();
+		    } 
                }
                else
                {
@@ -181,8 +202,15 @@ void OnTimer()
                     Magic3 = NormalizeDouble(OrderMagicNumber(),0);
                     Lot_D = OrderLots();
 		              Price4 = OrderOpenPrice()*Decimals_D;
-                    Tick4 = OrderTicket();
                     typ3 = OrderType();
+		    if(OrderType() == OP_BUY)
+		    {
+                    Tick4 = OrderTicket();
+		    }
+		    if(OrderType() == OP_SELL)
+		    {
+                    Tick4S = OrderTicket();
+		    } 
                }
                else
                {
@@ -227,17 +255,20 @@ void OnTimer()
     	{
 		   if(tick.ask > Bid_A)
 		   {
-			   OrderDelete(Tick_1A);
-			   openbuy = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
-	        	sym1 = 0;
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   	begin = GetTickCount();
+	        	   	sym1 = 0;
+			   }
 		   }
 		   else
 		   if((tick.ask < Bid_A && typA == 0) || (Bid_A > Price1A))
 		   {
 			   OrderDelete(Tick_1A);
 			   openbuy = OrderSend(Symbol_A,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
+            		   begin = GetTickCount();
 		   }
 	   }
     
@@ -245,10 +276,13 @@ void OnTimer()
     	{      
 		   if(tick.bid < Ask_A)
 		   {
-			   OrderDelete(Tick1);
-			   openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
-	        	sym1_A = 0;
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   	begin = GetTickCount();
+	        	   	sym1_A = 0;
+			   }
 		   }
 		   else
 		   if((tick.bid > Ask_A && typ1A == 0) || (Ask_A < Price1A))
@@ -265,19 +299,22 @@ void OnTimer()
     {      
 	   if(sym2 > 0)
     	{
-		   if(tick.ask < Bid_B)
-		   {
-			   OrderDelete(Tick2);
-			   openbuy = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
-	        	sym2 = 0;
-		   }
-		   else
 		   if(tick.ask > Bid_B)
 		   {
-			   openbuy = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
-	        	sym2 = 0;
+			   del = OrderDelete(Tick_2A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   	begin = GetTickCount();
+	        	   	sym2 = 0;
+			   }
+		   }
+		   else
+		   if((tick.ask < Bid_B && typ1A == 0) || (Bid_B > Price2A))
+		   {
+			   OrderDelete(Tick_2A);
+			   openbuy = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   begin = GetTickCount();
 		   }
 	   }
     
@@ -285,16 +322,20 @@ void OnTimer()
     	{      
 		   if(tick.bid < Ask_B)
 		   {
-			   OrderDelete(Tick2);
-			   openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-            begin = GetTickCount();
-	        	sym2_A = 0;
+			   del = OrderDelete(Tick2);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   	begin = GetTickCount();
+	        	   	sym2_A = 0;
+			   }
 		   }
 		   else
+		   if((tick.bid > Ask_B && typ2A == 0) || (Ask_B < Price2A))
 		   {
-			   openbuy = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			   OrderDelete(Tick2);
+			   openbuy = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
            	begin = GetTickCount();
-	        	sym2_A = 0;
 		   }
 	   }
     
@@ -306,7 +347,7 @@ void OnTimer()
    {
       if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4)
 	   {
-		   close = OrderClose(Tick_1A,Lot_A,Ask,1,Red);
+		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
         	Print("Closed..",Symbol_A,"...Conditions met");
         	Comment("");
 		   sym1 = 1;
@@ -322,18 +363,18 @@ void OnTimer()
       
       if(sym2 == 0 && sym2_A == 0 && ((Bid_B - tick.ask)*Decimals_B) >= 4)
 	   {
-		   close = OrderClose(Tick_2A,Lot_B,Ask,1,Red);
+		   close = OrderClose(Tick2S,Lot_B,Ask,1,Red);
         	Print("Closed..",Symbol_B,"...Conditions met");
         	Comment("");
 		   sym2 = 1;
       }
       
-      if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4)
+      if(sym2_A == 0 && sym2 == 0 && ((tick.bid - Ask_B)*Decimals_B) >= 4)
 	   {
-		   close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-        	Print("Closed..",Symbol_A,"...Conditions met");
+		   close = OrderClose(Tick2,Lot_B,Bid,1,Red);
+        	Print("Closed..",Symbol_B,"...Conditions met");
         	Comment("");
-		   sym1_A = 1;
+		   sym2_A = 1;
       }
    }
     
