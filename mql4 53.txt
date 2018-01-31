@@ -1,0 +1,492 @@
+//+---------------------------------------------------------------------------+
+//|                      Client.mq4                                           |
+//|                      http://www.klein-hill.com                            |
+//|                      forex@klein-hill.com                                 |
+//+---------------------------------------------------------------------------+
+#include <ImportNetEventsProcDLL.mqh>
+
+extern string Symbol_A = "EURUSD";
+extern int Decimals_A = 10000;
+extern string Symbol_B = "GBPU";
+extern int Decimals_B = 10000;
+extern string Symbol_C = "AUDU";
+extern int Decimals_C = 10000;
+extern string Symbol_D = "NZD";
+extern int Decimals_D = 10000;
+extern string ps8_ServerIP = "192.168.1.150";  // mine local IP
+extern int SymbTraded = 1;
+
+int i, j, s32_Error=1, s32_Port = 2000;
+uchar  uc_ServerIP[];
+int    ph_Client[1];
+int monitor = 0;
+
+bool b_ConnectTo = false, close, del;
+
+double pd_Buf[22];
+int    s32_BufLen = 16;
+int    ps32_ReadLen[16];
+double tickcount=0;
+
+int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
+int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
+double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
+double Price1A, Price2A, Price3A, Price4A;
+int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
+double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
+double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
+
+
+double pd_Value[2];
+
+//+------------------------------------------------------------------+
+//| expert initialization function                                   |
+//+------------------------------------------------------------------+
+void OnInit()
+{
+//----
+  EventSetMillisecondTimer(10);
+  StringToCharArray(ps8_ServerIP,uc_ServerIP);
+   
+   if(!b_ConnectTo)
+   {
+      s32_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
+      Print("ConnectTo(...) return is: ",GetErrMsg(s32_Error));
+      Print("ConnectTo(...) handle is: ",ph_Client[0]);
+      
+      if (s32_Error == OK)
+      {
+         pd_Value[0] = AccountEquity();
+    
+         s32_Error = SendToDouble(ph_Client[0], pd_Value, sizeof(pd_Value));
+         if(s32_Error==0)
+         {
+            Print("SendToDouble(",ph_Client[0],"...) Send is: OK");
+         }
+         b_ConnectTo = true;
+         Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
+      }
+   }
+
+//----
+
+}
+//+------------------------------------------------------------------+
+//| expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+//----
+
+      s32_Error = ConnectClose(ph_Client[0]);
+      Print("ConnectClose(...) return is: ",GetErrMsg(s32_Error));
+      
+      if (s32_Error == OK)
+         b_ConnectTo = false;
+   
+   EventKillTimer();
+//----
+}  
+
+void OnTimer()
+{
+//----   
+   int Tick1 = 0, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 0, Tick2S = 0, Tick3S = 0, Tick4S = 0;   
+   double spread;
+   RefreshRates();
+   MqlTick tick;
+ 
+ if(monitor == (SymbTraded*2))
+ {
+  for(j=0; j<OrdersTotal(); j++)          
+  {
+      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+      {
+           if(OrderSymbol()==Symbol_A)
+           {
+               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
+               {     
+                    Magic = NormalizeDouble(OrderMagicNumber(),0);              
+                    Lot_A = OrderLots();
+		              Price1 = OrderOpenPrice()*Decimals_B;
+		              typ = OrderType(); 
+		              if(OrderType() == OP_BUY)
+		              {
+                        Tick1 = OrderTicket();
+		              }
+		              if(OrderType() == OP_SELL)
+		              {
+                        Tick1S = OrderTicket();
+		              } 
+                }
+                else
+                {
+                    typA = OrderType();
+                    Tick_1A = OrderTicket();
+                    Price1A = OrderOpenPrice();
+                }        
+           }
+           
+           if(OrderSymbol()==Symbol_B)
+           {
+               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
+               {     
+                    Magic1 = NormalizeDouble(OrderMagicNumber(),0);                   
+                    Lot_B = OrderLots();
+		              Price2 = OrderOpenPrice()*Decimals_B;
+                    typ1 = OrderType();    
+		              if(OrderType() == OP_BUY)
+		              {
+                        Tick2 = OrderTicket();
+		              }
+		              if(OrderType() == OP_SELL)
+		              {
+                        Tick2S = OrderTicket();
+		              } 
+               }
+               else
+               {
+                    typ1A = OrderType();
+                    Tick_2A = OrderTicket();
+                    Price2A = OrderOpenPrice();
+               }        
+           }
+           
+            
+            if(OrderSymbol()==Symbol_C)
+            {
+               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
+               {          
+                    Magic2 = NormalizeDouble(OrderMagicNumber(),0);
+                    Lot_C = OrderLots();
+		              Price3 = OrderOpenPrice()*Decimals_C;
+                    typ2 = OrderType();
+		              if(OrderType() == OP_BUY)
+		              {
+                        Tick3 = OrderTicket();
+		              }
+		              if(OrderType() == OP_SELL)
+		              {
+                        Tick3S = OrderTicket();
+		               } 
+               }
+               else
+               {
+                    typ2A = OrderType();
+                    Tick_3A = OrderTicket();
+                    Price3A = OrderOpenPrice();
+               }          
+            } 
+            
+            if(OrderSymbol()==Symbol_D)
+            {
+               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
+               {    
+                    Magic3 = NormalizeDouble(OrderMagicNumber(),0);
+                    Lot_D = OrderLots();
+		              Price4 = OrderOpenPrice()*Decimals_D;
+                    typ3 = OrderType();
+		              if(OrderType() == OP_BUY)
+		              {
+                        Tick4 = OrderTicket();
+		              }
+		              if(OrderType() == OP_SELL)
+		              {
+                        Tick4S = OrderTicket();
+		               } 
+               }
+               else
+               {
+                    typ3A = OrderType();
+                    Tick_4A = OrderTicket();
+                    Price4A = OrderOpenPrice();
+               }           
+            }   
+        }   
+   }   
+  
+  if(b_ConnectTo == true)
+  {  
+   double ss_Value[16];
+   ss_Value[0] = 0;
+   ss_Value[1] = 0;
+   if(pd_Value[0] > 0)
+   {
+      Print("Trying to read from : (",ph_Client[0],"...)");
+   }
+   pd_Value[0] = 0; 
+   
+   s32_Error = ReadFromDouble(ph_Client[0], ss_Value, sizeof(ss_Value), ps32_ReadLen);  
+   
+   if(ss_Value[0]>0)
+   {  
+    Bid_A = ss_Value[1];
+    Ask_A = ss_Value[2];
+    Bid_B = ss_Value[3];
+    Ask_B = ss_Value[4];
+    Bid_C = ss_Value[5];
+    Ask_C = ss_Value[6];
+    Bid_D = ss_Value[7];
+    Ask_D = ss_Value[8];
+    
+    Print("ReadFromDouble(",ph_Client[0],"...) return is: OK");
+    pd_Value[0] = AccountEquity();
+    
+    s32_Error = SendToDouble(ph_Client[0], pd_Value, sizeof(pd_Value));
+    if(s32_Error==0)
+    {
+         Print("SendToDouble(",ph_Client[0],"...) Send is: OK");
+    }
+    
+    if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
+    {      
+	   if(sym1 > 0)
+    	{
+		   if(tick.ask > Bid_A)
+		   {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   sym1 = 0;
+			   }
+		   }
+
+		   if((tick.ask < Bid_A && typA == 0) || (Bid_A > Price1A))
+		   {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      openbuy = OrderSend(Symbol_A,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1S != 0)
+		   {
+		   	sym1 = 0;
+		   }
+	   }
+    
+    	if(sym1_A > 0)
+    	{      
+		   if(tick.bid < Ask_A)
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   	sym1_A = 0;
+			   }
+		   }
+
+		   if((tick.bid > Ask_A && typ1A == 0) || (Ask_A < Price1A))
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      openbuy = OrderSend(Symbol_A,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1 != 0)
+		   {
+		   	sym1_A = 0;
+		   }
+	   }
+	
+    }
+    
+    if(SymbolInfoTick(Symbol_B,tick) && b_ConnectTo==true)
+    {      
+	   if(sym2 > 0)
+    	{
+		   if(tick.ask > Bid_B)
+		   {
+			   del = OrderDelete(Tick_2A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   	sym2 = 0;
+			   }
+		   }
+
+		   if((tick.ask < Bid_B && typ1A == 0) || (Bid_B > Price2A))
+		   {
+			   del = OrderDelete(Tick_2A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      openbuy = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick2S != 0)
+		   {
+		   	sym2 = 0;
+		   }
+	   }
+    
+    	if(sym2_A > 0)
+    	{      
+		   if(tick.bid < Ask_B)
+		   {
+			   del = OrderDelete(Tick2);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   	sym2_A = 0;
+			   }
+		   }
+
+		   if((tick.bid > Ask_B && typ2A == 0) || (Ask_B < Price2A))
+		   {
+			   del = OrderDelete(Tick2);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      openbuy = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick2 != 0)
+		   {
+		   	sym2 = 0;
+		   }
+	   }
+    
+     }
+   
+   
+     if(OrdersTotal() == monitor)
+     {
+      if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0)
+	   {
+		   close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		   sym1 = 1;
+		   Tick1S = 0;
+      }
+      
+      if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
+	   {
+		   close = OrderClose(Tick1,Lot_A,Bid,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		   sym1_A = 1;
+		   Tick1 = 0;
+      }
+      
+      if(sym2 == 0 && sym2_A == 0 && ((Bid_B - tick.ask)*Decimals_B) >= 4 && Tick2S != 0)
+	   {
+		   close = OrderClose(Tick2S,Lot_B,Ask,1,Red);
+        	Print("Closed..",Symbol_B,"...Conditions met");
+        	Comment("");
+		   sym2 = 1;
+		   Tick2S = 0;
+      }
+      
+      if(sym2_A == 0 && sym2 == 0 && ((tick.bid - Ask_B)*Decimals_B) >= 4 && Tick2 != 0)
+	   {
+		   close = OrderClose(Tick2,Lot_B,Bid,1,Red);
+        	Print("Closed..",Symbol_B,"...Conditions met");
+        	Comment("");
+		   sym2_A = 1;
+		   Tick2 = 0;
+      }
+     }
+    
+    }
+     
+   }
+  }
+ }
+ 
+ void send()
+ {
+    double pd_Value[1];
+    pd_Value[0] = AccountEquity();
+    s32_Error = SendToDouble(ph_Client[0], pd_Value, sizeof(pd_Value));
+    if(s32_Error==0)
+    {
+         Print("SendToDouble(",ph_Client[0],"...",pd_Value[0],"..) Send is: OK");
+    }
+ }
+ 
+ int read()
+ {
+      double ss_Value[20];
+      int    s32_BufLen = 20;
+      int    ps32_ReadLen[3];
+      int val = 0;
+      s32_Error = ReadFromDouble(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);  
+      if(ps32_ReadLen[0] > 0)
+      {  
+         Print("ReadFromDouble(Ask is : ",ss_Value[1]," Bid is : ",ss_Value[2],") return is: OK");
+         Bid_A = ss_Value[1];
+         Ask_A = ss_Value[2];
+         Bid_B = ss_Value[3];
+         Ask_B = ss_Value[4];
+         Bid_C = ss_Value[5];
+         Ask_C = ss_Value[6];
+         Bid_D = ss_Value[7];
+         Ask_D = ss_Value[8];
+         val = 1;
+      }
+      if(s32_Error != 0)
+      {
+         Print("ReadFromDouble failed");
+      }
+      return(val);
+ }
+ 
+ int OpenOrders()
+ {
+  int monitor = 0;
+  if(OrdersTotal()<(SymbTraded*2) && b_ConnectTo==true)
+  {
+ 	if(SymbolInfoTick(Symbol_A,tick))
+   {
+		spread = (tick.ask - tick.bid)*Decimals_A;
+		if(spread < 2.5)
+		{
+			opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			Sleep(10);
+			openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+		}
+	}
+	
+	if(SymbolInfoTick(Symbol_B,tick))
+   {
+		spread = (tick.ask - tick.bid)*Decimals_B;
+		if(spread < 1)
+		{
+			opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			Sleep(10);
+			openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+		}
+	}
+	
+	if(SymbolInfoTick(Symbol_C,tick))
+   {
+		spread = (tick.ask - tick.bid)*Decimals_C;
+		if(spread < 1)
+		{
+			opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			Sleep(10);
+			openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+		}
+	}
+	
+	if(SymbolInfoTick(Symbol_D,tick))
+   {
+		spread = (tick.ask - tick.bid)*Decimals_D;
+		if(spread < 1)
+		{
+			opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			Sleep(10);
+			openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+		}
+	}
+	monitor = OrdersTotal();
+  }
+  return(monitor);
+ }

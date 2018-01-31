@@ -1,0 +1,122 @@
+//+---------------------------------------------------------------------------+
+//|                      Client.mq4                                           |
+//|                      http://www.klein-hill.com                            |
+//|                      forex@klein-hill.com                                 |
+//+---------------------------------------------------------------------------+
+#include <ImportNetEventsProcDLL.mqh>
+
+extern string Symbol_A = "EURUSD";
+extern int Decimals_A = 10000;
+extern string Symbol_B = "GBPU";
+extern int Decimals_B = 10000;
+extern string Symbol_C = "AUDU";
+extern int Decimals_C = 10000;
+extern string Symbol_D = "NZD";
+extern int Decimals_D = 10000;
+extern string ps8_ServerIP = "192.168.1.150";  // mine local IP
+extern int SymbTraded = 1;
+
+int i, j, s32_Error=1, s32_Port = 2000;
+uchar  uc_ServerIP[];
+int    ph_Client[1];
+int monitor = 0;
+
+bool b_ConnectTo = false, close, del;
+
+double Bid_A = 0, track = 0;
+double Ask_A = 0;
+
+//+------------------------------------------------------------------+
+//| expert initialization function                                   |
+//+------------------------------------------------------------------+
+void OnInit()
+{
+//----
+  EventSetMillisecondTimer(1);
+  StringToCharArray(ps8_ServerIP,uc_ServerIP);
+   
+   if(!b_ConnectTo)
+   {
+      s32_Error = ConnectTo(uc_ServerIP, s32_Port, ph_Client);
+      Print("ConnectTo(...) return is: ",GetErrMsg(s32_Error));
+      Print("ConnectTo(...) handle is: ",ph_Client[0]);
+      
+      if (s32_Error == OK)
+      {
+         double pd_Buf[1];
+         pd_Buf[0] = AccountEquity();
+    
+         s32_Error = SendToDouble(ph_Client[0], pd_Buf, sizeof(pd_Buf));
+         if(s32_Error==0)
+         {
+            Print("SendToDouble(",ph_Client[0],"...) Send is: OK");
+         }
+         b_ConnectTo = true;
+         Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
+      }
+   }
+
+//----
+
+}
+//+------------------------------------------------------------------+
+//| expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+//----
+
+      s32_Error = ConnectClose(ph_Client[0]);
+      Print("ConnectClose(...) return is: ",GetErrMsg(s32_Error));
+      
+      if (s32_Error == OK)
+         b_ConnectTo = false;
+   
+   EventKillTimer();
+//----
+}  
+
+void OnTimer()
+{
+//----    
+   RefreshRates();
+   MqlTick tick;
+  
+   if(b_ConnectTo == true)
+   {  
+     if(read()> 0)
+     {
+     send();
+     }
+   }
+}
+ 
+ void send()
+ {
+    double pd_Value[1];
+    pd_Value[0] = AccountEquity();
+    s32_Error = SendToDouble(ph_Client[0], pd_Value, sizeof(pd_Value));
+    if(s32_Error==0)
+    {
+         Print("SendToDouble(",ph_Client[0],"...",pd_Value[0],"..) Send is: OK");
+    }
+ }
+ 
+ int read()
+ {
+      double ss_Value[20];
+      int    s32_BufLen = 20;
+      int    ps32_ReadLen[3];
+      int val = 0;
+      s32_Error = ReadFromDouble(ph_Client[0], ss_Value, s32_BufLen, ps32_ReadLen);  
+      if(ps32_ReadLen[0] > 0)
+      {  
+         Print("ReadFromDouble(Ask is : ",ss_Value[1]," Bid is : ",ss_Value[2],") return is: OK");
+         val = 1;
+      }
+      if(s32_Error != 0)
+      {
+         Print("ReadFromDouble failed");
+      }
+      return(val);
+ }
