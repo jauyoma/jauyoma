@@ -95,9 +95,7 @@ void OnTimer()
  RefreshRates();
  if(monitor == (SymbTraded*2))
  {
-  
-  if(b_ConnectTo == true)
-  {
+
    if(read()>0)
    { 
    
@@ -267,7 +265,7 @@ void OnTimer()
 			   del = OrderDelete(Tick2);
 			   if(del == true || (del == false && OrdersTotal() < monitor))
 			   {
-			      openbuy = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      open = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 			      OpenOrders();
             		   }
 		   }
@@ -280,12 +278,13 @@ void OnTimer()
     
      }
      
-     send();
     }
-     
+    send();
    }
-  }
+
  }
+
+}
  
  void send()
  {
@@ -336,9 +335,9 @@ void OnTimer()
 		spread = (tick.ask - tick.bid)*Decimals_A;
 		if(spread < 2.5)
 		{
-			opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			open = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
 			Sleep(10);
-			openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			open = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
 	
@@ -347,9 +346,9 @@ void OnTimer()
 		spread = (tick.ask - tick.bid)*Decimals_B;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			open = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
 			Sleep(10);
-			openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			open = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
 	
@@ -358,9 +357,9 @@ void OnTimer()
 		spread = (tick.ask - tick.bid)*Decimals_C;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			open = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
 			Sleep(10);
-			openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			open = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
 	
@@ -369,9 +368,9 @@ void OnTimer()
 		spread = (tick.ask - tick.bid)*Decimals_D;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			open = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
 			Sleep(10);
-			openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			open = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
 	mntor = OrdersTotal();
