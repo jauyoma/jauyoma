@@ -14,12 +14,13 @@ extern int Decimals_C = 10000;
 extern string Symbol_D = "NZD";
 extern int Decimals_D = 10000;
 extern string ps8_ServerIP = "192.168.1.150";  // mine local IP
-extern int SymbTraded = 1;
+extern int Traded = 1;
 
 int i, j, s32_Error=1, s32_Port = 2000;
 uchar  uc_ServerIP[];
 int    ph_Client[1];
 int monitor = 0;
+int SymbTraded = Traded*2;
 
 bool b_ConnectTo = false, close, del, suspend = false;
 
@@ -33,7 +34,6 @@ double Price1A, Price2A, Price3A, Price4A;
 int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
 double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
 double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
-MqlTick tick;
 int Tick1 = 0, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 0, Tick2S = 0, Tick3S = 0, Tick4S = 0;   
 double pd_Value[1];
 
@@ -65,7 +65,7 @@ void OnInit()
          Print("Client now is ConnectTo the Server: ",ps8_ServerIP);
       }
    }
-   while(NewMktOrders() < (SymbTraded*2))
+   while(NewMktOrders() < (SymbTraded))
    {
       Print("Opening hedged orders : Please be patient..");
    }
@@ -93,7 +93,7 @@ void OnTimer()
 {
 //----   
  RefreshRates();
- if(monitor == (SymbTraded*2))
+ if(monitor == (SymbTraded))
  {
 
    if(read()>0)
@@ -101,185 +101,15 @@ void OnTimer()
    
      if(suspend == false)
      {
-      if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0 && suspend == false)
-	   {
-		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
-        	Print("Closed..",Symbol_A,"...Conditions met");
-        	Comment("");
-		   sym1 = 1;
-		   Tick1S = 0;
-		   suspend = true;
-      }
-      if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0 && suspend == false)
-	   {
-		   close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-        	Print("Closed..",Symbol_A,"...Conditions met");
-        	Comment("");
-		   sym1_A = 1;
-		   Tick1 = 0;
-		   suspend = true;
-      }      
-      if(sym2 == 0 && sym2_A == 0 && ((Bid_B - tick.ask)*Decimals_B) >= 4 && Tick2S != 0 && suspend == false)
-	   {
-		   close = OrderClose(Tick2S,Lot_B,Ask,1,Red);
-        	Print("Closed..",Symbol_B,"...Conditions met");
-        	Comment("");
-		   sym2 = 1;
-		   Tick2S = 0;
-		   suspend = true;
-      }     
-      if(sym2_A == 0 && sym2 == 0 && ((tick.bid - Ask_B)*Decimals_B) >= 4 && Tick2 != 0 && suspend == false)
-	   {
-		   close = OrderClose(Tick2,Lot_B,Bid,1,Red);
-        	Print("Closed..",Symbol_B,"...Conditions met");
-        	Comment("");
-		   sym2_A = 1;
-		   Tick2 = 0;
-		   suspend = true;
-      }
-    }
-    
-    if(suspend == true)
-    {
-     OpenOrders();
-     if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
-     {      
-	if(sym1 > 0)
-    	{
-		   if(tick.ask > Bid_A)
-		   {
-			   del = OrderDelete(Tick_1A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	open = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-				if(open > 0)
-				{
-	        	   		sym1 = 0;
-					suspend = false;
-				}
-			   }
-		   }
-
-		   if(suspend == true && ((tick.ask < Bid_A && typA == 0) || (Bid_A > Price1A)))
-		   {
-			   del = OrderDelete(Tick_1A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      open = OrderSend(Symbol_A,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick1S != 0)
-		   {
-		   	sym1 = 0;
-		   }
-	   }
-    
-    	if(sym1_A > 0)
-    	{      
-		   if(tick.bid < Ask_A)
-		   {
-			   del = OrderDelete(Tick1);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	open = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-				if(open > 0)
-				{		
-	        	   		sym1_A = 0;
-					suspend = false;
-				}
-			   }
-		   }
-
-		   if(suspend == true && ((tick.bid > Ask_A && typ1A == 0) || (Ask_A < Price1A)))
-		   {
-			   del = OrderDelete(Tick1);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      open = OrderSend(Symbol_A,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick1 != 0)
-		   {
-		   	sym1_A = 0;
-		   }
-	   }
-	
-    }
-    
-    if(SymbolInfoTick(Symbol_B,tick) && b_ConnectTo==true)
-    {      
-	if(sym2 > 0)
-    	{
-		   if(tick.ask > Bid_B)
-		   {
-			   del = OrderDelete(Tick_2A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	open = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-				if(open > 0)
-				{
-	        	   		sym2 = 0;
-					suspend = false;
-				}
-			   }
-		   }
-
-		   if(suspend == true && ((tick.ask < Bid_B && typ1A == 0) || (Bid_B > Price2A)))
-		   {
-			   del = OrderDelete(Tick_2A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      open = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick2S != 0)
-		   {
-		   	sym2 = 0;
-		   }
-	}
-    
-    	if(sym2_A > 0)
-    	{      
-		   if(tick.bid < Ask_B)
-		   {
-			   del = OrderDelete(Tick2);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	open = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-				if(open > 0)
-				{
-	        	   		sym2_A = 0;
-					suspend = false;
-				}
-			   }
-		   }
-
-		   if(suspend == true && ((tick.bid > Ask_B && typ2A == 0) || (Ask_B < Price2A)))
-		   {
-			   del = OrderDelete(Tick2);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      open = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick2 != 0)
-		   {
-		   	sym2 = 0;
-		   }
-	   }
-    
+      	CloseMktOrders();
      }
-     
-    }
-    send();
+    
+     if(suspend == true)
+     {
+     	OpenOrders();
+     	SendMktOrders();
+     }
+     send();
    }
 
  }
@@ -328,6 +158,7 @@ void OnTimer()
   int mntor = 0;
   double spread;
   RefreshRates();
+  MqlTick tick;
   if(OrdersTotal()<(SymbTraded*2) && b_ConnectTo==true)
   {
  	if(SymbolInfoTick(Symbol_A,tick))
@@ -486,4 +317,184 @@ void OnTimer()
             }   
         }   
     } 
+   }
+   
+   void SendMktOrders()
+   {
+   	MqlTick tick;
+	if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
+     	{      
+	if(sym1 > 0)
+    	{
+		   if(tick.ask > Bid_A)
+		   {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	open = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+				if(open > 0)
+				{
+	        	   		sym1 = 0;
+					suspend = false;
+				}
+			   }
+		   }
+
+		   if(suspend == true && ((tick.ask < Bid_A && typA == 0) || (Bid_A > Price1A)))
+		   {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      open = OrderSend(Symbol_A,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1S != 0)
+		   {
+		   	sym1 = 0;
+		   }
+	   }
+    
+    	if(sym1_A > 0)
+    	{      
+		   if(tick.bid < Ask_A)
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	open = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+				if(open > 0)
+				{		
+	        	   		sym1_A = 0;
+					suspend = false;
+				}
+			   }
+		   }
+
+		   if(suspend == true && ((tick.bid > Ask_A && typ1A == 0) || (Ask_A < Price1A)))
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      open = OrderSend(Symbol_A,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1 != 0)
+		   {
+		   	sym1_A = 0;
+		   }
+	   }
+	
+    }
+    
+    if(SymbolInfoTick(Symbol_B,tick) && b_ConnectTo==true)
+    {      
+	if(sym2 > 0)
+    	{
+		   if(tick.ask > Bid_B)
+		   {
+			   del = OrderDelete(Tick_2A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	open = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+				if(open > 0)
+				{
+	        	   		sym2 = 0;
+					suspend = false;
+				}
+			   }
+		   }
+
+		   if(suspend == true && ((tick.ask < Bid_B && typ1A == 0) || (Bid_B > Price2A)))
+		   {
+			   del = OrderDelete(Tick_2A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      open = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick2S != 0)
+		   {
+		   	sym2 = 0;
+		   }
+	}
+    
+    	if(sym2_A > 0)
+    	{      
+		   if(tick.bid < Ask_B)
+		   {
+			   del = OrderDelete(Tick2);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	open = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+				if(open > 0)
+				{
+	        	   		sym2_A = 0;
+					suspend = false;
+				}
+			   }
+		   }
+
+		   if(suspend == true && ((tick.bid > Ask_B && typ2A == 0) || (Ask_B < Price2A)))
+		   {
+			   del = OrderDelete(Tick2);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      open = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick2 != 0)
+		   {
+		   	sym2 = 0;
+		   }
+	   }
+    
+     }
+   }
+   
+   void CloseMktOrders()
+   {
+   	if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0 && suspend == false)
+	   {
+		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		   sym1 = 1;
+		   Tick1S = 0;
+		   suspend = true;
+      }
+      if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0 && suspend == false)
+	   {
+		   close = OrderClose(Tick1,Lot_A,Bid,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		   sym1_A = 1;
+		   Tick1 = 0;
+		   suspend = true;
+      }      
+      if(sym2 == 0 && sym2_A == 0 && ((Bid_B - tick.ask)*Decimals_B) >= 4 && Tick2S != 0 && suspend == false)
+	   {
+		   close = OrderClose(Tick2S,Lot_B,Ask,1,Red);
+        	Print("Closed..",Symbol_B,"...Conditions met");
+        	Comment("");
+		   sym2 = 1;
+		   Tick2S = 0;
+		   suspend = true;
+      }     
+      if(sym2_A == 0 && sym2 == 0 && ((tick.bid - Ask_B)*Decimals_B) >= 4 && Tick2 != 0 && suspend == false)
+	   {
+		   close = OrderClose(Tick2,Lot_B,Bid,1,Red);
+        	Print("Closed..",Symbol_B,"...Conditions met");
+        	Comment("");
+		   sym2_A = 1;
+		   Tick2 = 0;
+		   suspend = true;
+      }
    }
