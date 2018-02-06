@@ -1,19 +1,18 @@
 //+---------------------------------------------------------------------------+
 //|                                            EchoServer.cpp                 |
-//|                      Copyright © 2012, http://www.mql4.com/ru/users/more  |
+//|                      Copyright Â© 2012, http://www.mql4.com/ru/users/more  |
 //|                                       tradertobe@gmail.com                |
 //+---------------------------------------------------------------------------+
 
-#include <winsock2.h>
-#pragma comment(lib, "NetEventsProcDLL") // NetEventsProcDLL.lib placed in ...\FastStart\EchoServer\ 
-#include <iostream>
-#include <conio.h>
-#include  "C:\Users\User\Documents\forex\Trader\FastStart\EchoServer\cNetEventsProcDLL.h"
+#include <windows.h> 
+#include <stdio.h> 
+#include <tchar.h>
+#include <strsafe.h>
 
-BOOL FormatIP(DWORD u32_IP, char* s8_IP);
-DWORD u32_Count = 0;
-DWORD u32_Error;
-int ph_Client[15];
+#define BUFSIZE 512
+
+DWORD WINAPI InstanceThread(LPVOID); 
+VOID GetAnswerToRequest(LPTSTR, LPTSTR, LPDWORD);
 
 void OpenMT4Server()
 {
@@ -77,46 +76,57 @@ void CloseMT4Server()
 
 int main()
 {
-	double pd_Buf[16];
-	DWORD  u32_BufLen = 16;
-	int    ps32_ReadLen[2];
-	int send = 1;
+	BOOL   fConnected = FALSE; 
+   DWORD  dwThreadId = 0; 
+   HANDLE hPipe = INVALID_HANDLE_VALUE, hThread = NULL; 
+   LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\pipeMaster"); 
+   
+   for (;;) 
+   { 
+      _tprintf( TEXT("\nPipe Server: Main thread awaiting client connection on %s\n"), lpszPipename);
+      hPipe = CreateNamedPipe( 
+          lpszPipename,             // pipe name 
+          PIPE_ACCESS_DUPLEX,       // read/write access 
+          PIPE_TYPE_MESSAGE |       // message type pipe 
+          PIPE_READMODE_MESSAGE |   // message-read mode 
+          PIPE_WAIT,                // blocking mode 
+          PIPE_UNLIMITED_INSTANCES, // max. instances  
+          BUFSIZE,                  // output buffer size 
+          BUFSIZE,                  // input buffer size 
+          0,                        // client time-out 
+          NULL);                    // default security attribute 
 
-			for (DWORD i = 0; i<u32_Count; i++)
-			{
-				pd_Buf[0] = 0;
-				u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[i], pd_Buf, u32_BufLen, ps32_ReadLen);
+      if (hPipe == INVALID_HANDLE_VALUE) 
+      {
+          _tprintf(TEXT("CreateNamedPipe failed, GLE=%d.\n"), GetLastError()); 
+          return -1;
+      } 
+ 
+      fConnected = ConnectNamedPipe(hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED); 
+ 
+      if (fConnected) 
+      { 
+         printf("Client connected, creating a processing thread.\n"); 
 
-				if (!u32_Error)
-				{
-					if (pd_Buf[0] == 1.1)
-					{
-						pd_Buf[1] = Bid;
-						pd_Buf[2] = Ask;
+         hThread = CreateThread( 
+            NULL,              // no security attribute 
+            0,                 // default stack size 
+            InstanceThread,    // thread proc
+            (LPVOID) hPipe,    // thread parameter 
+            0,                 // not suspended 
+            &dwThreadId);      // returns thread ID 
 
-						u32_Error = cNetEventsProcDLL::SendToDouble(ph_Client[i], pd_Buf, ps32_ReadLen[0]);
-
-						if (u32_Error)
-						{
-							std::cout << "Failed to send; Get all connections..." << std::endl;
-							send = 0;
-						}
-						else
-						{
-							std::cout << "Sent To..." << ph_Client[i] << "...Ok" << std::endl;
-						}
-					}
-
-				}
-				else
-				{
-					std::cout << "Failed to read; Get all connections..." << std::endl;
-					send = 0;
-				}
-
-			}
-
-	return (0);
+         if (hThread == NULL) 
+         {
+            _tprintf(TEXT("CreateThread failed, GLE=%d.\n"), GetLastError()); 
+            return -1;
+         }
+         else CloseHandle(hThread); 
+       } 
+      else 
+      CloseHandle(hPipe); 
+   } 
+   return (0);
 }
 
 BOOL FormatIP(DWORD u32_IP, char* s8_IP)
