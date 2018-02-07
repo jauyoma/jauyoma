@@ -1,0 +1,69 @@
+#property strict
+//--- input parameters
+input string      ID="Client";
+
+int fHandle;
+string receive = "NOTHING YET!";
+
+void contact () {
+  
+   uint getOK = FileWriteString(fHandle,ID,StringLen(ID)+1);
+  
+   FileFlush(fHandle);
+   FileSeek(fHandle,0,SEEK_SET);
+  
+   if (getOK != 0) {
+      
+      int getsize = FileReadInteger(fHandle);
+      
+      //FileFlush(fHandle);
+      //FileSeek(fHandle,0,SEEK_SET);
+        
+      receive = FileReadString(fHandle,getsize);
+          
+      FileFlush(fHandle);
+      FileSeek(fHandle,0,SEEK_SET);
+      
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+//---
+   EventSetMillisecondTimer(1);
+   if (!IsDllsAllowed()) 
+   {
+      MessageBox("You need to turn on \'Allow DLL imports\'");
+   }
+   fHandle = FileOpen("\\\\.\\pipe\\MyMT4PipeServer",FILE_READ|FILE_WRITE|FILE_BIN);
+   if(fHandle != INVALID_HANDLE)
+   {
+   Comment("Handle Opened");
+   }
+   else
+   Comment("Failed!! Handle not opened");
+//---
+   return(0);
+}
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+//---
+   FileClose(fHandle);
+   EventKillTimer();
+}
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTimer()
+{
+//---
+   contact();
+   Print(receive);
+}
+//+------------------------------------------------------------------+
