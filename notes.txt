@@ -3,3 +3,5 @@ https://www.mql5.com/en/blogs/post/706665
 https://www.mql5.com/en/forum/160115/page3#comment_3817302
 https://www.mql5.com/en/forum/203049#comment_5232176
 http://expertadvisor-blog.com/mirror-ea/
+FileReadArray ;
+Print out status of writefile and readfile if successful on c++
