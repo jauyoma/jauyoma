@@ -4,52 +4,10 @@
 #include "SocketDemo.h"
 #include "SocketDemoDlg.h"
 
-void CSocketDemoDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CSocketDemoDlg)
-	DDX_Control(pDX, IDC_COMBO_DEMO_MODE, mi_ComboDemoMode);
-	DDX_Control(pDX, IDC_COMBO_BINDTO, mi_ComboBindTo);
-	DDX_Control(pDX, IDC_EDIT_OUTPUT, mi_Output);
-	DDX_Control(pDX, IDC_COMBO_SENDTO, mi_ComboSendTo);
-	DDX_Control(pDX, IDC_IPADDR, mi_IpAddr);
-	DDX_Text(pDX, IDC_EDIT_SEND, ms_Send);
-	DDX_Text(pDX, IDC_EDIT_PORT, ms32_Port);
-	//}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CSocketDemoDlg, CDialog)
-	//{{AFX_MSG_MAP(CSocketDemoDlg)
-	ON_BN_CLICKED(IDC_BTN_SEND, OnBtnSend)
-	ON_BN_CLICKED(IDC_BTN_LISTEN, OnBtnListen)
-	ON_BN_CLICKED(IDC_BTN_CONNECT, OnBtnConnect)
-	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_BTN_CLOSE, OnBtnClose)
-	ON_BN_CLICKED(IDC_BTN_CLEAR, OnBtnClear)
-	ON_WM_SHOWWINDOW()
-	ON_WM_TIMER()
-	ON_CBN_SELCHANGE(IDC_COMBO_DEMO_MODE, OnSelchangeComboDemoType)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-// Avoid that hitting Enter closes the window
-void CSocketDemoDlg::OnOK()
-{
-}
-
 // ----------------------------------------------------------
-
+Bool live = false;
 // Constructor
-CSocketDemoDlg::CSocketDemoDlg(CWnd* pParent)
-	: CDialog(CSocketDemoDlg::IDD, pParent),
-	  mi_SocketList(64)
-{
-	//{{AFX_DATA_INIT(CSocketDemoDlg)
-	
-	//}}AFX_DATA_INIT
-
-	
-}
+CSocketDemoDlg::InitializeCriticalSection(&mk_Critical);
 
 CSocketDemoDlg::~CSocketDemoDlg()
 {
@@ -62,7 +20,6 @@ BOOL CSocketDemoDlg::OnInitDialog()
 	ms32_Port = 2000;	
 
 	mb_DlgClosed    = FALSE;
-	mb_RefreshCombo = FALSE;
 	InitializeCriticalSection(&mk_Critical);
 
 	// Get all local IP addresses for each network adapter
@@ -452,16 +409,6 @@ BOOL CSocketDemoDlg::SendTo(SOCKET h_Socket, CString s_SendData)
 }
 
 
-// Allows to update the GUI from within an endless loop without needing an extra thread
-void CSocketDemoDlg::PumpMessages()
-{
-	MSG k_Msg;
-	while (PeekMessage(&k_Msg, NULL, NULL, NULL, PM_NOREMOVE))
-	{
-		PumpMessage();
-	}
-}
-
 // When the main dialog is closed: set the mb_DlgClosed flag to abort the ProcessEvents() Thread!
 void CSocketDemoDlg::OnClose()
 {
@@ -469,17 +416,15 @@ void CSocketDemoDlg::OnClose()
 	mi_Socket.Close();
 }
 
-// About the demo modes read the comment for eDemoMode!
-void CSocketDemoDlg::OnSelchangeComboDemoType() 
+int main()
 {
-	mi_Socket.Close();
-
-	if (me_DemoMode == E_TELNET)
-	{
-		UpdateData(TRUE);
-		ms32_Port = 23;
-		UpdateData(FALSE);
-	}
+   if(live == false)
+   {
+   	CSocketDemoDlg::OnInitDialog();
+	live = true;
+   }
+   CSocketDemoDlg::OnBtnSend();
+   return (0);
 }
 
 // ----------------------------------------------------------------
