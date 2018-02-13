@@ -26,7 +26,7 @@
 
 #include "Socket.h"
 
-class CSocketDemoDlg : public CDialog
+class CSocketDemoDlg
 {
 	// Study the different demo modes to see how to work with pi_RecvMem!
 	enum eDemoMode
@@ -46,11 +46,10 @@ class CSocketDemoDlg : public CDialog
 	};
 
 public:
-	 CSocketDemoDlg(CWnd* pParent = NULL);
 	~CSocketDemoDlg();
 	
 	CString	ms_Send;
-	int		ms32_Port;
+	int	ms32_Port; &ref
 
 
 protected:
