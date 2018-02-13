@@ -6,8 +6,6 @@
 
 // ----------------------------------------------------------
 Bool live = false;
-// Constructor
-CSocketDemoDlg::InitializeCriticalSection(&mk_Critical);
 
 CSocketDemoDlg::~CSocketDemoDlg()
 {
@@ -420,7 +418,9 @@ int main()
 {
    if(live == false)
    {
-   	CSocketDemoDlg::OnInitDialog();
+   	// Constructor
+	CSocketDemoDlg::InitializeCriticalSection(&mk_Critical);
+	CSocketDemoDlg::OnInitDialog();
 	live = true;
    }
    CSocketDemoDlg::OnBtnSend();
