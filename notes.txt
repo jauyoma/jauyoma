@@ -6,3 +6,4 @@ http://expertadvisor-blog.com/mirror-ea/
 FileReadArray ;
 Print out status of writefile and readfile if successful on c++
 https://docs.mql4.com/files/filereadstruct
+https://www.uwec.edu/help/acrobat9/for-fldoptions.htm
