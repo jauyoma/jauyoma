@@ -6,7 +6,7 @@
 
 // ----------------------------------------------------------
 Bool live = false;
-
+	
 CSocketDemoDlg::~CSocketDemoDlg()
 {
 	DeleteCriticalSection(&mk_Critical);
@@ -77,19 +77,17 @@ BOOL CSocketDemoDlg::OnInitDialog()
 
 	DWORD u32_Error = mi_Socket.Listen(u32_BindIP, ms32_Port, u32_EventTimeout, MAX_SERVER_IDLE_TIME);
 	
-	if (u32_Error) Print(_T("Listen Error %s"), GetErrMsg(u32_Err));
+	if (u32_Error) 
+	{
+		Print(_T("Listen Error %s"), GetErrMsg(u32_Err));
+		CloseSockets();
+		return;
+	}
 	else
 	{
 		Print(_T("Listening (%s) on Port %d.... (waiting for FD_ACCEPT)."), s_BindIP, ms32_Port);
-
 		if (MAX_SERVER_IDLE_TIME > 0)
 			Print(_T("Maximum idle time per client: %d seconds"), MAX_SERVER_IDLE_TIME);
-	}
-	
-	if (u32_Error) 
-	{
-		CloseSockets();
-		return;
 	}
 
 	// runs until an error occurred or all sockets have closed
@@ -328,24 +326,13 @@ void CSocketDemoDlg::OnBtnSend()
 		return;
 	}
 
-	int  s32_Sel = mi_ComboSendTo.GetCurSel();
-	// Get the socket handle which is stored invisibly in the Combobox
-	SOCKET h_Socket = (SOCKET)mi_ComboSendTo.GetItemData(s32_Sel);
+	for (DWORD i=0; i<mi_SocketList.GetCount(); i++)
+	{
+		h_Socket = mi_SocketList.GetKeyByIndex(i);
+		if (!SendTo(h_Socket, s_SendData))
+			break;
+	}
 
-	// Combobox index=0 on server -> Send to all connected Clients
-	if (h_Socket==0 && (mi_Socket.GetState() & TCP::cSocket::E_Server))
-	{
-		for (DWORD i=0; i<mi_SocketList.GetCount(); i++)
-		{
-			h_Socket = mi_SocketList.GetKeyByIndex(i);
-			if (!SendTo(h_Socket, s_SendData))
-				break;
-		}
-	}
-	else
-	{
-		SendTo(h_Socket, s_SendData);
-	}
 	tym = GetTickCount() - tym;
 	Print(_T("Speed is : %d milliseconds"), tym);
 }
@@ -416,14 +403,13 @@ void CSocketDemoDlg::OnClose()
 
 int main()
 {
+   CSocketDemoDlg map;
    if(live == false)
    {
-   	// Constructor
-	CSocketDemoDlg::InitializeCriticalSection(&mk_Critical);
-	CSocketDemoDlg::OnInitDialog();
+	map.OnInitDialog();
 	live = true;
    }
-   CSocketDemoDlg::OnBtnSend();
+   map.OnBtnSend();
    return (0);
 }
 
