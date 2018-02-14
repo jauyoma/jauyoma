@@ -33,12 +33,12 @@ class CSocketDemoDlg
 	{
 		// Receive data is printed immediately exactly as it comes from Winsock
 		E_NORMAL = 0,
-		
+
 		// Sends all data prefixed with a DWORD which contains the length of the entire datablock.
 		// Even if the data arrives in multiple parts the receiver knows in advance 
 		// how many data he has to read into pi_RecvMem
 		E_PREFIXED = 1,
-		
+
 		// Accumulate characters sent from a Telnet client (Port 23)
 		// and print them as entire lines rather than single characters.
 		// You can send linefeeds from SocketDemo if you enter "Hello\nWorld\n"
@@ -48,8 +48,8 @@ class CSocketDemoDlg
 public:
 	~CSocketDemoDlg();
 	CString	ms_Send;
-	int	ms32_Port; 
-	
+	int	ms32_Port;
+
 	friend void OnBtnSend();
 	friend void OnBtnListen();
 	friend void OnBtnConnect();
@@ -62,7 +62,7 @@ public:
 protected:
 	void    PumpMessages();
 	CString GetErrMsg(DWORD u32_Error);
-	CString FormatIP (DWORD u32_IP);
+	CString FormatIP(DWORD u32_IP);
 	void    ProcessEvents();
 	void    Print(CString s_Format, ...);
 	CString CopyToString(char* s8_Buf, DWORD u32_Bytes);
@@ -77,15 +77,14 @@ protected:
 
 	TCP::cSocket      mi_Socket;
 	BOOL              mb_RefreshCombo;
-	BOOL    	  mb_DlgClosed;
+	BOOL    		  mb_DlgClosed;
 	CString           ms_Output;
 	CRITICAL_SECTION  mk_Critical;
 	HANDLE            mh_Thread;
 	eDemoMode         me_DemoMode;
 
 	TCP::cSocket::cHash<DWORD, DWORD> mi_LocalIPs;
-	TCP::cSocket::cHash<SOCKET,DWORD> mi_SocketList;
+	TCP::cSocket::cHash<SOCKET, DWORD> mi_SocketList;
 };
 
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
