@@ -47,10 +47,17 @@ class CSocketDemoDlg
 
 public:
 	~CSocketDemoDlg();
-	
 	CString	ms_Send;
-	int	ms32_Port; &ref
-
+	int	ms32_Port; 
+	
+	friend void OnBtnSend();
+	friend void OnBtnListen();
+	friend void OnBtnConnect();
+	friend void OnClose();
+	friend void OnBtnClose();
+	friend virtual BOOL OnInitDialog();
+	friend virtual void OnOK();
+	friend void OnBtnClear();
 
 protected:
 	void    PumpMessages();
@@ -68,18 +75,9 @@ protected:
 
 	static ULONG WINAPI ProcessEventThread(void* p_Param);
 
-	void OnBtnSend();
-	void OnBtnListen();
-	void OnBtnConnect();
-	void OnClose();
-	void OnBtnClose();
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
-	void OnBtnClear();
-
 	TCP::cSocket      mi_Socket;
-	BOOL              mb_DlgClosed;
 	BOOL              mb_RefreshCombo;
+	BOOL    	  mb_DlgClosed;
 	CString           ms_Output;
 	CRITICAL_SECTION  mk_Critical;
 	HANDLE            mh_Thread;
