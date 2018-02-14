@@ -5,98 +5,99 @@
 #include "SocketDemoDlg.h"
 
 // ----------------------------------------------------------
-Bool live = false;
-	
+BOOL live = false;
+CSocketDemoDlg map;
+
 CSocketDemoDlg::~CSocketDemoDlg()
 {
 	DeleteCriticalSection(&mk_Critical);
 }
 
-BOOL CSocketDemoDlg::OnInitDialog() 
-{
-	ms_Send = _T("Hello World");
-	ms32_Port = 2000;	
+BOOL OnInitDialog()
+{	
+	map.ms_Send = _T("Hello World");
+	map.ms32_Port = 2000;
 
-	mb_DlgClosed    = FALSE;
-	InitializeCriticalSection(&mk_Critical);
+	map.mb_DlgClosed = FALSE;
+	InitializeCriticalSection(&map.mk_Critical);
 
 	// Get all local IP addresses for each network adapter
-	DWORD u32_Err = mi_Socket.GetLocalIPs(&mi_LocalIPs);
+	DWORD u32_Err = map.mi_Socket.GetLocalIPs(&map.mi_LocalIPs);
 	if (u32_Err)
 		Print(_T("Error retrieving Local IP: %s"), GetErrMsg(u32_Err));
 
 	CString s_Text;
-	#if _UNICODE
-		s_Text = _T("Compiled as UNICODE,");
-	#else
-		s_Text = _T("Compiled as MBCS,");
-	#endif
+#if _UNICODE
+	s_Text = _T("Compiled as UNICODE,");
+#else
+	s_Text = _T("Compiled as MBCS,");
+#endif
 
-	#if _DEBUG
-		s_Text += _T(" DEBUG,");
-	#else
-		s_Text += _T(" RELEASE,");
-	#endif
+#if _DEBUG
+	s_Text += _T(" DEBUG,");
+#else
+	s_Text += _T(" RELEASE,");
+#endif
 
-	#if PROCESS_EVENTS_IN_GUI_THREAD
-		s_Text += _T(" SingleThreaded,");
-	#else
-		s_Text += _T(" MultiThreaded,");
-	#endif
+#if PROCESS_EVENTS_IN_GUI_THREAD
+	s_Text += _T(" SingleThreaded,");
+#else
+	s_Text += _T(" MultiThreaded,");
+#endif
 
 	s_Text += _T(" Local IP = ");
 
 
-	for (DWORD i=0; i<mi_LocalIPs.GetCount(); i++)
+	for (DWORD i = 0; i<map.mi_LocalIPs.GetCount(); i++)
 	{
-		CString s_IP = FormatIP(mi_LocalIPs.GetValueByIndex(i));
-		
+		CString s_IP = FormatIP(map.mi_LocalIPs.GetValueByIndex(i));
+
 		if (i>0) s_Text += _T(" + ");
 		s_Text += s_IP;
 	}
 
-	me_DemoMode = E_NORMAL;
+	map.me_DemoMode = map.E_NORMAL;
 
 	Print(s_Text);
-	
 
-	if (mi_Socket.GetSocketCount())
+
+	if (map.mi_Socket.GetSocketCount())
 	{
 		Print(_T("Socket already in use!"));
 		return;
 	}
 
 	DWORD u32_BindIP = 0;
-	int s32_Sel = mi_LocalIPs.GetCount();
+	int s32_Sel = map.mi_LocalIPs.GetCount();
 	if (s32_Sel > 0)
-		u32_BindIP = mi_LocalIPs.GetValueByIndex(s32_Sel -1);
+		u32_BindIP = map.mi_LocalIPs.GetValueByIndex(s32_Sel - 1);
 
 	CString s_BindIP;
 
 	DWORD u32_EventTimeout = (PROCESS_EVENTS_IN_GUI_THREAD) ? 50 : INFINITE;
 
-	DWORD u32_Error = mi_Socket.Listen(u32_BindIP, ms32_Port, u32_EventTimeout, MAX_SERVER_IDLE_TIME);
-	
-	if (u32_Error) 
+	DWORD u32_Error = map.mi_Socket.Listen(u32_BindIP, map.ms32_Port, u32_EventTimeout, MAX_SERVER_IDLE_TIME);
+
+	if (u32_Error)
 	{
 		Print(_T("Listen Error %s"), GetErrMsg(u32_Err));
-		CloseSockets();
+		map.CloseSockets();
 		return;
 	}
 	else
 	{
-		Print(_T("Listening (%s) on Port %d.... (waiting for FD_ACCEPT)."), s_BindIP, ms32_Port);
+		Print(_T("Listening (%s) on Port %d.... (waiting for FD_ACCEPT)."), s_BindIP, map.ms32_Port);
 		if (MAX_SERVER_IDLE_TIME > 0)
 			Print(_T("Maximum idle time per client: %d seconds"), MAX_SERVER_IDLE_TIME);
 	}
 
 	// runs until an error occurred or all sockets have closed
-	#if PROCESS_EVENTS_IN_GUI_THREAD
-		ProcessEvents();
-	#else
-		DWORD u32_ID;
-		mh_Thread = CreateThread(0, 0, ProcessEventThread, this, 0, &u32_ID);
-	#endif
+#if PROCESS_EVENTS_IN_GUI_THREAD
+	ProcessEvents();
+#else
+	DWORD u32_ID;
+	map.mh_Thread = CreateThread(0, 0, map.ProcessEventThread, this, 0, &u32_ID);
+#endif
 
 	return TRUE;
 }
@@ -118,19 +119,19 @@ void CSocketDemoDlg::ProcessEvents()
 
 	while (TRUE) // Loop runs until the main window was closed or a severe error occurred
 	{
-		#if PROCESS_EVENTS_IN_GUI_THREAD
-			PumpMessages();
-		#endif
+#if PROCESS_EVENTS_IN_GUI_THREAD
+		PumpMessages();
+#endif
 
 		TCP::cSocket::cMemory* pi_RecvMem;
 		SOCKET  h_Socket;
 		DWORD u32_Event, u32_IP, u32_Read, u32_Sent;
-		DWORD u32_Err = mi_Socket.ProcessEvents(&u32_Event, &u32_IP, &h_Socket, &pi_RecvMem, &u32_Read,  &u32_Sent);
-		
+		DWORD u32_Err = mi_Socket.ProcessEvents(&u32_Event, &u32_IP, &h_Socket, &pi_RecvMem, &u32_Read, &u32_Sent);
+
 		// Main Dialog was closed -> !Immediately! stop all output and printing into GUI.
 		// Otherwise the application will not shut down correctly and the EXE keeps running. (only visible in Task Manager)
 		// There may appear a lot of other strange things when the Events thread still runs while the GUI thread already finished!
-		if (mb_DlgClosed) 
+		if (mb_DlgClosed)
 			return;  // return NOT break!
 
 		if (u32_Err == ERROR_TIMEOUT) // 50 ms interval has elapsed
@@ -145,9 +146,9 @@ void CSocketDemoDlg::ProcessEvents()
 			char s8_Events[200];
 			mi_Socket.FormatEvents(u32_Event, s8_Events);
 			s_Events += s8_Events;
-		
+
 			if (u32_Event & FD_READ)  s_Msg.Format(_T(" %d Bytes received."), u32_Read);
-			if (u32_Event & FD_WRITE) s_Msg.Format(_T(" %d Bytes sent"),      u32_Sent);
+			if (u32_Event & FD_WRITE) s_Msg.Format(_T(" %d Bytes sent"), u32_Sent);
 
 			Print(s_Events + s_Msg);
 
@@ -155,9 +156,9 @@ void CSocketDemoDlg::ProcessEvents()
 			{
 				switch (me_DemoMode)
 				{
-					case E_NORMAL:   ProcessReceivedDataNormal(pi_RecvMem); break;
-					case E_PREFIXED: ProcessReceivedDataPrefix(pi_RecvMem); break;
-					case E_TELNET:   ProcessReceivedDataTelnet(pi_RecvMem); break;
+				case E_NORMAL:   ProcessReceivedDataNormal(pi_RecvMem); break;
+				case E_PREFIXED: ProcessReceivedDataPrefix(pi_RecvMem); break;
+				case E_TELNET:   ProcessReceivedDataTelnet(pi_RecvMem); break;
 				}
 			}
 		}
@@ -171,7 +172,7 @@ void CSocketDemoDlg::ProcessEvents()
 
 			// Print all the other error messages
 			Print(_T("ProcessEvent Error %s"), GetErrMsg(u32_Err));
-			
+
 			// An error normally means that the socket has a problem -> abort the loop.
 			// A few errors should not abort the processing:
 			if (u32_Err != WSAECONNABORTED && // e.g. after the other side was killed in TaskManager 
@@ -229,7 +230,7 @@ void CSocketDemoDlg::ProcessReceivedDataPrefix(TCP::cSocket::cMemory* pi_RecvMem
 			return; // The block is not yet complete -> accumulate more data in pi_RecvMem
 		}
 
-		CString s_String = CopyToString(s8_Buf+4, u32_Blocksize-4);
+		CString s_String = CopyToString(s8_Buf + 4, u32_Blocksize - 4);
 		Print(_T("Received entire datablock (%d Bytes): '%s'"), u32_Blocksize, s_String);
 
 		// Only delete the data that has been processed and leave the rest.
@@ -244,13 +245,13 @@ void CSocketDemoDlg::ProcessReceivedDataPrefix(TCP::cSocket::cMemory* pi_RecvMem
 // When a line is complete it is printed to the screen and deleted from pi_RecvMem.
 void CSocketDemoDlg::ProcessReceivedDataTelnet(TCP::cSocket::cMemory* pi_RecvMem)
 {
-	#if _UNICODE
-		Print(_T("Telnet does not use Unicode. Please compile the Telnet demo as MBCS!"));
-		return;
-	#endif;
+#if _UNICODE
+	Print(_T("Telnet does not use Unicode. Please compile the Telnet demo as MBCS!"));
+	return;
+#endif;
 
 	// If you send "Hello\nWorld\n" from SocketDemo instead of using a real Telnet client this requires a loop
-	while (TRUE) 
+	while (TRUE)
 	{
 		char*  s8_Buf = pi_RecvMem->GetBuffer();
 		DWORD u32_Len = pi_RecvMem->GetLength();
@@ -264,14 +265,14 @@ void CSocketDemoDlg::ProcessReceivedDataTelnet(TCP::cSocket::cMemory* pi_RecvMem
 		}
 
 		s_String = s_String.Left(s32_Pos);
-		s_String.Replace(_T("\r"),_T(""));
+		s_String.Replace(_T("\r"), _T(""));
 
 		// Print all characters up to the "\n"
 		Print(_T("Received entire line: '%s'"), s_String);
 
 		// Delete all characters including the "\n" itself from the receive memory
 		// but leave all characters in RecvMem which follow the "\n"
-		pi_RecvMem->DeleteLeft(s32_Pos+1);
+		pi_RecvMem->DeleteLeft(s32_Pos + 1);
 	};
 }
 
@@ -280,16 +281,16 @@ void CSocketDemoDlg::ProcessReceivedDataTelnet(TCP::cSocket::cMemory* pi_RecvMem
 // ##################################################################################################
 
 // Close all open sockets
-void CSocketDemoDlg::OnBtnClose() 
+void OnBtnClose()
 {
-	if (!mi_Socket.GetSocketCount())
+	if (!map.mi_Socket.GetSocketCount())
 		Print(_T("No Socket open!"));
 	else
-		CloseSockets();
+		map.CloseSockets();
 }
 
 // Close all open sockets (if any)
-void CSocketDemoDlg::CloseSockets() 
+void CSocketDemoDlg::CloseSockets()
 {
 	if (mi_Socket.GetSocketCount())
 	{
@@ -300,25 +301,25 @@ void CSocketDemoDlg::CloseSockets()
 }
 
 // Send a text string to one or multiple destinations
-void CSocketDemoDlg::OnBtnSend() 
+void OnBtnSend()
 {
 	DWORD tym = GetTickCount();
 
-	if (!mi_Socket.GetSocketCount())
+	if (!map.mi_Socket.GetSocketCount())
 	{
 		Print(_T("Not connected!"));
 		return;
 	}
 
-	#if SEND_LARGE_DATA > 0
-		// SEND_LARGE_DATA = 100000 -> send a 100 Kilobyte string "AAAAAAAA...", each time with another character
-		static TCHAR t_Chr = 'A';
-		CString s_SendData(t_Chr++, SEND_LARGE_DATA/sizeof(TCHAR));
-		if (t_Chr > 'Z') t_Chr = 'A';
-	#else
-		// send the string that the user has entered
-		CString s_SendData = ms_Send;
-	#endif
+#if SEND_LARGE_DATA > 0
+	// SEND_LARGE_DATA = 100000 -> send a 100 Kilobyte string "AAAAAAAA...", each time with another character
+	static TCHAR t_Chr = 'A';
+	CString s_SendData(t_Chr++, SEND_LARGE_DATA / sizeof(TCHAR));
+	if (t_Chr > 'Z') t_Chr = 'A';
+#else
+	// send the string that the user has entered
+	CString s_SendData = map.ms_Send;
+#endif
 
 	if (!s_SendData.GetLength())
 	{
@@ -326,10 +327,10 @@ void CSocketDemoDlg::OnBtnSend()
 		return;
 	}
 
-	for (DWORD i=0; i<mi_SocketList.GetCount(); i++)
+	for (DWORD i = 0; i<map.mi_SocketList.GetCount(); i++)
 	{
-		h_Socket = mi_SocketList.GetKeyByIndex(i);
-		if (!SendTo(h_Socket, s_SendData))
+		SOCKET h_Socket = map.mi_SocketList.GetKeyByIndex(i);
+		if (!map.SendTo(h_Socket, s_SendData))
 			break;
 	}
 
@@ -340,7 +341,7 @@ void CSocketDemoDlg::OnBtnSend()
 // Sends data to the given socket
 // A "\r\n" in the input string is replaced with a linebreak
 // returns FALSE when the sockets have been closed due to a severe error
-BOOL CSocketDemoDlg::SendTo(SOCKET h_Socket, CString s_SendData) 
+BOOL CSocketDemoDlg::SendTo(SOCKET h_Socket, CString s_SendData)
 {
 	CString s_Text = s_SendData;
 	if (s_Text.GetLength() > 50)
@@ -389,28 +390,27 @@ BOOL CSocketDemoDlg::SendTo(SOCKET h_Socket, CString s_SendData)
 		Print(_T("%s"), _T(" -> Error ") + GetErrMsg(u32_Err));
 		// Severe error -> abort event loop
 		CloseSockets();
-		return FALSE; 
+		return FALSE;
 	};
 }
 
 
 // When the main dialog is closed: set the mb_DlgClosed flag to abort the ProcessEvents() Thread!
-void CSocketDemoDlg::OnClose()
+void OnClose()
 {
-	mb_DlgClosed = TRUE;
-	mi_Socket.Close();
+	map.mb_DlgClosed = TRUE;
+	map.mi_Socket.Close();
 }
 
 int main()
 {
-   CSocketDemoDlg map;
-   if(live == false)
-   {
-	map.OnInitDialog();
-	live = true;
-   }
-   map.OnBtnSend();
-   return (0);
+	if (live == false)
+	{
+		OnInitDialog();
+		live = true;
+	}
+	OnBtnSend();
+	return (0);
 }
 
 // ----------------------------------------------------------------
@@ -426,15 +426,15 @@ void CSocketDemoDlg::Print(CString s_Format, ...)
 	int BUFLEN = 50000;
 
 	CString s_Out;
-	TCHAR*  t_Out = s_Out.GetBuffer(BUFLEN+1);
+	TCHAR*  t_Out = s_Out.GetBuffer(BUFLEN + 1);
 
 	_vsntprintf(t_Out, BUFLEN, s_Format, args);
 
 	// If the new line should be longer than BUFLEN it is cropped.
 	t_Out[BUFLEN] = 0;
 	s_Out.ReleaseBuffer();
-	
-	if (s_Out.GetLength() == BUFLEN) 
+
+	if (s_Out.GetLength() == BUFLEN)
 		s_Out += _T("...<cut>");
 
 	// The edit box does not display a single "\n" correctly. It requires always "\r\n"
@@ -454,9 +454,9 @@ void CSocketDemoDlg::Print(CString s_Format, ...)
 CString CSocketDemoDlg::CopyToString(char* s8_Buf, DWORD u32_Bytes)
 {
 	DWORD u32_StrLen = u32_Bytes / sizeof(TCHAR);
-	
+
 	CString s_String;
-	char*  s8_String = (char*)s_String.GetBuffer(u32_StrLen+1);
+	char*  s8_String = (char*)s_String.GetBuffer(u32_StrLen + 1);
 	memcpy(s8_String, s8_Buf, u32_Bytes);
 	s_String.ReleaseBuffer(u32_StrLen);
 
@@ -469,7 +469,7 @@ CString CSocketDemoDlg::FormatDisplayName(SOCKET h_Socket)
 {
 	CString s_IP = FormatIP(mi_SocketList.GetValueByKey(h_Socket));
 	CString s_Disp;
-	if (mi_Socket.GetState() & TCP::cSocket::E_Server) 
+	if (mi_Socket.GetState() & TCP::cSocket::E_Server)
 		s_Disp.Format(_T("Client %X (%s)"), h_Socket, s_IP);
 	else
 		s_Disp.Format(_T("Server (%s)"), s_IP);
@@ -483,7 +483,7 @@ CString CSocketDemoDlg::FormatIP(DWORD u32_IP)
 	BYTE* pu8_Addr = (BYTE*)&u32_IP;
 
 	CString s_IP;
-	s_IP.Format(_T("%d.%d.%d.%d"), pu8_Addr[0],pu8_Addr[1],pu8_Addr[2],pu8_Addr[3]);
+	s_IP.Format(_T("%d.%d.%d.%d"), pu8_Addr[0], pu8_Addr[1], pu8_Addr[2], pu8_Addr[3]);
 	return s_IP;
 }
 
@@ -494,78 +494,78 @@ CString CSocketDemoDlg::GetErrMsg(DWORD u32_Error)
 	CString s_Code;
 	switch (u32_Error)
 	{
-		case WSAEINTR:                s_Code = _T("WSAEINTR"); break;
-		case WSAEBADF:                s_Code = _T("WSAEBADF"); break;
-		case WSAEACCES:               s_Code = _T("WSAEACCES"); break;
-		case WSAEFAULT:               s_Code = _T("WSAEFAULT"); break;
-		case WSAEINVAL:               s_Code = _T("WSAEINVAL"); break;
-		case WSAEMFILE:               s_Code = _T("WSAEMFILE"); break;
-		case WSAEWOULDBLOCK:          s_Code = _T("WSAEWOULDBLOCK"); break;
-		case WSAEINPROGRESS:          s_Code = _T("WSAEINPROGRESS"); break;
-		case WSAEALREADY:             s_Code = _T("WSAEALREADY"); break;
-		case WSAENOTSOCK:             s_Code = _T("WSAENOTSOCK"); break;
-		case WSAEDESTADDRREQ:         s_Code = _T("WSAEDESTADDRREQ"); break;
-		case WSAEMSGSIZE:             s_Code = _T("WSAEMSGSIZE"); break;
-		case WSAEPROTOTYPE:           s_Code = _T("WSAEPROTOTYPE"); break;
-		case WSAENOPROTOOPT:          s_Code = _T("WSAENOPROTOOPT"); break;
-		case WSAEPROTONOSUPPORT:      s_Code = _T("WSAEPROTONOSUPPORT"); break;
-		case WSAESOCKTNOSUPPORT:      s_Code = _T("WSAESOCKTNOSUPPORT"); break;
-		case WSAEOPNOTSUPP:           s_Code = _T("WSAEOPNOTSUPP"); break;
-		case WSAEPFNOSUPPORT:         s_Code = _T("WSAEPFNOSUPPORT"); break;
-		case WSAEAFNOSUPPORT:         s_Code = _T("WSAEAFNOSUPPORT"); break;
-		case WSAEADDRINUSE:           s_Code = _T("WSAEADDRINUSE"); break;
-		case WSAEADDRNOTAVAIL:        s_Code = _T("WSAEADDRNOTAVAIL"); break;
-		case WSAENETDOWN:             s_Code = _T("WSAENETDOWN"); break;
-		case WSAENETUNREACH:          s_Code = _T("WSAENETUNREACH"); break;
-		case WSAENETRESET:            s_Code = _T("WSAENETRESET"); break;
-		case WSAECONNABORTED:         s_Code = _T("WSAECONNABORTED"); break;
-		case WSAECONNRESET:           s_Code = _T("WSAECONNRESET"); break;
-		case WSAENOBUFS:              s_Code = _T("WSAENOBUFS"); break;
-		case WSAEISCONN:              s_Code = _T("WSAEISCONN"); break;
-		case WSAENOTCONN:             s_Code = _T("WSAENOTCONN"); break;
-		case WSAESHUTDOWN:            s_Code = _T("WSAESHUTDOWN"); break;
-		case WSAETOOMANYREFS:         s_Code = _T("WSAETOOMANYREFS"); break;
-		case WSAETIMEDOUT:            s_Code = _T("WSAETIMEDOUT"); break;
-		case WSAECONNREFUSED:         s_Code = _T("WSAECONNREFUSED"); break;
-		case WSAELOOP:                s_Code = _T("WSAELOOP"); break;
-		case WSAENAMETOOLONG:         s_Code = _T("WSAENAMETOOLONG"); break;
-		case WSAEHOSTDOWN:            s_Code = _T("WSAEHOSTDOWN"); break;
-		case WSAEHOSTUNREACH:         s_Code = _T("WSAEHOSTUNREACH"); break;
-		case WSAENOTEMPTY:            s_Code = _T("WSAENOTEMPTY"); break;
-		case WSAEPROCLIM:             s_Code = _T("WSAEPROCLIM"); break;
-		case WSAEUSERS:               s_Code = _T("WSAEUSERS"); break;
-		case WSAEDQUOT:               s_Code = _T("WSAEDQUOT"); break;
-		case WSAESTALE:               s_Code = _T("WSAESTALE"); break;
-		case WSAEREMOTE:              s_Code = _T("WSAEREMOTE"); break;
-		case WSASYSNOTREADY:          s_Code = _T("WSASYSNOTREADY"); break;
-		case WSAVERNOTSUPPORTED:      s_Code = _T("WSAVERNOTSUPPORTED"); break;
-		case WSANOTINITIALISED:       s_Code = _T("WSANOTINITIALISED"); break;
-		case WSAEDISCON:              s_Code = _T("WSAEDISCON"); break;
-		case WSAENOMORE:              s_Code = _T("WSAENOMORE"); break;
-		case WSAECANCELLED:           s_Code = _T("WSAECANCELLED"); break;
-		case WSAEINVALIDPROCTABLE:    s_Code = _T("WSAEINVALIDPROCTABLE"); break;
-		case WSAEINVALIDPROVIDER:     s_Code = _T("WSAEINVALIDPROVIDER"); break;
-		case WSAEPROVIDERFAILEDINIT:  s_Code = _T("WSAEPROVIDERFAILEDINIT"); break;
-		case WSASYSCALLFAILURE:       s_Code = _T("WSASYSCALLFAILURE"); break;
-		case WSASERVICE_NOT_FOUND:    s_Code = _T("WSASERVICE_NOT_FOUND"); break;
-		case WSATYPE_NOT_FOUND:       s_Code = _T("WSATYPE_NOT_FOUND"); break;
-		case WSA_E_NO_MORE:           s_Code = _T("WSA_E_NO_MORE"); break;
-		case WSA_E_CANCELLED:         s_Code = _T("WSA_E_CANCELLED"); break;
-		case WSAEREFUSED:             s_Code = _T("WSAEREFUSED"); break;
-		case WSAHOST_NOT_FOUND:       s_Code = _T("WSAHOST_NOT_FOUND"); break;
-		case WSATRY_AGAIN:            s_Code = _T("WSATRY_AGAIN"); break;
-		case WSANO_RECOVERY:          s_Code = _T("WSANO_RECOVERY"); break;
-		case WSANO_DATA:              s_Code = _T("WSANO_DATA"); break;
-		case WSA_IO_PENDING:          s_Code = _T("WSA_IO_PENDING"); break;
-		case WSA_IO_INCOMPLETE:       s_Code = _T("WSA_IO_INCOMPLETE"); break;
-		case WSA_INVALID_HANDLE:      s_Code = _T("WSA_INVALID_HANDLE"); break;
-		case WSA_INVALID_PARAMETER:   s_Code = _T("WSA_INVALID_PARAMETER"); break;
-		case WSA_NOT_ENOUGH_MEMORY:   s_Code = _T("WSA_NOT_ENOUGH_MEMORY"); break;
-		case WSA_OPERATION_ABORTED:   s_Code = _T("WSA_OPERATION_ABORTED"); break;
-		
-		default:
-			s_Code.Format(_T("Code %u"), u32_Error); 
-			break;
+	case WSAEINTR:                s_Code = _T("WSAEINTR"); break;
+	case WSAEBADF:                s_Code = _T("WSAEBADF"); break;
+	case WSAEACCES:               s_Code = _T("WSAEACCES"); break;
+	case WSAEFAULT:               s_Code = _T("WSAEFAULT"); break;
+	case WSAEINVAL:               s_Code = _T("WSAEINVAL"); break;
+	case WSAEMFILE:               s_Code = _T("WSAEMFILE"); break;
+	case WSAEWOULDBLOCK:          s_Code = _T("WSAEWOULDBLOCK"); break;
+	case WSAEINPROGRESS:          s_Code = _T("WSAEINPROGRESS"); break;
+	case WSAEALREADY:             s_Code = _T("WSAEALREADY"); break;
+	case WSAENOTSOCK:             s_Code = _T("WSAENOTSOCK"); break;
+	case WSAEDESTADDRREQ:         s_Code = _T("WSAEDESTADDRREQ"); break;
+	case WSAEMSGSIZE:             s_Code = _T("WSAEMSGSIZE"); break;
+	case WSAEPROTOTYPE:           s_Code = _T("WSAEPROTOTYPE"); break;
+	case WSAENOPROTOOPT:          s_Code = _T("WSAENOPROTOOPT"); break;
+	case WSAEPROTONOSUPPORT:      s_Code = _T("WSAEPROTONOSUPPORT"); break;
+	case WSAESOCKTNOSUPPORT:      s_Code = _T("WSAESOCKTNOSUPPORT"); break;
+	case WSAEOPNOTSUPP:           s_Code = _T("WSAEOPNOTSUPP"); break;
+	case WSAEPFNOSUPPORT:         s_Code = _T("WSAEPFNOSUPPORT"); break;
+	case WSAEAFNOSUPPORT:         s_Code = _T("WSAEAFNOSUPPORT"); break;
+	case WSAEADDRINUSE:           s_Code = _T("WSAEADDRINUSE"); break;
+	case WSAEADDRNOTAVAIL:        s_Code = _T("WSAEADDRNOTAVAIL"); break;
+	case WSAENETDOWN:             s_Code = _T("WSAENETDOWN"); break;
+	case WSAENETUNREACH:          s_Code = _T("WSAENETUNREACH"); break;
+	case WSAENETRESET:            s_Code = _T("WSAENETRESET"); break;
+	case WSAECONNABORTED:         s_Code = _T("WSAECONNABORTED"); break;
+	case WSAECONNRESET:           s_Code = _T("WSAECONNRESET"); break;
+	case WSAENOBUFS:              s_Code = _T("WSAENOBUFS"); break;
+	case WSAEISCONN:              s_Code = _T("WSAEISCONN"); break;
+	case WSAENOTCONN:             s_Code = _T("WSAENOTCONN"); break;
+	case WSAESHUTDOWN:            s_Code = _T("WSAESHUTDOWN"); break;
+	case WSAETOOMANYREFS:         s_Code = _T("WSAETOOMANYREFS"); break;
+	case WSAETIMEDOUT:            s_Code = _T("WSAETIMEDOUT"); break;
+	case WSAECONNREFUSED:         s_Code = _T("WSAECONNREFUSED"); break;
+	case WSAELOOP:                s_Code = _T("WSAELOOP"); break;
+	case WSAENAMETOOLONG:         s_Code = _T("WSAENAMETOOLONG"); break;
+	case WSAEHOSTDOWN:            s_Code = _T("WSAEHOSTDOWN"); break;
+	case WSAEHOSTUNREACH:         s_Code = _T("WSAEHOSTUNREACH"); break;
+	case WSAENOTEMPTY:            s_Code = _T("WSAENOTEMPTY"); break;
+	case WSAEPROCLIM:             s_Code = _T("WSAEPROCLIM"); break;
+	case WSAEUSERS:               s_Code = _T("WSAEUSERS"); break;
+	case WSAEDQUOT:               s_Code = _T("WSAEDQUOT"); break;
+	case WSAESTALE:               s_Code = _T("WSAESTALE"); break;
+	case WSAEREMOTE:              s_Code = _T("WSAEREMOTE"); break;
+	case WSASYSNOTREADY:          s_Code = _T("WSASYSNOTREADY"); break;
+	case WSAVERNOTSUPPORTED:      s_Code = _T("WSAVERNOTSUPPORTED"); break;
+	case WSANOTINITIALISED:       s_Code = _T("WSANOTINITIALISED"); break;
+	case WSAEDISCON:              s_Code = _T("WSAEDISCON"); break;
+	case WSAENOMORE:              s_Code = _T("WSAENOMORE"); break;
+	case WSAECANCELLED:           s_Code = _T("WSAECANCELLED"); break;
+	case WSAEINVALIDPROCTABLE:    s_Code = _T("WSAEINVALIDPROCTABLE"); break;
+	case WSAEINVALIDPROVIDER:     s_Code = _T("WSAEINVALIDPROVIDER"); break;
+	case WSAEPROVIDERFAILEDINIT:  s_Code = _T("WSAEPROVIDERFAILEDINIT"); break;
+	case WSASYSCALLFAILURE:       s_Code = _T("WSASYSCALLFAILURE"); break;
+	case WSASERVICE_NOT_FOUND:    s_Code = _T("WSASERVICE_NOT_FOUND"); break;
+	case WSATYPE_NOT_FOUND:       s_Code = _T("WSATYPE_NOT_FOUND"); break;
+	case WSA_E_NO_MORE:           s_Code = _T("WSA_E_NO_MORE"); break;
+	case WSA_E_CANCELLED:         s_Code = _T("WSA_E_CANCELLED"); break;
+	case WSAEREFUSED:             s_Code = _T("WSAEREFUSED"); break;
+	case WSAHOST_NOT_FOUND:       s_Code = _T("WSAHOST_NOT_FOUND"); break;
+	case WSATRY_AGAIN:            s_Code = _T("WSATRY_AGAIN"); break;
+	case WSANO_RECOVERY:          s_Code = _T("WSANO_RECOVERY"); break;
+	case WSANO_DATA:              s_Code = _T("WSANO_DATA"); break;
+	case WSA_IO_PENDING:          s_Code = _T("WSA_IO_PENDING"); break;
+	case WSA_IO_INCOMPLETE:       s_Code = _T("WSA_IO_INCOMPLETE"); break;
+	case WSA_INVALID_HANDLE:      s_Code = _T("WSA_INVALID_HANDLE"); break;
+	case WSA_INVALID_PARAMETER:   s_Code = _T("WSA_INVALID_PARAMETER"); break;
+	case WSA_NOT_ENOUGH_MEMORY:   s_Code = _T("WSA_NOT_ENOUGH_MEMORY"); break;
+	case WSA_OPERATION_ABORTED:   s_Code = _T("WSA_OPERATION_ABORTED"); break;
+
+	default:
+		s_Code.Format(_T("Code %u"), u32_Error);
+		break;
 	}
 
 	CString s_Out;
@@ -574,7 +574,7 @@ CString CSocketDemoDlg::GetErrMsg(DWORD u32_Error)
 
 	if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, u32_Error, 0, t_Buf, BUFLEN, 0))
 		s_Out.Format(_T("%s: %s"), s_Code, t_Buf);
-	else 
+	else
 		s_Out.Format(_T("%s: Windows has no explanation for this error"), s_Code);
 
 	s_Out.TrimRight(); // some messages end with useless Linefeeds
