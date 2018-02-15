@@ -21,7 +21,7 @@
 #define MAX_CLIENT_IDLE_TIME  0 // off
 
 // The titlebar of the window
-#define TITLE  CString("ElmüSoft TCP Socket 1.5")
+#define TITLE  CString("ElmÃ¼Soft TCP Socket 1.5")
 
 
 #include "C:\Users\User\Documents\Visual Studio 2017\Projects\socketserver\Socket.h"
@@ -37,6 +37,7 @@ public:
 	void OnBtnSend();
 	void OnClose();
 	void OnBtnClose();
+	void OnBtnListen();
 
 protected:
 	// Study the different demo modes to see how to work with pi_RecvMem!
