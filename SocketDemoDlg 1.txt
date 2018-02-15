@@ -57,12 +57,16 @@ BOOL CSocketDemoDlg::OnInitDialog()
 	me_DemoMode = E_NORMAL;
 
 	Print(s_Text);
+	
+	return TRUE;
+}
 
-
+void CSocketDemoDlg::OnBtnListen() 
+{
 	if (mi_Socket.GetSocketCount())
 	{
 		Print(_T("Socket already in use!"));
-		return FALSE;
+		return;
 	}
 
 	DWORD u32_BindIP = 0;
@@ -80,7 +84,7 @@ BOOL CSocketDemoDlg::OnInitDialog()
 	{
 		Print(_T("Listen Error %s"), GetErrMsg(u32_Err));
 		CloseSockets();
-		return FALSE;
+		return;
 	}
 	else
 	{
@@ -97,7 +101,6 @@ BOOL CSocketDemoDlg::OnInitDialog()
 	mh_Thread = CreateThread(0, 0, ProcessEventThread, this, 0, &u32_ID);
 #endif
 
-	return TRUE;
 }
 
 // static
@@ -405,11 +408,17 @@ int main()
 	if (live == false)
 	{
 		if (map.OnInitDialog())
+		{
 			live = true;
+			map.OnBtnListen();
+		}
 		else
 			printf("\nServer failed to initialize...\n");
 	}
-	map.OnBtnSend();
+	else
+	{
+		map.OnBtnSend();
+	}
 	return (0);
 }
 
