@@ -126,11 +126,11 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
    // Print verbose messages. In production code, this should be for debugging only.
    printf("InstanceThread created, receiving and processing messages.\n");
 
-// The thread's parameter is a handle to a pipe object instance. 
+  // The thread's parameter is a handle to a pipe object instance. 
  
    hPipe = (HANDLE) lpvParam; 
 
-// Loop until done reading
+  // Loop until done reading
    while (1) 
    { 
       RApi* pServer;      
@@ -140,31 +140,31 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
       {
       	pServer->GetAnswerToRequest(pchRequest, pchReply, &cbReplyBytes); 
  
-      // Write to the pipe. 
-      fSuccess = WriteFile( 
+      	// Write to the pipe. 
+      	fSuccess = WriteFile( 
          hPipe,        // handle to pipe 
          pchReply,     // buffer to write from 
          cbReplyBytes, // number of bytes to write 
          &cbWritten,   // number of bytes written 
          NULL);        // not overlapped I/O 
 
-      if (!fSuccess || cbReplyBytes != cbWritten)
-      {   
+      	if (!fSuccess || cbReplyBytes != cbWritten)
+      	{   
           _tprintf(TEXT("InstanceThread WriteFile failed, GLE=%d.\n"), GetLastError()); 
           break;
-      }   
+      	}   
 
-   // Read client requests from the pipe. This simplistic code only allows messages
-   // up to BUFSIZE characters in length.
-      fSuccess = ReadFile( 
+   	// Read client requests from the pipe. This simplistic code only allows messages
+   	// up to BUFSIZE characters in length.
+      	fSuccess = ReadFile( 
          hPipe,        // handle to pipe 
          pchRequest,    // buffer to receive data 
          BUFSIZE*sizeof(TCHAR), // size of buffer 
          &cbBytesRead, // number of bytes read 
          NULL);        // not overlapped I/O 
 
-      if (!fSuccess || cbBytesRead == 0)
-      {   
+      	if (!fSuccess || cbBytesRead == 0)
+      	{   
           if (GetLastError() == ERROR_BROKEN_PIPE)
           {
               _tprintf(TEXT("InstanceThread: client disconnected.\n"), GetLastError()); 
@@ -174,15 +174,15 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
               _tprintf(TEXT("InstanceThread ReadFile failed, GLE=%d.\n"), GetLastError()); 
           }
           break;
-      }
-      else
-	  printf("Awaiting signal from RApi server")
+      	}
+      	else
+	  printf("Awaiting signal from RApi server");
 
-  }
+   }
 
-// Flush the pipe to allow the client to read the pipe's contents 
-// before disconnecting. Then disconnect the pipe, and close the 
-// handle to this pipe instance. 
+  // Flush the pipe to allow the client to read the pipe's contents 
+  // before disconnecting. Then disconnect the pipe, and close the 
+  // handle to this pipe instance. 
  
    FlushFileBuffers(hPipe); 
    DisconnectNamedPipe(hPipe); 
@@ -194,5 +194,4 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
    printf("InstanceThread exitting.\n");
    return 1;
 }
-
 
