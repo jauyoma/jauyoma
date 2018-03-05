@@ -1,0 +1,40 @@
+/**
+ * Description: RApi class implements pipe server related functionality.
+ *              Wraps the underlying ReadFile/WriteFile functions to read/write
+ *              data to the pipe. Provides an event-based mechanism to handle
+ *              pipe communication. An independent thread processes all the pipe
+ *              related events. This implemenation is Windows specific.
+ */
+
+#pragma once
+
+#include <tchar.h>
+
+#include <strsafe.h>
+#include <string.h>
+
+class RApi
+{
+public:
+
+    RApi() {};
+	
+    ~RApi() {};
+
+
+    /**
+     * Read data from pipe. This is a blocking call.
+     * @return: true if success else false
+     */
+    bool Trigger();
+
+    /**
+     * Populate the reply buffer with data string
+     * Print data sent by client to console
+     */
+    VOID GetAnswerToRequest( LPTSTR pchRequest, 
+                         LPTSTR pchReply, 
+                         LPDWORD pchBytes )
+
+
+};
