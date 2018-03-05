@@ -44,6 +44,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
+#include "samplePipe.h"
 
 #ifdef WinOS
 #include <unistd.h>
@@ -61,12 +62,14 @@ using namespace RApi;
 
 /*   =====================================================================   */
 
-DWORD WINAPI InstanceThread(LPVOID), thd = 0;
-VOID GetAnswerToRequest(LPTSTR, LPTSTR, LPDWORD);
-
 bool g_bMdLoginComplete = false, trig = false;
 double Bid = 0, Ask = 0;
 LPTSTR pchValue;
+CString np_Send;
+char c[10]; //because double is 8 bytes in GCC compiler but take 10 for safety 
+char t[10];
+TCHAR   BidBuffer[10]; 
+TCHAR   AskBuffer[10];
 
 int main(int      argc,
 	char * * argv,
@@ -375,8 +378,14 @@ private:
 
 void MyCallbacks::send(double &Bid, double &Ask)
 {
+	int j = sprintf(c, "%.3f", Bid);
+	j = sprintf(t, "%.3f", Ask);
+	j = sprintf(BidBuffer, "%.3f", Bid);
+	j = sprintf(AskBuffer, "%.3f", Ask);
+
+	np_Send = strcat(c, t);
+	pchValue = strcat(BidBuffer, AskBuffer);
 	trig = true;
-	pchValue = TEXT("Trial from RApi");
 }
 
 
@@ -1539,7 +1548,7 @@ VOID GetAnswerToRequest(LPTSTR pchRequest,
 	_tprintf(TEXT("Client Request String:\"%s\"\n"), pchRequest);
 
 	// Check the outgoing message to make sure it's not too long for the buffer.
-	if (FAILED(StringCchCopy(pchReply, BUFSIZE, TEXT("default answer from server"))))
+	if (FAILED(StringCchCopy(pchReply, BUFSIZE, pchValue)))
 	{
 		*pchBytes = 0;
 		pchReply[0] = 0;
@@ -1547,6 +1556,17 @@ VOID GetAnswerToRequest(LPTSTR pchRequest,
 		return;
 	}
 	*pchBytes = (lstrlen(pchReply) + 1) * sizeof(TCHAR);
+}
+
+bool Trigger
+{
+	if(trig)
+	{
+		return TRUE;
+		trig = false;
+	}
+	else
+	return FALSE;
 }
 
 /*   =====================================================================   */
