@@ -8,3 +8,4 @@ Print out status of writefile and readfile if successful on c++
 https://docs.mql4.com/files/filereadstruct
 https://www.uwec.edu/help/acrobat9/for-fldoptions.htm
 Create a listen server call that awaits connections from clients within the main function on cpp
+http://www.learncpp.com/cpp-tutorial/19-header-files/
