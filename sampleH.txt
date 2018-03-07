@@ -1,0 +1,49 @@
+/**
+* Description: RApi class implements pipe server related functionality.
+*              Wraps the underlying ReadFile/WriteFile functions to read/write
+*              data to the pipe. Provides an event-based mechanism to handle
+*              pipe communication. An independent thread processes all the pipe
+*              related events. This implemenation is Windows specific.
+*/
+
+#pragma once
+
+#include <tchar.h>
+#include <windows.h> 
+#include <strsafe.h>
+
+#include <string>
+
+class RithmicApi
+{
+	LPTSTR pchRequest, pchReply, np_Send;
+	LPDWORD pchBytes;
+public:
+
+	RithmicApi() {};
+
+	~RithmicApi() {};
+
+	/**
+	* Constructor
+	*/
+	RithmicApi(LPTSTR str1, LPTSTR str2, LPDWORD str3, LPTSTR str4) : pchRequest(str1), pchReply(str2), pchBytes(str3), np_Send(str4) {};
+
+	/**
+	* Populate the reply buffer with data string
+	* Print data sent by client to console
+	*/
+	LPTSTR& GetAnswerToRequest();
+
+};
+
+class BoolHolder
+{
+public:
+	BoolHolder(bool* state) : state(state) {}
+	bool GetState() const { return *state; } // read only
+	bool& GetStet() { return *state; } // read/write
+
+private:
+	bool* state;
+};
