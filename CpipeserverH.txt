@@ -12,7 +12,7 @@ LPTSTR& RithmicApi::GetAnswerToRequest()
 	// would put the actual client request processing code that runs in the context
 	// of an instance thread. Keep in mind the main thread will continue to wait for
 	// and receive other client connections while the instance thread is working.
-		_tprintf(TEXT("Client Request String:\"%s\"\n"), pchRequest);
+		_tprintf(TEXT("Server send String is :\"%s\"\n"), np_Send);
 
 		// Check the outgoing message to make sure it's not too long for the buffer.
 		if (FAILED(StringCchCopy(pchReply, BUFSIZE, np_Send)))
