@@ -27,13 +27,15 @@ public:
 	/**
 	* Constructor
 	*/
-	RithmicApi(LPTSTR str1, LPTSTR str2, LPDWORD str3, LPTSTR str4) : pchRequest(str1), pchReply(str2), pchBytes(str3), np_Send(str4) {};
+	RithmicApi(LPTSTR str1, LPTSTR str2, LPDWORD str3 : pchRequest(str1), pchReply(str2), pchBytes(str3)) {};
+	RithmicApi(LPTSTR str5) : np_Send(str5) {};
 
 	/**
 	* Populate the reply buffer with data string
 	* Print data sent by client to console
 	*/
 	LPTSTR& GetAnswerToRequest();
+	LPTSTR& CopyVal(LPTSTR val);
 
 };
 
