@@ -390,7 +390,8 @@ void MyCallbacks::send(double &Bid, double &Ask)
 
 	np_Send = strcat(c, t);
 	LPTSTR lptszStr = np_Send.GetBuffer(0);
-	pServer = new RithmicApi(chRqst, chRply, chByts, lptszStr);
+	pServer = new RithmicApi(lptszStr);
+	pServer->CopyVal();
 	trig = true;
 	BoolHolder testbool_holder(&trig);
 	testbool_holder.GetStet();
