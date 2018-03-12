@@ -14,7 +14,7 @@ LPTSTR& RithmicApi::GetAnswerToRequest()
 		_tprintf(TEXT("Client Request String:\"%s\"\n"), pchRequest);
 
 		// Check the outgoing message to make sure it's not too long for the buffer.
-		if (FAILED(StringCchCopy(pchReply, BUFSIZE, np_Send)))
+		if (FAILED(StringCchCopy(pchReply, BUFSIZE, global_x)))
 		{
 			*pchBytes = 0;
 			pchReply[0] = 0;
