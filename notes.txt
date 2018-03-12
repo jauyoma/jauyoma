@@ -11,3 +11,4 @@ Create a listen server call that awaits connections from clients within the main
 http://www.learncpp.com/cpp-tutorial/19-header-files/
 http://www.learncpp.com/cpp-tutorial/89-class-code-and-header-files/
 https://stackoverflow.com/questions/10422034/when-to-use-extern-in-c
+http://www.learncpp.com/cpp-tutorial/42-global-variables/
