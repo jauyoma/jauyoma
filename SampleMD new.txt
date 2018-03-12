@@ -73,6 +73,9 @@ LPTSTR chRqst, chRply;
 LPDWORD chByts;
 RithmicApi * pServer;
 
+// it needs to be defined somewhere
+char * global_x;
+
 int main(int      argc,
 	char * * argv,
 	char * * envp);
@@ -388,7 +391,7 @@ void MyCallbacks::send(double &Bid, double &Ask)
 	j = sprintf(BidBuffer, "%.3f", Bid);
 	j = sprintf(AskBuffer, "%.3f", Ask);
 
-	np_Send = strcat(c, t);
+	global_x = strcat(c, t);
 	LPTSTR lptszStr = np_Send.GetBuffer(0);
 	pServer = new RithmicApi(lptszStr);
 	pServer->CopyVal();
