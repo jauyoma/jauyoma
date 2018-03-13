@@ -1,0 +1,58 @@
+/**
+* Description: RApi class implements pipe server related functionality.
+*              Wraps the underlying ReadFile/WriteFile functions to read/write
+*              data to the pipe. Provides an event-based mechanism to handle
+*              pipe communication. An independent thread processes all the pipe
+*              related events. This implemenation is Windows specific.
+*/
+
+#pragma once
+
+#include <tchar.h>
+#include <windows.h> 
+#include <strsafe.h>
+
+#include <string>
+
+#define BUFSIZE 512
+
+class RithmicApi
+{
+	LPTSTR pchRequest, pchReply;
+	LPDWORD pchBytes;
+	char *Mx_Send = "Initial Text";
+	char* np_Send = "Private Value : np_Send";
+public:
+
+	HANDLE hHeap = GetProcessHeap();
+	TCHAR* chRqst = (TCHAR*)HeapAlloc(hHeap, 0, BUFSIZE * sizeof(TCHAR));
+
+	RithmicApi() {};
+
+	~RithmicApi() {};
+
+	/**
+	* Constructor
+	*/
+	RithmicApi(char* str5) : np_Send(str5) {};
+	RithmicApi(LPTSTR str1, LPTSTR str2, LPDWORD str3) : pchRequest(str1), pchReply(str2), pchBytes(str3) {};
+
+	/**
+	* Populate the reply buffer with data string
+	* Print data sent by client to console
+	*/
+	VOID GetAnswerToRequest(LPTSTR, LPTSTR, LPDWORD);
+	int CopyVal(char* val);
+	std::string GetVal() { return np_Send; }
+};
+
+class BoolHolder
+{
+public:
+	BoolHolder(bool* state) : state(state) {}
+	bool GetState() const { return *state; } // read only
+	bool& GetStet() { return *state; } // read/write
+
+private:
+	bool* state;
+};

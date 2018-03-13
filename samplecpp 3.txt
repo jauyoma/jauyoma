@@ -1,0 +1,46 @@
+#include "Sample.h"
+#include <atlstr.h>
+#include <strsafe.h>
+#include <string.h> 
+#include <stdio.h>
+
+#define BUFSIZE 512
+
+int RithmicApi::CopyVal(char* val)
+{
+	np_Send = val;
+	printf("STD np_Send string text is :\"%s\"\n", np_Send);
+
+	return 0;
+}
+
+VOID RithmicApi::GetAnswerToRequest(LPTSTR pchRequest, LPTSTR pchReply, LPDWORD pchBytes)
+// This routine is a simple function to print the client request to the console
+// and populate the reply buffer with a default data string. This is where you
+// would put the actual client request processing code that runs in the context
+// of an instance thread. Keep in mind the main thread will continue to wait for
+// and receive other client connections while the instance thread is working.
+{
+	RithmicApi Ans;
+	if (strlen(Mx_Send) < 1)
+	{
+		Mx_Send = "No value passed";
+	}
+
+	std::string str = Ans.GetVal();
+	const char *cstr = str.c_str();
+
+	_tprintf(TEXT("\nClient Request String:\"%s\"\n"), Mx_Send);
+
+	// Check the outgoing message to make sure it's not too long for the buffer.
+	if (FAILED(StringCchCopy(pchReply, BUFSIZE, cstr)))
+	{
+		*pchBytes = 0;
+		pchReply[0] = 0;
+		printf("StringCchCopy failed, no outgoing message.\n");
+		return;
+	}
+	*pchBytes = (lstrlen(pchReply) + 1) * sizeof(TCHAR);
+	
+}
+
