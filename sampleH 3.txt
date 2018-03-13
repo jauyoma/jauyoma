@@ -21,7 +21,7 @@ class RithmicApi
 	LPTSTR pchRequest, pchReply;
 	LPDWORD pchBytes;
 	char *Mx_Send = "Initial Text";
-	char* np_Send = "Private Value : np_Send";
+	char* &np_Send = Mx_Send;
 public:
 
 	HANDLE hHeap = GetProcessHeap();
