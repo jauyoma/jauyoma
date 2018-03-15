@@ -36,16 +36,13 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 
 =====================================================================   */
 
-#include "C:\Users\User\Documents\9.9.0.0\include\RApiPlus.h"
+#include "RApiPlus.h"
 
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <winsock2.h>
-#include <conio.h>
-#include  "C:\Users\User\Documents\forex\Trader\FastStart\EchoServer\cNetEventsProcDLL.h"
-#pragma comment(lib, "NetEventsProcDLL")
+#include <tchar.h>
 
 #ifdef WinOS
 #include <unistd.h>
@@ -55,83 +52,37 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 
 #define GOOD 0
 #define BAD  1
+#define BUFSIZE 512
 
 using namespace std;
 using namespace RApi;
 
 /*   =====================================================================   */
 
-BOOL FormatIP(DWORD u32_IP, char* s8_IP);
-DWORD u32_Count = 8;
-DWORD u32_Error;
-int ph_Client[15];
-DWORD u32_CountOld = 2;
-int ps32_ClientIP[15];
-int ps32_ClientCount[1];
-bool g_bMdLoginComplete = false, serveropen = false;
+bool g_bMdLoginComplete = false, trig = false;
 double Bid = 0, Ask = 0;
-int tuma = 0;
+char   BidBuffer[10];
+char   AskBuffer[10];
+int inst = 0;
 
 int main(int      argc,
 	char * * argv,
 	char * * envp);
 
+
+
+/*   =====================================================================   */
+/*                         Custom class declarations                         */
+/*   =====================================================================   */
+
+
+
 /*   =====================================================================   */
 /*                          class declarations                               */
 /*   =====================================================================   */
 
-bool OpenMT4Server()
-{
-	int s32_Port = 2000;
-	bool success = false;
-	u32_Error = cNetEventsProcDLL::ServerOpen(s32_Port);
-
-	if (u32_Error)
-	{
-		std::cout << "\nServerOpen() failed with error...:" << u32_Error << std::endl;
-	}
-	else
-	{
-		std::cout << "\nServerOpen() fine, we now are waiting for connections...\n" << std::endl;
-		success = true;
-	}
-	return(success);
-}
-
-void GetConnections()
-{
-	
 
 
-}
-
-void CloseMT4Server()
-{
-	u32_Error = cNetEventsProcDLL::ServerClose();
-
-	if (u32_Error)
-	{
-		std::cout << "\nServerClose() failed with error:" << std::endl;
-	}
-	else
-		std::cout << "\nServerClose() fine...\n" << std::endl;
-}
-
-BOOL FormatIP(DWORD u32_IP, char* s8_IP)
-{
-	DWORD u32_Len = strlen(s8_IP);
-
-	if (u32_Len < 15)
-		return FALSE;
-
-	BYTE* pu8_Addr = (BYTE*)&u32_IP;
-	sprintf(s8_IP, "%d.%d.%d.%d", pu8_Addr[0], pu8_Addr[1], pu8_Addr[2], pu8_Addr[3]);
-
-	return TRUE;
-}
-
-/*   =====================================================================   */
-/*                          class declarations                               */
 /*   =====================================================================   */
 
 class MyAdmCallbacks : public AdmCallbacks
@@ -146,8 +97,6 @@ public:
 		void *      pContext,
 		int *       aiCode);
 };
-
-/*   =====================================================================   */
 
 class MyCallbacks : public RCallbacks
 {
@@ -427,61 +376,93 @@ private:
 
 void MyCallbacks::send(double &Bid, double &Ask)
 {
-	DWORD  u32_BufLen = 15;
-	double sell, buy;
-	double pd_Buf[15];
-	int    ps32_ReadLen[3];
+	HANDLE hPipe;
+	LPTSTR lpvMessage = TEXT("Default message from client.");
+	TCHAR  chBuf[BUFSIZE];
+	BOOL   fSuccess = FALSE;
+	DWORD  cbRead, cbToWrite, cbWritten, dwMode;
+	LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\mynamedpipe");
+	bool cont = false;
 
-	sell = Bid;
-	buy = Ask;
-	u32_Error = cNetEventsProcDLL::GetAllConnections(ph_Client, ps32_ClientIP, ps32_ClientCount);
+	hPipe = CreateFile(
+		lpszPipename,   // pipe name 
+		GENERIC_READ |  // read and write access 
+		GENERIC_WRITE,
+		0,              // no sharing 
+		NULL,           // default security attributes
+		OPEN_EXISTING,  // opens existing pipe 
+		0,              // default attributes 
+		NULL);          // no template file 
 
-	if (u32_Error)
+						// Break if the pipe handle is valid. 
+
+	if (hPipe != INVALID_HANDLE_VALUE)
 	{
-		std::cout << "\nGetAllConnections(...) failed with error...:" << u32_Error << std::endl;
+		cont = true;
 	}
 	else
+		_tprintf(TEXT("\nINVALID_HANDLE_VALUE\n"));
+
+	if(cont)
 	{
-		if (u32_Count != ps32_ClientCount[0])
+		dwMode = PIPE_READMODE_MESSAGE;
+		fSuccess = SetNamedPipeHandleState(
+			hPipe,    // pipe handle 
+			&dwMode,  // new pipe mode 
+			NULL,     // don't set maximum bytes 
+			NULL);    // don't set maximum time 
+		if (!fSuccess)
 		{
-			cout << "Number of connections : " << u32_Count << endl;
+			_tprintf(TEXT("SetNamedPipeHandleState failed. GLE=%d\n"), GetLastError());
+			cont = false;
 		}
-		u32_Count = ps32_ClientCount[0];
+		else
+		{
+			trig = true;
+			inst++;
+		}
 	}
 
-	for (DWORD i = 0; i < u32_Count; i++)
+	if (cont == true && trig == true)
 	{
-			pd_Buf[0] = 0;
-			u32_Error = cNetEventsProcDLL::ReadFromDouble(ph_Client[i], pd_Buf, sizeof(pd_Buf), ps32_ReadLen);
+		int j = sprintf(BidBuffer, "%.3f", Bid);
+		j = sprintf(AskBuffer, "%.3f", Ask);
 
-			if (u32_Error)
-			{
-				printf("ReadFromDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
-			}
+		printf("BidBuffer is :\"%s\"\n", BidBuffer);
+		printf("AskBuffer is :\"%s\"\n", AskBuffer);
 
-			if (ps32_ReadLen[0] > 0)
-			{
-				if (pd_Buf[0] > 0)
-				{
-					cout << "Value is : " << pd_Buf[0] << endl;
-					pd_Buf[0] = 5.75;
-					pd_Buf[1] = buy;
-					pd_Buf[2] = sell;
-					u32_Error = cNetEventsProcDLL::SendToDouble(ph_Client[i], pd_Buf, ps32_ReadLen[0]);
+		if (BidBuffer != "")
+		{
+			lpvMessage = BidBuffer;
+		}
+		else
+		{
+			lpvMessage = AskBuffer;
+		}
 
-					if (u32_Error)
-					{
-						printf("SendToDouble(%d...) failed with error: %d\n", ph_Client[i], u32_Error);
-					}
-					else
-					{
-						cout << "Sent to Client : " << pd_Buf[0] << " : " << pd_Buf[1] << endl;
-					}
-				}
-				cout << "Bid is : " << sell << " Ask is : " << buy << endl;
-			}
-			else
-				cout << "Awaiting Signal from client" << endl;
+		cbToWrite = (lstrlen(lpvMessage) + 1) * sizeof(TCHAR);
+		_tprintf(TEXT("Sending %d byte message: \"%s\"\n"), cbToWrite, lpvMessage);
+
+		fSuccess = WriteFile(
+			hPipe,                  // pipe handle 
+			lpvMessage,             // message 
+			cbToWrite,              // message length 
+			&cbWritten,             // bytes written 
+			NULL);                  // not overlapped 
+
+		if (!fSuccess)
+		{
+			_tprintf(TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError());
+		}
+
+		printf("\nMessage sent to multi thread pipe server\n");
+
+	}
+
+	if (inst > 1)
+	{
+		CloseHandle(hPipe);
+		inst--;
 	}
 
 }
@@ -866,7 +847,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 
 	Ask = pInfo->dPrice;
 	send(Bid, Ask);
-	
+
 	/*   ----------------------------------------------------------------   */
 
 	*aiCode = API_OK;
@@ -1408,7 +1389,6 @@ int main(int      argc,
 	char *           fake_envp[11];
 	int              iFlags;
 	int              iCode;
-	void *			 context;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1419,17 +1399,6 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-
-	if (!OpenMT4Server() && serveropen == false)
-	{
-		cout << "Error opening MT4 server: " << endl;
-	}
-	else
-	{
-		serveropen = true;
-		cout << "Server connected " << endl;
-		Sleep(10000);
-	}
 
 	try
 	{
@@ -1637,9 +1606,15 @@ int main(int      argc,
 	delete pCallbacks;
 	delete pAdmCallbacks;
 
+
 	/*   ----------------------------------------------------------------   */
 
 	return (GOOD);
 }
+
+/*   =====================================================================   */
+/*                          function declarations                            */
+/*   =====================================================================   */
+
 
 /*   =====================================================================   */
