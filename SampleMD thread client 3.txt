@@ -382,56 +382,25 @@ private:
 
 void MyCallbacks::send(double &Bid, double &Ask)
 {
-	HANDLE hPipe;
-	LPTSTR lpvMessage = TEXT("Default message from client.");
-	TCHAR  chBuf[BUFSIZE];
-	BOOL   fSuccess = FALSE;
-	DWORD  cbRead, cbToWrite, cbWritten, dwMode;
-	LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\mynamedpipe");
-	bool cont = false;
-	DWORD tym;
 
 	tym = GetTickCount();
 
-	if (!trig)
+	int j = sprintf(BidBuffer, "%.3f", Bid);
+	j = sprintf(AskBuffer, "%.3f", Ask);
+
+	if (BidBuffer != "")
 	{
-
-		int j = sprintf(BidBuffer, "%.3f", Bid);
-		j = sprintf(AskBuffer, "%.3f", Ask);
-
-		printf("BidBuffer is :\"%s\"\n", BidBuffer);
-		printf("AskBuffer is :\"%s\"\n", AskBuffer);
-
-		if (BidBuffer != "")
-		{
-			lpvMessage = BidBuffer;
-		}
-		else
-		{
-			lpvMessage = AskBuffer;
-		}
-
-		cbToWrite = (lstrlen(lpvMessage) + 1) * sizeof(TCHAR);
-		_tprintf(TEXT("Sending %d byte message: \"%s\"\n"), cbToWrite, lpvMessage);
-
-		fSuccess = WriteFile(
-			Clpipe,                  // pipe handle 
-			lpvMessage,             // message 
-			cbToWrite,              // message length 
-			&cbWritten,             // bytes written 
-			NULL);                  // not overlapped 
-
-		if (!fSuccess)
-		{
-			_tprintf(TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError());
-		}
-
-		printf("\nMessage sent to multi thread pipe server\n");
-
+		pchReply = BidBuffer;
+		printf("Bid value to pchReply is :\"%s\"\n", pchReply);
+	}
+	else
+	{
+		pchReply = AskBuffer;
+		printf("Ask value to pchReply is :\"%s\"\n", pchReply);
 	}
 
 	tym = GetTickCount() - tym;
-	printf("\nClockspeed is : %d\n", tym);
+	printf("\nClockspeed: MyCallbacks::send function is  %d\n", tym);
 }
 
 
@@ -1424,6 +1393,7 @@ int main(int      argc,
 				conn = 1;
 				sThread = hThread;
 				CloseHandle(hThread);
+				printf("\nRithmicApi : Thread created\n", tym);
 			}
 		}
 		else
@@ -1703,14 +1673,14 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
 			_tprintf(TEXT("InstanceThread WriteFile failed, GLE=%d.\n"), GetLastError());
 			break;
 		}
-		else
-			FlushFileBuffers(hPipe);
+		
 	}
 
 	// Flush the pipe to allow the client to read the pipe's contents 
 	// before disconnecting. Then disconnect the pipe, and close the 
 	// handle to this pipe instance. 
-
+	
+	FlushFileBuffers(hPipe);
 	DisconnectNamedPipe(hPipe);
 	CloseHandle(hPipe);
 
