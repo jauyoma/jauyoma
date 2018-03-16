@@ -66,7 +66,6 @@ double Bid = 0, Ask = 0;
 char   BidBuffer[10];
 char   AskBuffer[10];
 int inst = 0;
-HANDLE Clpipe;
 LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\mynamedpipe");
 HANDLE sPipe, sThread;
 HANDLE hHeap = GetProcessHeap();
@@ -1655,7 +1654,7 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
 
 	// The thread's parameter is a handle to a pipe object instance. 
 
-	hPipe = (HANDLE)lpvParam;
+	hPipe = sPipe;
 
 	// Loop until done reading
 	while (1)
