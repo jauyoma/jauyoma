@@ -62,6 +62,8 @@ int ps32_ClientIP[15];
 int ps32_ClientCount[1];
 bool g_bMdLoginComplete = false, serveropen = false;
 double Bid = 0, Ask = 0;
+char   BidBuffer[10];
+char   AskBuffer[10];
 int tuma = 0;
 BOOL live = false;
 
@@ -392,6 +394,25 @@ void CSocketDemoDlg::OnBtnSend(double &Bid, double &Ask)
 	if (t_Chr > 'Z') t_Chr = 'A';
 #else
 	// send the string that the user has entered
+	
+	if (Bid == 0 && Ask != 0)
+	{
+		int j = sprintf(AskBuffer, "%.3f", Ask);
+	}
+	elseif(Ask == 0 && Bid != 0)
+	{
+		j = sprintf(BidBuffer, "%.3f", Bid);
+	}
+	else
+	{
+		j = sprintf(BidBuffer, "%.3f", Bid);
+		
+	}
+
+	printf("BidBuffer is :\"%s\"\n", BidBuffer);
+	printf("AskBuffer is :\"%s\"\n", AskBuffer);
+	
+	ms_Send = j;
 	CString s_SendData = ms_Send;
 #endif
 
@@ -419,15 +440,7 @@ void CSocketDemoDlg::OnBtnSend(double &Bid, double &Ask)
 		else
 			printf("\nSuccessfully sent\n");
 	}
-	char c[10]; //because double is 8 bytes in GCC compiler but take 10 for safety 
-	char t[10];
-	double d = 234.2341;
-	double k = -4563.256;
 
-	int j = sprintf(c, "%.2f", Bid);
-	j = sprintf(t, "%.1f", Ask);
-
-	ms_Send = strcat(c, t);
 	printf("\nValue of mi_SocketList is : %d\n", mi_SocketList.GetCount());
 	tym = GetTickCount() - tym;
 	Print(_T("Speed is : %d milliseconds"), tym);
@@ -1743,6 +1756,7 @@ int main(int      argc,
 
 	if (live == false)
 	{
+		bool printed = false;
 		if (map.OnInitDialog())
 		{
 			printf("\nServer initialized...\n");
@@ -1754,16 +1768,18 @@ int main(int      argc,
 		}
 		else
 			printf("\nServer failed to initialize...\n");
-		if (map.OnBtnClose()>0)
+		while (map.OnBtnClose() < 1)
 		{
-			printf("\nConnected...\n");
-			printf("\nNumber of connections is %d \n", map.OnBtnClose());
+			if(!printed)
+			{
+				printf("\nAwaiting client connections...\n"));
+				printed	= true;
+			}
+			
 		}
-		char y;
-		cout << "Ready?" << endl;
-		cin >> y;
+		printf("\nNumber of connections is %d \n", map.OnBtnClose());
 	}
-
+	
 	try
 	{
 		pAdmCallbacks = new MyAdmCallbacks();
