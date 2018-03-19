@@ -14,3 +14,4 @@ https://stackoverflow.com/questions/10422034/when-to-use-extern-in-c
 http://www.learncpp.com/cpp-tutorial/42-global-variables/
 https://bobobobo.wordpress.com/2009/06/04/understanding-extern-variables-in-c/
 http://www.learncpp.com/cpp-tutorial/611-references/
+printf("\nConcatenated value is :\"%s\"\n", strcat(BidBuffer, AskBuffer));
