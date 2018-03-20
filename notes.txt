@@ -15,3 +15,4 @@ http://www.learncpp.com/cpp-tutorial/42-global-variables/
 https://bobobobo.wordpress.com/2009/06/04/understanding-extern-variables-in-c/
 http://www.learncpp.com/cpp-tutorial/611-references/
 printf("\nConcatenated value is :\"%s\"\n", strcat(BidBuffer, AskBuffer));
+https://social.msdn.microsoft.com/Forums/vstudio/en-US/8ce6ddef-3f1a-4033-a28b-54af91766e9f/teach-me-what-is-t?forum=vcgeneral
