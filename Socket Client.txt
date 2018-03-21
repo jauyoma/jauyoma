@@ -1,0 +1,159 @@
+/* ###################################################################
+
+Example socket client.
+Code can be used as both MQ4 and MQ5 (on both 32-bit and 64-bit MT5)
+
+Simply sends each new tick to the server, as a CRLF-terminated 
+message. The example server then writes these to its Experts log.
+
+################################################################### */
+
+
+#property strict
+
+// --------------------------------------------------------------------
+// Include socket library
+// --------------------------------------------------------------------
+#define SOCKET_LIBRARY_USE_EVENTS
+#include <socket-library-mt4-mt5.mqh>
+
+
+// --------------------------------------------------------------------
+// EA user inputs
+// --------------------------------------------------------------------
+
+input string   Hostname = "192.168.1.150";    // Server hostname or IP address
+input ushort   ServerPort = 2000;        // Server port
+
+
+// --------------------------------------------------------------------
+// Global variables and constants
+// --------------------------------------------------------------------
+
+ClientSocket * glbClientSocket = NULL;
+
+// --------------------------------------------------------------------
+// Initialisation (no action required)
+// --------------------------------------------------------------------
+
+void OnInit() {
+EventSetMillisecondTimer(100);
+}
+
+
+// --------------------------------------------------------------------
+// Termination - free the client socket, if created
+// --------------------------------------------------------------------
+
+void OnDeinit(const int reason)
+{
+   if (glbClientSocket) {
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+   EventKillTimer();
+}
+
+
+// --------------------------------------------------------------------
+// Tick handling - set up a connection, if none already active,
+// and send the current price quote
+// --------------------------------------------------------------------
+
+void OnTimer()
+{
+   if (!glbClientSocket) {
+      glbClientSocket = new ClientSocket(Hostname, ServerPort);
+      if (glbClientSocket.IsSocketConnected()) {
+         Comment("Client connection succeeded");
+      } else {
+         Comment("Client connection failed");
+      }
+  }
+
+   if (glbClientSocket.IsSocketConnected()) {
+      // Send the current price as a CRLF-terminated message
+      string strMessage = glbClientSocket.Receive();
+      if (strMessage != "") {
+      // Process the message
+      Print("Timer event : " +strMessage);
+      string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
+      glbClientSocket.Send(strMsg);
+      }
+
+   } else {
+      Print("Problem connecting..Checking server connection");
+      // Either the connection above failed, or the socket has been closed since an earlier
+      // connection. We handle this in the next block of code...
+   }
+   
+   // If the socket is closed, destroy it, and attempt a new connection
+   // on the next call to OnTick()
+   if (!glbClientSocket.IsSocketConnected()) {
+      // Destroy the server socket. A new connection
+      // will be attempted on the next tick
+      Print("Client disconnected. Will retry.");
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+}
+
+void OnChartEvent(const int id, const long& lparam, const double& dparam, const string& sparam)
+{
+   if (id == CHARTEVENT_KEYDOWN) 
+   {
+      // If the lparam matches a .GetSocketHandle(), then it's a dummy
+      // key press indicating that there's socket activity. Otherwise,
+      // it's a real key press
+         
+      if (lparam == glbClientSocket.GetSocketHandle()) 
+      {
+         if (!glbClientSocket) 
+         {
+      glbClientSocket = new ClientSocket(Hostname, ServerPort);
+      if (glbClientSocket.IsSocketConnected()) {
+         Comment("Client connection succeeded");
+      } else {
+         Comment("Client connection failed");
+      }
+     }
+
+    if (glbClientSocket.IsSocketConnected()) {
+      // Send the current price as a CRLF-terminated message
+      string strMessage = glbClientSocket.Receive();
+      if (strMessage != "") {
+      // Process the message
+      Print("Chart event : " +strMessage);
+      string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
+      glbClientSocket.Send(strMsg);
+      Print("Sent to server");
+      }
+    } 
+    else 
+    {
+      Print("Problem connecting..Checking server connection");
+      // Either the connection above failed, or the socket has been closed since an earlier
+      // connection. We handle this in the next block of code...
+     }
+   
+   // If the socket is closed, destroy it, and attempt a new connection
+   // on the next call to OnTick()
+   if (!glbClientSocket.IsSocketConnected()) {
+      // Destroy the server socket. A new connection
+      // will be attempted on the next tick
+      Print("Client disconnected. Will retry.");
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+
+   } 
+   else 
+    {
+         Print("Chart Event");
+            }
+         }
+         
+         // If we get here, then the key press does not seem
+         // to match any socket, and appears to be a real
+         // key press event...
+}
