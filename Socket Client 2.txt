@@ -35,7 +35,7 @@ input ushort   ServerPort = 2000;        // Server port
 
 int monitor = 0;
 bool b_ConnectTo = false, close, del;
-
+string symb;
 int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
 int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
 double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
@@ -69,7 +69,6 @@ ClientSocket * glbClientSocket = NULL;
 		if(spread < 2.5)
 		{
 			opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			Sleep(10);
 			openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
@@ -80,7 +79,6 @@ ClientSocket * glbClientSocket = NULL;
 		if(spread < 1)
 		{
 			opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			Sleep(10);
 			openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
@@ -91,7 +89,6 @@ ClientSocket * glbClientSocket = NULL;
 		if(spread < 1)
 		{
 			opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			Sleep(10);
 			openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
@@ -102,7 +99,6 @@ ClientSocket * glbClientSocket = NULL;
 		if(spread < 1)
 		{
 			opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			Sleep(10);
 			openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
 		}
 	}
@@ -381,6 +377,30 @@ void SendMktOrders()
 	   }
    }
  }
+ 
+ void read(string val)
+ {
+      string sep="_";                // A separator as a character
+      ushort u_sep;                  // The code of the separator character
+      string result[];               // An array to get strings
+      //--- Get the separator code
+      u_sep=StringGetCharacter(sep,0);
+      //--- Split the string to substrings
+      int k=StringSplit(val,u_sep,result);
+      //--- Show a comment 
+      PrintFormat("Strings obtained: %d. Used separator '%s' with the code %d",k,sep,u_sep);
+      //--- Now output all obtained strings
+      if(k>0)
+      {
+        for(int i=0;i<k;i++)
+        {
+         PrintFormat("result[%d]=%s",i,result[i]);
+        }
+	symb = result[0];
+	Bid = StringToDouble(result[1]);
+	Ask = StringToDouble(result[2]);
+      }
+ }
 
 // --------------------------------------------------------------------
 // Initialisation (no action required)
@@ -427,6 +447,7 @@ void OnTimer()
       if (strMessage != "") {
       // Process the message
       Print("Timer event : " +strMessage);
+      double val = StringToDouble(strMessage);
       string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
       glbClientSocket.Send(strMsg);
       }
