@@ -389,7 +389,16 @@ void CSocketDemoDlg::OnBtnSend(string &val, double &Bid, double &Ask)
 		printf("\nNot connected!\n");
 		return;
 	}
-
+	string valu = val + "_" + to_string(Bid) + "_" + to_string(Ask);
+	const char *cstr = valu.c_str();
+	char *cstrg = new char[valu.length() + 1];
+	strcpy(cstrg, valu.c_str());
+	// do stuff
+	
+	
+	printf("\nString value for cstr is : %s\n", cstr);
+	printf("\nString value for cstrg is : %s\n", cstrg);
+	
 	// send the string that the user has entered
 	int j;
 	if (Bid == 0 && Ask != 0)
@@ -408,9 +417,9 @@ void CSocketDemoDlg::OnBtnSend(string &val, double &Bid, double &Ask)
 		ms_Send = BidBuffer;
 
 	}
-
+	
 	CString s_SendData = ms_Send;
-
+	ms_Send = strcal(
 	if (!s_SendData.GetLength())
 	{
 		printf("\nError: You must enter a text!\n");
@@ -443,6 +452,7 @@ void CSocketDemoDlg::OnBtnSend(string &val, double &Bid, double &Ask)
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
 
 	printf("\nSpeed new counter is : %d microseconds\n", ElapsedMicroseconds.QuadPart);
+	delete [] cstrg;
 }
 
 // Sends data to the given socket
