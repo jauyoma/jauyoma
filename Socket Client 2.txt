@@ -34,15 +34,15 @@ input string   Hostname = "192.168.1.150";    // Server hostname or IP address
 input ushort   ServerPort = 2000;        // Server port
 
 int monitor = 0;
-bool b_ConnectTo = false, close, del;
-string symb;
+bool b_ConnectTo = false, close, del, suspend = false;
+string symb, hold;
 int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
 int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
 double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 double Price1A, Price2A, Price3A, Price4A;
 int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
-double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
-double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
+double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0, Bid;
+double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0, Ask;
 MqlTick tick;
 int Tick1 = 0, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 0, Tick2S = 0, Tick3S = 0, Tick4S = 0;
 
@@ -64,7 +64,7 @@ ClientSocket * glbClientSocket = NULL;
   if(OrdersTotal()<(SymbTraded*2) && b_ConnectTo==true)
   {
  	if(SymbolInfoTick(Symbol_A,tick))
-   {
+   	{
 		spread = (tick.ask - tick.bid)*Decimals_A;
 		if(spread < 2.5)
 		{
@@ -74,7 +74,7 @@ ClientSocket * glbClientSocket = NULL;
 	}
 	
 	if(SymbolInfoTick(Symbol_B,tick))
-   {
+   	{
 		spread = (tick.ask - tick.bid)*Decimals_B;
 		if(spread < 1)
 		{
@@ -84,7 +84,7 @@ ClientSocket * glbClientSocket = NULL;
 	}
 	
 	if(SymbolInfoTick(Symbol_C,tick))
-   {
+   	{
 		spread = (tick.ask - tick.bid)*Decimals_C;
 		if(spread < 1)
 		{
@@ -94,7 +94,7 @@ ClientSocket * glbClientSocket = NULL;
 	}
 	
 	if(SymbolInfoTick(Symbol_D,tick))
-   {
+   	{
 		spread = (tick.ask - tick.bid)*Decimals_D;
 		if(spread < 1)
 		{
@@ -113,7 +113,7 @@ ClientSocket * glbClientSocket = NULL;
   {
       if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
       {
-           if(OrderSymbol()==Symbol_A)
+           if(OrderSymbol()==hold)
            {
                if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
                {     
@@ -123,11 +123,11 @@ ClientSocket * glbClientSocket = NULL;
 		              typ = OrderType(); 
 		              if(OrderType() == OP_BUY)
 		              {
-                        Tick1 = OrderTicket();
+                        	Tick1 = OrderTicket();
 		              }
 		              if(OrderType() == OP_SELL)
 		              {
-                        Tick1S = OrderTicket();
+                        	Tick1S = OrderTicket();
 		              } 
                 }
                 else
@@ -135,133 +135,12 @@ ClientSocket * glbClientSocket = NULL;
                     typA = OrderType();
                     Tick_1A = OrderTicket();
                     Price1A = OrderOpenPrice();
-                }        
-           }
-           
-           if(OrderSymbol()==Symbol_B)
-           {
-               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
-               {     
-                    Magic1 = OrderMagicNumber();                   
-                    Lot_B = OrderLots();
-		              Price2 = OrderOpenPrice()*Decimals_B;
-                    typ1 = OrderType();    
-		              if(OrderType() == OP_BUY)
-		              {
-                        Tick2 = OrderTicket();
-		              }
-		              if(OrderType() == OP_SELL)
-		              {
-                        Tick2S = OrderTicket();
-		              } 
-               }
-               else
-               {
-                    typ1A = OrderType();
-                    Tick_2A = OrderTicket();
-                    Price2A = OrderOpenPrice();
-               }        
-           }
-           
-            
-            if(OrderSymbol()==Symbol_C)
-            {
-               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
-               {          
-                    Magic2 = OrderMagicNumber();
-                    Lot_C = OrderLots();
-		              Price3 = OrderOpenPrice()*Decimals_C;
-                    typ2 = OrderType();
-		              if(OrderType() == OP_BUY)
-		              {
-                        Tick3 = OrderTicket();
-		              }
-		              if(OrderType() == OP_SELL)
-		              {
-                        Tick3S = OrderTicket();
-		               } 
-               }
-               else
-               {
-                    typ2A = OrderType();
-                    Tick_3A = OrderTicket();
-                    Price3A = OrderOpenPrice();
-               }          
-            } 
-            
-            if(OrderSymbol()==Symbol_D)
-            {
-               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
-               {    
-                    Magic3 = OrderMagicNumber();
-                    Lot_D = OrderLots();
-		              Price4 = OrderOpenPrice()*Decimals_D;
-                    typ3 = OrderType();
-		              if(OrderType() == OP_BUY)
-		              {
-                        Tick4 = OrderTicket();
-		              }
-		              if(OrderType() == OP_SELL)
-		              {
-                        Tick4S = OrderTicket();
-		               } 
-               }
-               else
-               {
-                    typ3A = OrderType();
-                    Tick_4A = OrderTicket();
-                    Price4A = OrderOpenPrice();
-               }           
-            }   
-        }   
-    } 
- }
-
-void CloseMktOrders()
-   {
-   	if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0)
-	   {
-		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
-        	Print("Closed..",Symbol_A,"...Conditions met");
-        	Comment("");
-		   sym1 = 1;
-		   Tick1S = 0;
-      }
-      
-      if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
-	   {
-		   close = OrderClose(Tick1,Lot_A,Bid,1,Red);
-        	Print("Closed..",Symbol_A,"...Conditions met");
-        	Comment("");
-		   sym1_A = 1;
-		   Tick1 = 0;
-      }
-      
-      if(sym2 == 0 && sym2_A == 0 && ((Bid_B - tick.ask)*Decimals_B) >= 4 && Tick2S != 0)
-	   {
-		   close = OrderClose(Tick2S,Lot_B,Ask,1,Red);
-        	Print("Closed..",Symbol_B,"...Conditions met");
-        	Comment("");
-		   sym2 = 1;
-		   Tick2S = 0;
-      }
-      
-      if(sym2_A == 0 && sym2 == 0 && ((tick.bid - Ask_B)*Decimals_B) >= 4 && Tick2 != 0)
-	   {
-		   close = OrderClose(Tick2,Lot_B,Bid,1,Red);
-        	Print("Closed..",Symbol_B,"...Conditions met");
-        	Comment("");
-		   sym2_A = 1;
-		   Tick2 = 0;
-      }
-}
-
-void SendMktOrders()
-   {
-	if(SymbolInfoTick(Symbol_A,tick) && b_ConnectTo==true)
-    {      
-	 if(sym1 > 0)
-    	{
+                } 
+		
+		if(SymbolInfoTick(hold,tick))
+    		{      
+        	 if(sym1 > 0)
+    		 {
 		   if(tick.ask > Bid_A)
 		   {
 			   del = OrderDelete(Tick_1A);
@@ -286,10 +165,10 @@ void SendMktOrders()
 		   {
 		   	sym1 = 0;
 		   }
-	   }
-    
-    	if(sym1_A > 0)
-    	{      
+	   	}
+		
+		if(sym1_A > 0)
+    		{      
 		   if(tick.bid < Ask_A)
 		   {
 			   del = OrderDelete(Tick1);
@@ -314,71 +193,52 @@ void SendMktOrders()
 		   {
 		   	sym1_A = 0;
 		   }
-	   }
-	
-    }
-    
-    if(SymbolInfoTick(Symbol_B,tick) && b_ConnectTo==true)
-    {      
-	   if(sym2 > 0)
-    	{
-		   if(tick.ask > Bid_B)
-		   {
-			   del = OrderDelete(Tick_2A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	openbuy = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-	        	   	sym2 = 0;
-			   }
-		   }
-
-		   if((tick.ask < Bid_B && typ1A == 0) || (Bid_B > Price2A))
-		   {
-			   del = OrderDelete(Tick_2A);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      openbuy = OrderSend(Symbol_B,OP_SELLLIMIT,0.01,Bid_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick2S != 0)
-		   {
-		   	sym2 = 0;
-		   }
-	   }
-    
-    	if(sym2_A > 0)
-    	{      
-		   if(tick.bid < Ask_B)
-		   {
-			   del = OrderDelete(Tick2);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			   	openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-	        	   	sym2_A = 0;
-			   }
-		   }
-
-		   if((tick.bid > Ask_B && typ2A == 0) || (Ask_B < Price2A))
-		   {
-			   del = OrderDelete(Tick2);
-			   if(del == true || (del == false && OrdersTotal() < monitor))
-			   {
-			      openbuy = OrderSend(Symbol_B,OP_BUYLIMIT,0.01,Ask_B,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
-			      OpenOrders();
-            		   }
-		   }
-		   
-		   if(OrdersTotal() == monitor && Tick2 != 0)
-		   {
-		   	sym2 = 0;
-		   }
-	   }
-   }
+	  	 }
+    	      }		
+	      break;
+           }                                              
+        }   
+    } 
  }
+
+ void CloseMktOrders()
+ {
+   for(int j=0; j<OrdersTotal(); j++)          
+   {
+      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+      {	
+	if(symb == OrderSymbol())
+	{
+	   if(SymbolInfoTick(symb,tick))
+   	   {
+	   if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0)
+	   {
+		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		   sym1 = 1;
+		   Tick1S = 0;
+		   suspend = true;
+		   hold = symb;
+      	  }
+      
+      	  if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
+	  {
+		close = OrderClose(Tick1,Lot_A,Bid,1,Red);
+        	Print("Closed..",Symbol_A,"...Conditions met");
+        	Comment("");
+		sym1_A = 1;
+		Tick1 = 0;
+		suspend = true;
+		hold = symb;
+      	  }
+	}
+      }
+    }
+  }
+}
  
- void read(string val)
+ bool read(string val)
  {
       string sep="_";                // A separator as a character
       ushort u_sep;                  // The code of the separator character
@@ -397,9 +257,12 @@ void SendMktOrders()
          PrintFormat("result[%d]=%s",i,result[i]);
         }
 	symb = result[0];
-	Bid = StringToDouble(result[1]);
-	Ask = StringToDouble(result[2]);
+	Bid_A = StringToDouble(result[1]);
+	Ask_A = StringToDouble(result[2]);
+	return true;
       }
+      else
+      return false;
  }
 
 // --------------------------------------------------------------------
@@ -447,7 +310,6 @@ void OnTimer()
       if (strMessage != "") {
       // Process the message
       Print("Timer event : " +strMessage);
-      double val = StringToDouble(strMessage);
       string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
       glbClientSocket.Send(strMsg);
       }
@@ -495,6 +357,18 @@ void OnChartEvent(const int id, const long& lparam, const double& dparam, const 
       if (strMessage != "") {
       // Process the message
       Print("Chart event : " +strMessage);
+      if(read(strMessage))
+      {
+      	if(suspend == false)
+     	{
+      		CloseMktOrders();
+     	}
+	
+	if(suspend == true)
+     	{
+     		OpenOrders();
+     	}
+      }
       string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
       glbClientSocket.Send(strMsg);
       Print("Sent to server");
