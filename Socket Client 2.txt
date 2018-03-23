@@ -44,7 +44,7 @@ int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
 double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0, Bid;
 double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0, Ask;
 MqlTick tick;
-int Tick1 = 0, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 0, Tick2S = 0, Tick3S = 0, Tick4S = 0;
+int Tick1 = 1, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 1, Tick2S = 0, Tick3S = 0, Tick4S = 0;
 
 // --------------------------------------------------------------------
 // Global variables and constants
