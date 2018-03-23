@@ -41,8 +41,8 @@ int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, 
 double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 double Price1A, Price2A, Price3A, Price4A;
 int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
-double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0, Bid;
-double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0, Ask;
+double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
+double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
 MqlTick tick;
 int Tick1 = 1, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 1, Tick2S = 0, Tick3S = 0, Tick4S = 0;
 
@@ -108,7 +108,7 @@ ClientSocket * glbClientSocket = NULL;
  }
  
  void OpenOrders()
- {
+{
   for(int j=0; j<OrdersTotal(); j++)          
   {
       if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
@@ -137,9 +137,16 @@ ClientSocket * glbClientSocket = NULL;
                     Price1A = OrderOpenPrice();
                 } 
 		
-		if(SymbolInfoTick(hold,tick))
-    		{      
-        	 if(sym1 > 0)
+           }                                              
+        }   
+    } 
+ }
+ 
+ void SendMktOrders()
+ {
+	if(SymbolInfoTick(hold,tick))
+    	{      
+        	if(sym1 > 0)
     		 {
 		   if(tick.ask > Bid_A)
 		   {
@@ -194,13 +201,9 @@ ClientSocket * glbClientSocket = NULL;
 		   	sym1_A = 0;
 		   }
 	  	 }
-    	      }		
-	      break;
-           }                                              
-        }   
-    } 
+    	  }	
  }
-
+ 
  void CloseMktOrders()
  {
    for(int j=0; j<OrdersTotal(); j++)          
@@ -216,10 +219,14 @@ ClientSocket * glbClientSocket = NULL;
 		close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
         	Print("Closed..",Symbol_A,"...Conditions met");
         	Comment("");
+		if(close)
+		{
 		   sym1 = 1;
 		   Tick1S = 0;
 		   suspend = true;
 		   hold = symb;
+		   OpenOrders();
+		}
       	  }
       
       	  if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
@@ -227,10 +234,14 @@ ClientSocket * glbClientSocket = NULL;
 		close = OrderClose(Tick1,Lot_A,Bid,1,Red);
         	Print("Closed..",Symbol_A,"...Conditions met");
         	Comment("");
+		if(close)
+		{
 		sym1_A = 1;
 		Tick1 = 0;
 		suspend = true;
 		hold = symb;
+		OpenOrders();
+		}
       	  }
 	}
       }
@@ -262,7 +273,9 @@ ClientSocket * glbClientSocket = NULL;
 	return true;
       }
       else
+      {
       return false;
+      Print("No string split");
  }
 
 // --------------------------------------------------------------------
