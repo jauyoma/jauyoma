@@ -19,11 +19,11 @@ message. The example server then writes these to its Experts log.
 
 extern string Symbol_A = "EURUSD";
 extern int Decimals_A = 10000;
-extern string Symbol_B = "GBPU";
+extern string Symbol_B = "GBPUSD";
 extern int Decimals_B = 10000;
-extern string Symbol_C = "AUDU";
+extern string Symbol_C = "AUDUSD";
 extern int Decimals_C = 10000;
-extern string Symbol_D = "NZD";
+extern string Symbol_D = "NZDUSD";
 extern int Decimals_D = 10000;
 extern int SymbTraded = 1;
 // --------------------------------------------------------------------
@@ -33,10 +33,10 @@ extern int SymbTraded = 1;
 input string   Hostname = "192.168.1.150";    // Server hostname or IP address
 input ushort   ServerPort = 2000;        // Server port
 
-int monitor = 0;
+int monitor = 0, bght = 0;
 bool b_ConnectTo = false, close, del, suspend = false;
 string symb, hold;
-int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
+int openbuy = 0, opensell = 0, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
 int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
 double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 double Price1A, Price2A, Price3A, Price4A;
@@ -63,43 +63,77 @@ ClientSocket * glbClientSocket = NULL;
   RefreshRates();
   if(OrdersTotal()<(SymbTraded*2) && b_ConnectTo==true)
   {
- 	if(SymbolInfoTick(Symbol_A,tick))
+ 	while(SymbolInfoTick(Symbol_A,tick) && bght < 2)
    	{
 		spread = (tick.ask - tick.bid)*Decimals_A;
 		if(spread < 2.5)
 		{
-			opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
 		}
 	}
+	opensell = 0;
+	openbuy = 0;
 	
-	if(SymbolInfoTick(Symbol_B,tick))
+	while(SymbolInfoTick(Symbol_B,tick) && bght > 1 && bght < 4)
    	{
 		spread = (tick.ask - tick.bid)*Decimals_B;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
 		}
 	}
+	opensell = 0;
+	openbuy = 0;
 	
-	if(SymbolInfoTick(Symbol_C,tick))
+	while(SymbolInfoTick(Symbol_C,tick) && bght > 3 && bght < 6)
    	{
 		spread = (tick.ask - tick.bid)*Decimals_C;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
 		}
 	}
+	opensell = 0;
+	openbuy = 0;
 	
-	if(SymbolInfoTick(Symbol_D,tick))
+	while(SymbolInfoTick(Symbol_D,tick) && bght > 5)
    	{
 		spread = (tick.ask - tick.bid)*Decimals_D;
 		if(spread < 1)
 		{
-			opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
-			openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
 		}
 	}
 	mntor = OrdersTotal();
@@ -284,6 +318,8 @@ ClientSocket * glbClientSocket = NULL;
 
 void OnInit() {
 EventSetMillisecondTimer(100);
+if(NewMktOrders() == (SymbTraded*2))
+ Alert("All Orders Opened");
 }
 
 
