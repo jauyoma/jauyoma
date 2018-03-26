@@ -40,7 +40,7 @@ int openbuy = 0, opensell = 0, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, 
 int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
 double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
 double Price1A, Price2A, Price3A, Price4A;
-int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
+int Tick_1A=0, Tick_2A=0, Tick_3A, Tick_4A;
 double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
 double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
 MqlTick tick;
@@ -184,7 +184,11 @@ ClientSocket * glbClientSocket = NULL;
     		 {
 		   if(tick.ask > Bid_A)
 		   {
-			   del = OrderDelete(Tick_1A);
+			   del = false;
+			   if(Tick_1A != 0)
+			   {
+			   	del = OrderDelete(Tick_1A);
+			   }
 			   if(del == true || (del == false && OrdersTotal() < monitor))
 			   {
 			   	openbuy = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
@@ -192,7 +196,7 @@ ClientSocket * glbClientSocket = NULL;
 			   }
 		   }
 
-		   if((tick.ask < Bid_A && typA == 0) || (Bid_A > Price1A))
+		   if((tick.ask < Bid_A && typA == OP_BUY) || (Bid_A > Price1A))
 		   {
 			   del = OrderDelete(Tick_1A);
 			   if(del == true || (del == false && OrdersTotal() < monitor))
