@@ -244,7 +244,6 @@ int NewMktOrders()
    {
       if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
       {	
-	   Print("Cycling through Orders");
 	   if(symb == OrderSymbol())
 	   {
 	      if(SymbolInfoTick(OrderSymbol(),tick))
@@ -252,7 +251,8 @@ int NewMktOrders()
 	         if(OrderType()==OP_SELL)
 	         {
 	         Tick1S = OrderTicket();
-		 Comment("Trying to Close Sell");
+		      PrintFormat("Trying to Close Sell : %d",Tick1S);
+		      
 	         if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0)
 	         {
 		         close = OrderClose(Tick1S,Lot_A,Ask,1,Red);
@@ -268,9 +268,11 @@ int NewMktOrders()
             if(OrderType()==OP_BUY)
 	         {
 	         Tick1 = OrderTicket();
-		 Comment("Trying to Close Buy");
+		      PrintFormat("Trying to Close Buy : %d",Tick1);
+		      PrintFormat("Bid value is : %f",tick.bid);
       	   if(sym1_A == 0 && sym1 == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
 	         {
+		         Comment(Ask_A);
 		         close = OrderClose(Tick1,Lot_A,Bid,1,Red);
         	      Print("Closed..",Symbol_A,"...Conditions met");
         	      Comment("");
@@ -380,7 +382,6 @@ void OnTimer()
       glbClientSocket = NULL;
    }
    CloseMktOrders();
-   Comment(Bid_A);
 }
 
 void OnChartEvent(const int id, const long& lparam, const double& dparam, const string& sparam)
