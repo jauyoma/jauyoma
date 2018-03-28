@@ -1,0 +1,446 @@
+/* ###################################################################
+
+Example socket client.
+Code can be used as both MQ4 and MQ5 (on both 32-bit and 64-bit MT5)
+
+Simply sends each new tick to the server, as a CRLF-terminated 
+message. The example server then writes these to its Experts log.
+
+################################################################### */
+
+
+#property strict
+
+// --------------------------------------------------------------------
+// Include socket library
+// --------------------------------------------------------------------
+#define SOCKET_LIBRARY_USE_EVENTS
+#include <socket-library-mt4-mt5.mqh>
+
+extern string Symbol_A = "EURUSD";
+extern int Decimals_A = 10000;
+extern string Symbol_B = "GBPUSD";
+extern int Decimals_B = 10000;
+extern string Symbol_C = "AUDUSD";
+extern int Decimals_C = 10000;
+extern string Symbol_D = "NZDUSD";
+extern int Decimals_D = 10000;
+extern int SymbTraded = 4;
+// --------------------------------------------------------------------
+// EA user inputs
+// --------------------------------------------------------------------
+
+input string   Hostname = "192.168.1.150";    // Server hostname or IP address
+input ushort   ServerPort = 2000;        // Server port
+
+int monitor = 0, bght=0;
+bool close, del, suspend = false;
+string symb, hold;
+int openbuy, opensell, MagicNumber, Magic, Magic1, Magic2, Magic3, typ, typ1, typ2, typ3, typA =0, typ1A =0, typ2A =0, typ3A =0;
+int sym1 = 0, sym2 = 0, sym3 = 0, sym4 = 0, sym1_A = 0, sym2_A = 0, sym3_A = 0, sym4_A = 0;
+double Lots, Lot_A, Lot_B, Lot_C, Lot_D, Price1, Price2, Price3, Price4;
+double Price1A, Price2A, Price3A, Price4A;
+int Tick_1A, Tick_2A, Tick_3A, Tick_4A;
+double Bid_A = 0, Bid_B = 0, Bid_C = 0, Bid_D = 0;
+double Ask_A = 0, Ask_B = 0, Ask_C = 0, Ask_D = 0;
+MqlTick tick;
+int Tick1 = 0, Tick2 = 0, Tick3 = 0, Tick4 = 0, Tick1S = 0, Tick2S = 0, Tick3S = 0, Tick4S = 0;
+
+// --------------------------------------------------------------------
+// Global variables and constants
+// --------------------------------------------------------------------
+
+ClientSocket * glbClientSocket = NULL;
+
+// --------------------------------------------------------------------
+// Function Definitions
+// --------------------------------------------------------------------
+
+void NewMktOrders()
+{
+  int mntor = 0;
+  double spread;
+  RefreshRates();
+  if(OrdersTotal()<(SymbTraded*2))
+  {
+ 	while(SymbolInfoTick(Symbol_A,tick) && bght < 2)
+   	{
+		spread = (tick.ask - tick.bid)*Decimals_A;
+		if(spread < 2.5)
+		{
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_A,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_A,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
+		}
+	}
+	opensell = 0;
+	openbuy = 0;
+	
+	while(SymbolInfoTick(Symbol_B,tick) && bght > 1 && bght < 4)
+   	{
+		spread = (tick.ask - tick.bid)*Decimals_B;
+		if(spread < 3)
+		{
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_B,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_B,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
+		}
+	}
+	opensell = 0;
+	openbuy = 0;
+	
+	while(SymbolInfoTick(Symbol_C,tick) && bght > 3 && bght < 6)
+   	{
+		spread = (tick.ask - tick.bid)*Decimals_C;
+		if(spread < 3)
+		{
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_C,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_C,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
+		}
+	}
+	opensell = 0;
+	openbuy = 0;
+	
+	while(SymbolInfoTick(Symbol_D,tick) && bght < (SymbTraded*2))
+   	{
+		spread = (tick.ask - tick.bid)*Decimals_D;
+		if(spread < 3)
+		{
+			if(opensell<=0)
+			{
+				opensell = OrderSend(Symbol_D,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Red);
+			}
+			if(openbuy<=0)
+			{
+				openbuy = OrderSend(Symbol_D,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			}
+			bght = OrdersTotal();
+		}
+	}
+	mntor = OrdersTotal();
+  }
+
+ }
+ 
+ void SendMktOrders()
+ {
+	if(SymbolInfoTick(hold,tick))
+    	{      
+        	if(sym1 > 0)
+    		{
+		     if(tick.ask > Bid_A)
+		     {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	Comment("Reading Sell...");
+			   	openbuy = OrderSend(hold,OP_SELL,0.01,Bid,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   	sym1 = 0;
+			   }
+		     }
+
+		   if((tick.ask < Bid_A && typA == OP_BUY) || (Bid_A > Price1A))
+		   {
+			   del = OrderDelete(Tick_1A);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      Comment("Reading Sell Limit...");
+			      openbuy = OrderSend(hold,OP_SELLLIMIT,0.01,Bid_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1S != 0)
+		   {
+		   	sym1 = 0;
+		   }
+	   	}
+		
+		if(sym1_A > 0)
+    		{      
+		   if(tick.bid < Ask_A)
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			   	openbuy = OrderSend(hold,OP_BUY,0.01,Ask,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+	        	   	sym1_A = 0;
+			   }
+		   }
+
+		   if((tick.bid > Ask_A && typ1A == OP_SELL) || (Ask_A < Price1A))
+		   {
+			   del = OrderDelete(Tick1);
+			   if(del == true || (del == false && OrdersTotal() < monitor))
+			   {
+			      openbuy = OrderSend(hold,OP_BUYLIMIT,0.01,Ask_A,1,0,0,"Arbitrage Trader",MagicNumber,0,Blue);
+			      OpenOrders();
+            		   }
+		   }
+		   
+		   if(OrdersTotal() == monitor && Tick1 != 0)
+		   {
+		   	sym1_A = 0;
+		   }
+	  	 }
+    	  }	
+ }
+ 
+ void OpenOrders()
+{
+  for(int j=0; j<OrdersTotal(); j++)          
+  {
+      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+      {
+           if(OrderSymbol()==hold)
+           {
+               if(OrderType() == OP_BUY || OrderType() ==OP_SELL)
+               {     
+                    Magic = OrderMagicNumber();           
+                    Lot_A = OrderLots();
+		              Price1 = OrderOpenPrice()*Decimals_B;
+		              typ = OrderType(); 
+		              if(OrderType() == OP_BUY)
+		              {
+                        	Tick1 = OrderTicket();
+		              }
+		              if(OrderType() == OP_SELL)
+		              {
+                        	Tick1S = OrderTicket();
+		              } 
+                }
+                else
+                {
+                    typA = OrderType();
+                    Tick_1A = OrderTicket();
+                    Price1A = OrderOpenPrice();
+                } 
+		
+           }                                              
+        }   
+    } 
+ }
+ 
+ void CloseMktOrders()
+ {
+   for(int j=0; j<OrdersTotal(); j++)          
+   {
+      if (OrderSelect(j,SELECT_BY_POS,MODE_TRADES)==true) 
+      {	
+	   if(symb == OrderSymbol())
+	   {
+	      if(SymbolInfoTick(OrderSymbol(),tick))
+   	   {
+	         if(OrderType()==OP_SELL)
+	         {
+	         Tick1S = OrderTicket();	      
+	         if(sym1 == 0 && sym1_A == 0 && ((Bid_A - tick.ask)*Decimals_A) >= 4 && Tick1S != 0)
+	         {
+		         close = OrderClose(Tick1S,OrderLots(),Ask,1,Red);
+        	      Comment("Closed..",Symbol_A,"...Conditions met");
+		         sym1 = 1;
+		         Tick1S = 0;
+		         suspend = true;
+		         hold = symb;
+		         Bid_A = Bid + 0.00039;
+               Ask_A = Ask - 0.00039;
+      	   }
+            }
+            
+            if(OrderType()==OP_BUY)
+	         {
+	         Tick1 = OrderTicket();
+      	   if(sym1 == 0 && sym1_A == 0 && ((tick.bid - Ask_A)*Decimals_A) >= 4 && Tick1 != 0)
+	         {
+		         close = OrderClose(Tick1,OrderLots(),Bid,1,Red);
+        	      Comment("Closed..",Symbol_A,"...Conditions met");
+		         sym1_A = 1;
+		         Tick1 = 0;
+		         suspend = true;
+		         hold = symb;
+		         Bid_A = Bid + 0.00039;
+               Ask_A = Ask + 0.00039;
+      	   }
+      	   }
+	      }
+      }
+    }
+  }
+}
+ 
+ bool read(string val)
+ {
+      string sep="_";                // A separator as a character
+      ushort u_sep;                  // The code of the separator character
+      string result[];               // An array to get strings
+      //--- Get the separator code
+      u_sep=StringGetCharacter(sep,0);
+      //--- Split the string to substrings
+      int k=StringSplit(val,u_sep,result);
+
+      //--- Now output all obtained strings
+      if(k>0)
+      {
+	      symb = result[0];
+	      Bid_A = NormalizeDouble(StringToDouble(result[1]),5);
+	      Ask_A = NormalizeDouble(StringToDouble(result[2]),5);
+	      PrintFormat("Symbol value is %s :",symb);
+	      PrintFormat("Bid value is %f :",Bid_A);
+	      PrintFormat("Ask value is %f :",Ask_A);
+	      return true;
+      }
+      else
+      return false;
+ }
+
+// --------------------------------------------------------------------
+// Initialisation (no action required)
+// --------------------------------------------------------------------
+
+void OnInit() {
+EventSetMillisecondTimer(1);
+NewMktOrders();
+Bid_A = Bid - 0.00068;
+Ask_A = Ask - 0.00068;
+symb = "EURUSD";
+monitor = OrdersTotal();
+}
+
+
+// --------------------------------------------------------------------
+// Termination - free the client socket, if created
+// --------------------------------------------------------------------
+
+void OnDeinit(const int reason)
+{
+   if (glbClientSocket) {
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+   EventKillTimer();
+}
+
+
+// --------------------------------------------------------------------
+// Tick handling - set up a connection, if none already active,
+// and send the current price quote
+// --------------------------------------------------------------------
+
+void OnTimer()
+{
+   if (!glbClientSocket) {
+      glbClientSocket = new ClientSocket(Hostname, ServerPort);
+      if (glbClientSocket.IsSocketConnected()) {
+         Comment("Client connection succeeded");
+      } else {
+         Comment("Client connection failed");
+      }
+  }
+
+   if (glbClientSocket.IsSocketConnected()) {
+      // Send the current price as a CRLF-terminated message
+      string strMessage = glbClientSocket.Receive();
+      if (strMessage != "") {
+      // Process the message
+      Print("Timer event : " +strMessage);
+      string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
+      glbClientSocket.Send(strMsg);
+      }
+
+   } else {
+      Print("Problem connecting..Checking server connection");
+      // Either the connection above failed, or the socket has been closed since an earlier
+      // connection. We handle this in the next block of code...
+   }
+   
+   // If the socket is closed, destroy it, and attempt a new connection
+   // on the next call to OnTick()
+   if (!glbClientSocket.IsSocketConnected()) {
+      // Destroy the server socket. A new connection
+      // will be attempted on the next tick
+      Print("Client disconnected. Will retry.");
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+   CloseMktOrders();
+   SendMktOrders();
+}
+
+void OnChartEvent(const int id, const long& lparam, const double& dparam, const string& sparam)
+{
+   if (id == CHARTEVENT_KEYDOWN) 
+   {
+      // If the lparam matches a .GetSocketHandle(), then it's a dummy
+      // key press indicating that there's socket activity. Otherwise,
+      // it's a real key press
+         
+      if (lparam == glbClientSocket.GetSocketHandle()) 
+      {
+         if (!glbClientSocket) 
+         {
+      glbClientSocket = new ClientSocket(Hostname, ServerPort);
+      if (glbClientSocket.IsSocketConnected()) {
+         Comment("Client connection succeeded");
+      } else {
+         Comment("Client connection failed");
+      }
+     }
+
+    if (glbClientSocket.IsSocketConnected()) {
+      // Send the current price as a CRLF-terminated message
+      string strMessage = glbClientSocket.Receive();
+      if (strMessage != "") {
+      // Process the message
+      Print("Chart event : " +strMessage);
+      string strMsg = Symbol() + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_BID), 6) + "," + DoubleToString(SymbolInfoDouble(Symbol(), SYMBOL_ASK), 6) + "\r\n";
+      glbClientSocket.Send(strMsg);
+      Print("Sent to server");
+      }
+    } 
+    else 
+    {
+      Print("Problem connecting..Checking server connection");
+      // Either the connection above failed, or the socket has been closed since an earlier
+      // connection. We handle this in the next block of code...
+     }
+   
+   // If the socket is closed, destroy it, and attempt a new connection
+   // on the next call to OnTick()
+   if (!glbClientSocket.IsSocketConnected()) {
+      // Destroy the server socket. A new connection
+      // will be attempted on the next tick
+      Print("Client disconnected. Will retry.");
+      delete glbClientSocket;
+      glbClientSocket = NULL;
+   }
+
+   } 
+   else 
+    {
+         Print("Chart Event");
+            }
+         }
+         
+         // If we get here, then the key press does not seem
+         // to match any socket, and appears to be a real
+         // key press event...
+}
