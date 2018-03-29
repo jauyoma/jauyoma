@@ -17,3 +17,5 @@ http://www.learncpp.com/cpp-tutorial/611-references/
 printf("\nConcatenated value is :\"%s\"\n", strcat(BidBuffer, AskBuffer));
 https://social.msdn.microsoft.com/Forums/vstudio/en-US/8ce6ddef-3f1a-4033-a28b-54af91766e9f/teach-me-what-is-t?forum=vcgeneral
 https://www.forexfactory.com/showthread.php?t=337102
+USTECHIndex - Nasdaq
+US500Index - ES
