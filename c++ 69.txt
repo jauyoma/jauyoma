@@ -1379,7 +1379,7 @@ int main(int      argc,
 	fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
 	fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
 
-	fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
+	fake_envp[9] = "USER=42554PPR";
 	fake_envp[10] = NULL;
 
 	/*   ----------------------------------------------------------------   */
