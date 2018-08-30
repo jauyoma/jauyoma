@@ -1862,32 +1862,6 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-
-	if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
-	{
-		printf("\nREngine::getPriceIncrInfo() error : %d\n", iCode);
-
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
-
-		return (BAD);
-	}
-
-	/*   ----------------------------------------------------------------   */
-	/*   Use the global boolean as the signaller of when the callback has   */
-	/*   been fired (and our internal instrument-specific data is ready.)   */
-
-	while (!g_bRcvdPriceIncr)
-	{
-#ifdef WinOS
-		sleep(1);
-#else
-		Sleep(1000);
-#endif
-	}
-
-	/*   ----------------------------------------------------------------   */
 	/*   Placing an order requires a trade route to be specified.  Based    */
 	/*   on your FCM and/or IB, you may have zero to many trade routes      */
 	/*   for a given exchange.  Store the exchange where the callback can   */
@@ -1994,7 +1968,7 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 
 	/*   press 'enter' to quit... */
-
+	if(!g_bDone)
 	fgetc(stdin);
 
 	/*   ----------------------------------------------------------------   */
