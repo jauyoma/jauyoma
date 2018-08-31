@@ -627,7 +627,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	*aiCode = API_OK;
-	return(OK);
+	return(OK);An
 }
 
 
@@ -669,6 +669,18 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	void *    pContext,
 	int *     aiCode)
 {
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	
 	if (pInfo->eAccountBalance == 2)
 		_AccBal = pInfo->dAccountBalance;
 	if (pInfo->eMarginBalance == 2)
@@ -681,7 +693,8 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_Posn = pInfo->lPosition;
 	_ClosedPL = pInfo->dClosedPnl;
 	_OpenPL = pInfo->dOpenPnl;
-
+	
+	/*   ----------------------------------------------------------------   */
 
 	*aiCode = API_OK;
 	return(OK);
@@ -1985,6 +1998,21 @@ int main(int      argc,
 		Sleep(1000);
 #endif
 	}
+	
+	/*   ----------------------------------------------------------------   */
+	/*   Printout of variables		                                */
+	/*   ----------------------------------------------------------------   */
+	
+	printf("\nBid is  : %.3f\n", Bid);
+	printf("Ask is  : %.3f\n", Ask);
+	printf("Average Fill Price is  : %.3f\n", _AvgFillPrice);
+	printf("Account Balance is  : %.2f\n", _AccBal);
+	printf("Closed P&L is  : %.2f\n", _ClosedPL);
+	printf("Margin Balance is  : %.2f\n", _Margin);
+	printf("Open P&L is  : %.2f\n", _OpenPL);
+	printf("Buy Qty is  : %d\n", _BuyQty);
+	printf("Sell Qty is  : %d\n", _SellQty);
+	printf("Position is  : %d\n", _Posn);
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
