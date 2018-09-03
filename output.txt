@@ -1,79 +1,18 @@
-           buy sell type : B
-          order duration : DAY
-        order entry type : M
-     pre-trade anonymity : <empty>
-       trading algorithm : <empty>
-             trade route : globex
-    routing instructions : <empty>
-    order operation type : <empty>
-            bracket type : <empty>
-         release command : <empty>
-           release ssboe : 0 (not used)
-           release usecs : 0 (not used)
-            cancel ssboe : 0 (not used)
-            cancel usecs : 0 (not used)
-            cancel after : 0 (not used)
-        trigger exchange : <empty>
-          trigger ticker : <empty>
-        trigger price id : 0
-    trigger cmp operator : <empty>
-            order status : order sent to exch
-       completion reason : <empty>
-                 remarks : <empty>
-                    text : <empty>
-                     tag : <empty>
-                user tag : <empty>
-                user msg : <empty>
-          trail by ticks : 0
-       trail by price id : 0
-                 context : 00000000
-                    user : andrew.kowuoche@gmail.com
-gtwy buffer bytes behind : 0
-       gateway timestamp :          0.000000
-               timestamp : 1535957374.383193
-           callback type : 2 (update)
-           Response Code : 0
-                         : <empty>
-
-
-Received Status Report
-             OrderReport :
-                  FCM ID : Rithmic-FCM
-                   IB ID : Prospects
-              Account ID : AK7658
-                  ticker : NQU8
-                exchange : CME
-            order number : 8884816
-   original order number : <empty>
- current sequence number : EN9UH
- initial sequence number : EN9UH
-       exchange order id : 68569909950
-         omnibus account : <empty>
-    position disposition : opening
-              order type : M
-           buy sell type : B
-          order duration : DAY
-        order entry type : M
-           price to fill :  7667.000000 (valid)
-           trigger price :     0.000000 (invalid)
-          avg fill price :     0.000000 (invalid)
-              fill price :     0.000000 (invalid)
-               fill size : 0
           trigger ticker : <empty>
         trigger exchange : <empty>
     trigger cmp operator : <empty>
         trigger price id : 0
             total filled : 0
           total unfilled : 1
-               report id : 68454:364282
+               report id : 68454:579756
              report type : status
                     text : <empty>
                     user : andrew.kowuoche@gmail.com
            connection id : 2
 gtwy buffer bytes behind : 0
        gateway timestamp :          0.000000
-        source timestamp : 1535957374.000000000
-               timestamp : 1535957374.471509
+        source timestamp : 1535976951.000000000
+               timestamp : 1535976951.856441
            callback type : 2 (update)
                      tag : <empty>
                 user tag : <empty>
@@ -89,13 +28,13 @@ gtwy buffer bytes behind : 0
               Account ID : AK7658
                   ticker : NQU8
                 exchange : CME
-            order number : 8884816
+            order number : 8884818
    original order number : <empty>
- current sequence number : EN9UH
- initial sequence number : EN9UH
-       exchange order id : 68569909950
+ current sequence number : EN9UJ
+ initial sequence number : EN9UJ
+       exchange order id : 68570044664
          omnibus account : <empty>
-           price to fill :  7667.000000 (valid)
+           price to fill :  7670.750000 (valid)
           avg fill price :     0.000000 (invalid)
            trigger price :     0.000000 (invalid)
         quantity to fill : 1
@@ -140,7 +79,7 @@ gtwy buffer bytes behind : 0
                     user : andrew.kowuoche@gmail.com
 gtwy buffer bytes behind : 0
        gateway timestamp :          0.000000
-               timestamp : 1535957374.471509
+               timestamp : 1535976951.856441
            callback type : 2 (update)
            Response Code : 0
                          : <empty>
@@ -153,21 +92,21 @@ Received Fill Report
               Account ID : AK7658
                   ticker : NQU8
                 exchange : CME
-            order number : 8884816
+            order number : 8884818
    original order number : <empty>
- current sequence number : EN9UH
- initial sequence number : EN9UH
-       exchange order id : 68569909950
+ current sequence number : EN9UJ
+ initial sequence number : EN9UJ
+       exchange order id : 68570044664
          omnibus account : <empty>
     position disposition : opening
               order type : M
            buy sell type : B
           order duration : DAY
         order entry type : M
-           price to fill :  7667.000000 (valid)
+           price to fill :  7670.750000 (valid)
            trigger price :     0.000000 (invalid)
-          avg fill price :  7661.000000 (valid)
-              fill price :  7661.000000 (valid)
+          avg fill price :  7664.750000 (valid)
+              fill price :  7664.750000 (valid)
                fill size : 1
           trigger ticker : <empty>
         trigger exchange : <empty>
@@ -175,15 +114,15 @@ Received Fill Report
         trigger price id : 0
             total filled : 1
           total unfilled : 0
-               report id : 68454:M:47256TN0007962
+               report id : 68454:M:68900TN0010693
              report type : fill
                     text : <empty>
                     user : andrew.kowuoche@gmail.com
            connection id : 2
 gtwy buffer bytes behind : 0
        gateway timestamp :          0.000000
-        source timestamp : 1535957374.000000000
-               timestamp : 1535957374.471614
+        source timestamp : 1535976951.000000000
+               timestamp : 1535976951.856523
            callback type : 2 (update)
                      tag : <empty>
                 user tag : <empty>
@@ -201,39 +140,20 @@ gtwy buffer bytes behind : 0
                      : <empty>
 
 
-Best Ask Quote
-         AskInfo :
-          ticker : ESU8
-        exchange : CME
-           price :  2901.000000 (valid)
-            size :           34 (valid)
-    implied size :            0
-      num orders :            4
-     update type : undefined
-   callback type : update
-       timestamp : 1535957374.972029
-
-Bid value is :"0.000"
-
-Ask value is :"0.000"
-
-Speed new counter is : 1277 microseconds
-
-
                 LineInfo :
                   FCM ID : Rithmic-FCM
                    IB ID : Prospects
               Account ID : AK7658
                   ticker : NQU8
                 exchange : CME
-            order number : 8884816
+            order number : 8884818
    original order number : <empty>
- current sequence number : EN9UH
- initial sequence number : EN9UH
-       exchange order id : 68569909950
+ current sequence number : EN9UJ
+ initial sequence number : EN9UJ
+       exchange order id : 68570044664
          omnibus account : <empty>
-           price to fill :  7667.000000 (valid)
-          avg fill price :  7661.000000 (valid)
+           price to fill :  7670.750000 (valid)
+          avg fill price :  7664.750000 (valid)
            trigger price :     0.000000 (invalid)
         quantity to fill : 1
         minimum quantity : 0
@@ -277,13 +197,32 @@ Speed new counter is : 1277 microseconds
                     user : andrew.kowuoche@gmail.com
 gtwy buffer bytes behind : 0
        gateway timestamp :          0.000000
-               timestamp : 1535957374.471614
+               timestamp : 1535976951.856523
            callback type : 2 (update)
            Response Code : 0
                          : <empty>
 
-Bid is  : 7660.500
-Ask is  : 2901.000
+
+Best Bid
+         BidInfo :
+          ticker : ESU8
+        exchange : CME
+           price :  2903.000000 (valid)
+            size :          202 (valid)
+    implied size :            0
+      num orders :           41
+     update type : undefined
+   callback type : update
+       timestamp : 1535976952.568202
+
+Bid value is :"0.000"
+
+Ask value is :"0.000"
+
+Speed new counter is : 6778 microseconds
+
+Bid is  : 2903.000
+Ask is  : 7665.000
 Average Fill Price is  : 1.000
 Account Balance is  : 0.00
 Closed P&L is  : 0.00
@@ -295,6 +234,45 @@ Position is  : 0
 ES Bid price is  : 0.000
 NQ Bid price is  : 0.000
 ES Ask price is  : 0.000
-NQ Ask price is  : 0.000
-Completion Reason is  :
+NQ Ask price is  : 7665.000
+Completion reason is : F
+Order Duration is : DAY
+Order Type is : M
+Ticker (sTicker) is : NQU8
+Ticker (Trial) is : NQU8
+NQ Value is : NQU8
+
+usecs at exchange : 49025
+
+
+
+     AlertInfo :
+        ticker : <empty>
+      exchange : <empty>
+       message : PnL Connection Closed
+    alert type : 2
+ connection id : 3
+ response code : 0
+               : <empty>
+
+
+     AlertInfo :
+        ticker : <empty>
+      exchange : <empty>
+       message : Trading System Connection Closed
+    alert type : 2
+ connection id : 2
+ response code : 0
+               : <empty>
+
+
+     AlertInfo :
+        ticker : <empty>
+      exchange : <empty>
+       message : Market Data Connection Closed
+    alert type : 2
+ connection id : 1
+ response code : 0
+               : <empty>
+
 C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
