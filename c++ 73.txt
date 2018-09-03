@@ -42,6 +42,9 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/timeb.h>
 #ifdef WinOS
 #include <unistd.h>
 #else
@@ -99,8 +102,8 @@ std::string _stype, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
 std::string _sTickerNQ, _sTickerES;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
-std::string trial;
-
+std::string trial, test, check;
+int  hr_T = 17, min_T = 30, sec_T = 30;
 
 int main(int      argc,
 	char * * argv,
@@ -1093,6 +1096,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		_ESAsk = pInfo->dPrice;
+	
+	trial = "";
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1126,15 +1131,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	NBid = pBid->dPrice;
 	NAsk = pAsk->dPrice;
 	send(Bid, Ask);
+	
+	trial = std::string(pBid->sTicker.pData, pBid->sTicker.iDataLen);
+	test = std::string(pAsk->sTicker.pData, pAsk->sTicker.iDataLen);
 
-	if (pAsk->sTicker.pData == _TickerNQ.pData)
+	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		_NQAsk = pAsk->dPrice;
-	if (pAsk->sTicker.pData == _TickerES.pData)
+	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 		_ESAsk = pAsk->dPrice;
-	if (pBid->sTicker.pData == _TickerNQ.pData)
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		_NQBid = pBid->dPrice;
-	if (pBid->sTicker.pData == _TickerES.pData)
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		_ESBid = pBid->dPrice;
+	
+	trial = "";
+	test = "";
 
 	/*   ----------------------------------------------------------------   */
 	*aiCode = API_OK;
@@ -1160,11 +1171,15 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 
 	NBid = pInfo->dPrice;
 	send(Bid, Ask);
+	
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
-	if (pInfo->sTicker.pData == _TickerNQ.pData)
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		_NQBid = pInfo->dPrice;
-	if (pInfo->sTicker.pData == _TickerES.pData)
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		_ESBid = pInfo->dPrice;
+	
+	trial = "";
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2007,7 +2022,9 @@ int main(int      argc,
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
 	/*   ----------------------------------------------------------------   */
-
+	
+	if(today.tm_hour >= hr_T)
+	{
 	if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 	{
 		printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2017,6 +2034,7 @@ int main(int      argc,
 		delete pAdmCallbacks;
 
 		return (BAD);
+	}
 	}
 
 	/*   ----------------------------------------------------------------   */
