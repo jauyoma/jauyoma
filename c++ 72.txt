@@ -2051,11 +2051,11 @@ int main(int      argc,
 	printf("NQ Bid price is  : %.3f\n", _NQBid);
 	printf("ES Ask price is  : %.3f\n", _ESAsk);
 	printf("NQ Ask price is  : %.3f\n", _NQAsk);
-	printf("Completion Reason is  : %s\n", _sCompReason);
-	printf("Order Duration is  : %s\n", _sOrdDuration);
-	printf("Order Type is  : %s\n", _sOrdType);
-	printf("Ticker is  : %s\n", _sTicker);
-	printf("Ticker is  : %s\n", trial);
+	std::cout << "Completion reason is : " << _sCompReason << endl;
+	std::cout << "Order Duration is : " << _sOrdDuration << endl;
+	std::cout << "Order Type is : " << _sOrdType << endl;
+	std::cout << "Ticker (sTicker) is : " << _sTicker << endl;
+	std::cout << "Ticker (Trial) is : " << trial << endl;
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
