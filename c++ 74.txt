@@ -637,10 +637,10 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_OrdType = pInfo->sOrderType;
 	_Ticker = pInfo->sTicker;
 
-	_sCompReason = std::string(_CompReason.pData, _CompReason.iDataLen);
-	_sOrdDuration = std::string(_OrdDuration.pData, _OrdDuration.iDataLen);
-	_sOrdType = std::string(_OrdType.pData, _OrdType.iDataLen);
-	_sTicker = std::string(_Ticker.pData, _Ticker.iDataLen);
+	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
+	_sOrdDuration = std::string(pInfo->sOrderDuration.pData, pInfo->sOrderDuration.iDataLen);
+	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
+	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1080,8 +1080,13 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 {
 
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
+	
+	hr_T = lt.wHour;
+	min_T = lt.wMinute;
 
 	printf("\n\nBest Ask Quote\n");
 	if (!pInfo->dump(&iIgnored))
@@ -1115,8 +1120,13 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 {
 
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
+	
+	hr_T = lt.wHour;
+	min_T = lt.wMinute;
 
 	printf("\n\nBest Bid/Ask\n");
 	if (!pBid->dump(&iIgnored))
@@ -1161,8 +1171,13 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 {
 
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
+	
+	hr_T = lt.wHour;
+	min_T = lt.wMinute;
 
 	printf("\n\nBest Bid\n");
 	if (!pInfo->dump(&iIgnored))
@@ -1737,8 +1752,8 @@ int main(int      argc,
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
-	LoginParams       oLoginParams;
 	MarketOrderParams oMktOrdParams;
+	LoginParams       oLoginParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
@@ -2027,10 +2042,20 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
+	
+
+	/*   ----------------------------------------------------------------   */
+	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
+	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
+	/*   for details.                                                       */
+
+	while (!g_bDone)
+	{
+	
 	hr_T = lt.wHour;
 	min_T = lt.wMinute;
 
-	if (min_T > 2 && hr_T == 20)
+	if (min_T > 50 && hr_T == 12)
 	{
 		if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
@@ -2043,14 +2068,7 @@ int main(int      argc,
 			return (BAD);
 		}
 	}
-
-	/*   ----------------------------------------------------------------   */
-	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
-	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
-	/*   for details.                                                       */
-
-	while (!g_bDone)
-	{
+	
 #ifdef WinOS
 		sleep(1);
 #else
