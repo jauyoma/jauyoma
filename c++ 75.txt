@@ -105,6 +105,9 @@ LARGE_INTEGER Frequency;
 std::string trial, test, check;
 int  hr_T = 13, min_T = 10, sec_T = 30;
 
+bool	NQFree = false;
+bool	ESFree = false;
+
 SYSTEMTIME st, lt;
 
 int main(int      argc,
@@ -1099,13 +1102,13 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQAsk = pInfo->dPrice;
-		if(lt.wHour==hr_T && lt.wMinute<min_T)
+		if((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour==hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pInfo->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
 	}
 
@@ -1152,25 +1155,25 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQAsk = pAsk->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pAsk->dPrice;
 	}
 	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pAsk->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pAsk->dPrice;
 	}
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pBid->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pBid->dPrice;
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pBid->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pBid->dPrice;
 	}
 
@@ -1209,13 +1212,13 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pInfo->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pInfo->dPrice;
-		if (lt.wHour == hr_T && lt.wMinute<min_T)
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
 	}
 
@@ -2081,23 +2084,101 @@ int main(int      argc,
 
 		if (min_T > 50 && hr_T == 12)
 		{
-			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if(_NQBid > _NQPBid && NQFree == false)
 			{
-				printf("REngine::sendOrder() error : %d\n", iCode);
+				oMktOrdParams.sBuySellType.pData = "B";	
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker = "NQU8";
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
 
-				delete g_pEngine;
-				delete pCallbacks;
-				delete pAdmCallbacks;
-
-				return (BAD);
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+				
+					g_bDone = true;
+					
+					return (BAD);
+					break;
+				}
+				else
+					NQFree = true;
 			}
+			
+			if(_NQBid < _NQPBid && NQFree == false)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";	
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker = "NQU8";
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+				
+					g_bDone = true;
+					
+					return (BAD);
+					break;
+				}
+				else
+					NQFree = true;
+			}
+			
+			if(_ESBid > _ESPBid && ESFree == false)
+			{
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker = "ESU8";
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+				
+					g_bDone = true;
+					
+					return (BAD);
+					break;
+				}
+				else
+					ESFree = true;
+			}
+			
+			if(_ESBid < _ESPBid && ESFree == false)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker = "ESU8";
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+				
+					g_bDone = true;
+					
+					return (BAD);
+					break;
+				}
+				else
+					ESFree = true;
+			}
+			
 		}
 
-#ifdef WinOS
+	#ifdef WinOS
 		sleep(1);
-#else
+	#else
 		Sleep(1000);
-#endif
+	#endif
 	}
 
 	/*   ----------------------------------------------------------------   */
