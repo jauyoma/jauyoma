@@ -1,0 +1,47 @@
+
+Bid is  : %.3f
+7612.75
+Ask is  : %.3f
+2890.25
+Average Fill Price is  : %.3f
+1
+Account Balance is  : %.2f
+0
+Closed P&L is  : %.2f
+0
+Margin Balance is  : %.2f
+0
+Open P&L is  : %.2f
+0
+Buy Qty is  : %d
+0
+Sell Qty is  : %d
+0
+Position is  : %d
+0
+ES Bid price is  : %.3f
+2890
+NQ Bid price is  : %.3f
+7612.75
+ES Ask price is  : %.3f
+2890.25
+NQ Ask price is  : %.3f
+7613.25
+ESP Ask price is  : %.3f
+2890.25
+NQP Ask price is  : %.3f
+7613.25
+ESP Bid price is  : %.3f
+2890
+NQP Bid price is  : %.3f
+7613
+Completion reason is : F
+Order Duration is : DAY
+Order Type is : M
+Ticker (sTicker) is : NQU8
+Ticker (Trial) is : 
+NQ Value is : NQU8
+The Local Time is : 13:19
+The System Time is : 12:19
+Hour is : 13
+Minute is : 19
