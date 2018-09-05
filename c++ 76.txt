@@ -1786,6 +1786,11 @@ int main(int      argc,
 	char *            fake_envp[11];
 	int               iCode;
 	int               iFlags;
+	
+	std::string	  BNQ = "Not Bought;
+	std::string	  SNQ = "Not Bought;
+	std::string	  BES = "Not Bought;
+	std::string	  SES = "Not Bought;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2081,7 +2086,7 @@ int main(int      argc,
 
 		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T+5))
 		{
-			if (_NQBid > _NQPBid && NQFree == false)
+			if (_NQBid > _NQPBid && _NQAsk > _NQPAsk && NQFree == false)
 			{
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2101,10 +2106,13 @@ int main(int      argc,
 					break;
 				}
 				else
+				{
 					NQFree = true;
+					BNQ = "Bought NQ";
+				}
 			}
 
-			if (_NQBid < _NQPBid && NQFree == false)
+			if (_NQBid < _NQPBid && _NQAsk < _NQPAsk && NQFree == false)
 			{
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2124,10 +2132,13 @@ int main(int      argc,
 					break;
 				}
 				else
+				{
 					NQFree = true;
+					SNQ = "Sold NQ";
+				}
 			}
 
-			if (_ESBid > _ESPBid && ESFree == false)
+			if (_ESBid > _ESPBid && _ESAsk > _ESPAsk && ESFree == false)
 			{
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2147,10 +2158,13 @@ int main(int      argc,
 					break;
 				}
 				else
+				{
 					ESFree = true;
+					BES = "Bought ES";
+				}
 			}
 
-			if (_ESBid < _ESPBid && ESFree == false)
+			if (_ESBid < _ESPBid && _ESAsk < _ESPAsk && ESFree == false)
 			{
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2170,7 +2184,10 @@ int main(int      argc,
 					break;
 				}
 				else
+				{
 					ESFree = true;
+					SES = "Sold ES";
+				}
 			}
 
 		}
@@ -2214,6 +2231,10 @@ int main(int      argc,
 	std::cout << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
 	std::cout << "Hour is : " << hr_T << endl;
 	std::cout << "Minute is : " << min_T << endl;
+	std::cout << "Value of BNQ is : " << BNQ << endl;
+	std::cout << "Value of BES is : " << BES << endl;
+	std::cout << "Value of SNQ is : " << SNQ << endl;
+	std::cout << "Value of SES is : " << SES << endl;
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
