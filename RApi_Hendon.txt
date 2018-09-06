@@ -1,47 +1,37 @@
-
-Bid is  : %.3f
-7612.75
-Ask is  : %.3f
-2890.25
-Average Fill Price is  : %.3f
-1
-Account Balance is  : %.2f
-0
-Closed P&L is  : %.2f
-0
-Margin Balance is  : %.2f
-0
-Open P&L is  : %.2f
-0
-Buy Qty is  : %d
-0
-Sell Qty is  : %d
-0
-Position is  : %d
-0
-ES Bid price is  : %.3f
-2890
-NQ Bid price is  : %.3f
-7612.75
-ES Ask price is  : %.3f
-2890.25
-NQ Ask price is  : %.3f
-7613.25
-ESP Ask price is  : %.3f
-2890.25
-NQP Ask price is  : %.3f
-7613.25
-ESP Bid price is  : %.3f
-2890
-NQP Bid price is  : %.3f
-7613
+Bid is  : 7533.25
+Ask is  : 2889
+Average Fill Price is  : 1
+Account Balance is  : 503088
+Closed P&L is  : 3087.5
+Margin Balance is  : 0
+Open P&L is  : n-5
+Buy Qty is  : 7
+Sell Qty is  : 6
+Position is  : 1
+ES Bid price is  : 2888.75
+NQ Bid price is  : 7533.25
+ES Ask price is  : 2889
+NQ Ask price is  : 7533.5
+ESP Ask price is  : 2889
+NQP Ask price is  : 7533.25
+ESP Bid price is  : 2888.75
+NQP Bid price is  : 7533
 Completion reason is : F
 Order Duration is : DAY
 Order Type is : M
 Ticker (sTicker) is : NQU8
 Ticker (Trial) is : 
 NQ Value is : NQU8
-The Local Time is : 13:19
-The System Time is : 12:19
-Hour is : 13
-Minute is : 19
+The Local Time is : 21:32
+The System Time is : 20:32
+Hour is : 21
+Minute is : 32
+Value of BNQ is : Bought NQ
+Value of BES is : Not Bought
+Value of SNQ is : Not Bought
+Value of SES is : Not Bought
+Acc Balance is : 503088
+Margin Balance is : 0
+Position Confirmation is : 1
+Open PnL is : -5
+Closed PnL is : 3087.5
