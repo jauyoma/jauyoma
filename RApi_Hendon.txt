@@ -1,37 +1,36 @@
-Bid is  : 7533.25
-Ask is  : 2889
+Bid is  : 2878.75
+Ask is  : 2879
 Average Fill Price is  : 1
-Account Balance is  : 503088
-Closed P&L is  : 3087.5
+Account Balance is  : 500018
 Margin Balance is  : 0
-Open P&L is  : n-5
-Buy Qty is  : 7
-Sell Qty is  : 6
-Position is  : 1
-ES Bid price is  : 2888.75
-NQ Bid price is  : 7533.25
-ES Ask price is  : 2889
-NQ Ask price is  : 7533.5
-ESP Ask price is  : 2889
-NQP Ask price is  : 7533.25
-ESP Bid price is  : 2888.75
-NQP Bid price is  : 7533
+Buy Qty is  : 2
+Sell Qty is  : 0
+Position is  : 2
+ES Bid price is  : 2878.75
+NQ Bid price is  : 7456
+ES Ask price is  : 2879
+NQ Ask price is  : 7456.5
+ESP Ask price is  : 0
+NQP Ask price is  : 0
+ESP Bid price is  : 0
+NQP Bid price is  : 0
 Completion reason is : F
 Order Duration is : DAY
 Order Type is : M
-Ticker (sTicker) is : NQU8
+Ticker (sTicker) is : ESU8
 Ticker (Trial) is : 
 NQ Value is : NQU8
-The Local Time is : 21:32
-The System Time is : 20:32
-Hour is : 21
-Minute is : 32
+The Local Time is : 8:15
+The System Time is : 7:15
+Hour is : 8
+Minute is : 15
 Value of BNQ is : Bought NQ
-Value of BES is : Not Bought
+Value of BES is : Bought ES
 Value of SNQ is : Not Bought
 Value of SES is : Not Bought
-Acc Balance is : 503088
+Acc Balance is : 500018
 Margin Balance is : 0
-Position Confirmation is : 1
-Open PnL is : -5
-Closed PnL is : 3087.5
+Position Confirmation is : 2
+Open PnL is : 0
+Closed PnL is : 0
+Status is : complete
