@@ -88,12 +88,13 @@ REngine *   g_pEngine;
 
 double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
 double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0;
-double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk;
+double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk, _PnlAvgOpenPrice;
 long _BuyQty = 0, _SellQty = 0, _Posn = 0;
 char   BidBuffer[10];
 char   AskBuffer[10];
 int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
 int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
+int _PnlAvgOpen;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _TickerNQ = { (char *)"NQU8",
 (int)strlen("NQU8") };
@@ -718,6 +719,9 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_Posn = pInfo->lPosition;
 	_ClosedPL = pInfo->dClosedPnl;
 	_OpenPL = pInfo->dOpenPnl;
+	
+	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
+	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2256,6 +2260,8 @@ int main(int      argc,
 		myfile << "Open PnL is : " << _OpenPL << endl;
 		myfile << "Closed PnL is : " << _ClosedPL << endl;
 		myfile << "Status is : " << _Status << endl;
+		myfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+		myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
 
 		myfile.close();
 	}
