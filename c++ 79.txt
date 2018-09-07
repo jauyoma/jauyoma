@@ -722,6 +722,15 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
 	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
+	
+	if(pInfo->sTicker.pData = _TickerNQ.pData)
+	{
+		_Posn = pInfo->lPosition;
+	}
+	if(pInfo->sTicker.pData = _TickerES.pData)
+	{
+		_PosnConf = pInfo->lPosition;
+	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1793,13 +1802,9 @@ int main(int      argc,
 	char *            fake_envp[11];
 	int               iCode;
 	int               iFlags;
-	ofstream		  myfile("RApi_Hendon.txt");
-	ofstream		  livefile("RApi_Live.txt");
-
-	std::string	  BNQ = "Not Bought";
-	std::string	  SNQ = "Not Bought";
-	std::string	  BES = "Not Bought";
-	std::string	  SES = "Not Bought";
+	ofstream	  myfile("RApi_Hendon.txt");
+	ofstream	  livefile("RApi_Live.txt");
+	int		  BNQ = 0, SNQ = 0, BES = 0, SES = 0, CLS = 0;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2101,10 +2106,10 @@ int main(int      argc,
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
 
-	while (!g_bDone)
+	while (CLS = 0)
 	{
 
-		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 5))
+		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 		{
 			if (_NQBid > _NQPBid && _NQAsk > _NQPAsk && NQFree == false)
 			{
@@ -2128,7 +2133,7 @@ int main(int      argc,
 				else
 				{
 					NQFree = true;
-					BNQ = "Bought NQ";
+					BNQ = 1;
 				}
 			}
 
@@ -2154,7 +2159,7 @@ int main(int      argc,
 				else
 				{
 					NQFree = true;
-					SNQ = "Sold NQ";
+					SNQ = 1;
 				}
 			}
 
@@ -2180,7 +2185,7 @@ int main(int      argc,
 				else
 				{
 					ESFree = true;
-					BES = "Bought ES";
+					BES = 1;
 				}
 			}
 
@@ -2206,9 +2211,9 @@ int main(int      argc,
 				else
 				{
 					ESFree = true;
-					SES = "Sold ES";
+					SES = 1;
 				}
-			}
+			}	
 
 			/*   ----------------------------------------------------------------   */
 			/*   Printout of variables		                                */
@@ -2259,6 +2264,95 @@ int main(int      argc,
 			}
 			else cout << "Unable to open file";
 
+		}
+		
+		if (lt.wHour == hr_T && lt.wMinute > (min_T + 2))
+		{
+			if(BNQ == 1)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			}
+			
+			if(SNQ == 1)
+			{
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			}
+			if(BES == 1)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			}
+			if(SES == 1)
+			{
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			}
+			if(_Posn == 0)
+			{
+				CLS = 1;
+			}
 		}
 
 #ifdef WinOS
