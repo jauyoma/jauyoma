@@ -1830,7 +1830,7 @@ int main(int      argc,
 	/*   Rithmic trading platform, consult appropriate connection params    */
 	/*   document in your download directory.                               */
 	
-	if(argv[1] == "42554PPR"
+	if(_stricmp(argv[1], "42554PPR") == 0)
 	{
 	fake_envp[0] = "MML_DMN_SRVR_ADDR=ritpz01004.01.rithmic.com:65000~ritpz04063.04.rithmic.com:65000~ritpz01004.01.rithmic.net:65000~ritpz04063.04.rithmic.net:65000~ritpz01004.01.theomne.net:65000~ritpz04063.04.theomne.net:65000~ritpz01004.01.theomne.com:65000~ritpz04063.04.theomne.com:65000";
 	fake_envp[1] = "MML_DOMAIN_NAME=rithmic_paper_prod_domain";
@@ -1851,7 +1851,7 @@ int main(int      argc,
 	fake_envp[10] = NULL;
 	}
 	
-	if(argv[1] == "andrew.kowuoche@gmail.com"
+	if(_stricmpp(argv[1], "andrew.kowuoche@gmail.com") == 0)
 	{
 	fake_envp[0] = "MML_DMN_SRVR_ADDR=rituz00100.00.rithmic.com:65000~rituz00100.00.rithmic.net:65000~rituz00100.00.theomne.net:65000~rituz00100.00.theomne.com:65000";
 	fake_envp[1] = "MML_DOMAIN_NAME=rithmic_uat_dmz_domain";
@@ -1943,7 +1943,7 @@ int main(int      argc,
 	oLoginParams.sPassword.pData = argv[2];
 	oLoginParams.sPassword.iDataLen = (int)strlen(oLoginParams.sPassword.pData);
 	
-	if(argv[1] == "42554PPR"
+	if(_stricmp(argv[1], "42554PPR") == 0)
 	{
 	oLoginParams.sTsCnnctPt.pData = "login_agent_op_paperc";
 	oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
@@ -1952,7 +1952,7 @@ int main(int      argc,
 	oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
 	}
 	
-	if(argv[1] == "andrew.kowuoche@gmail.com"
+	if(_stricmp(argv[1], "andrew.kowuoche@gmail.com") == 0)
 	{
 	oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
 	oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
