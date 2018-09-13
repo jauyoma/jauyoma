@@ -90,6 +90,7 @@ double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid,
 double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
 double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk, _PnlAvgOpenPrice;
 double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES;
+double _AvgFillPriceNQ = 0, _AvgFillPriceES = 0, _PriceToFillNQ = 0, _PriceToFillES = 0;
 long _BuyQty = 0, _SellQty = 0, _Posn = 0;
 char   BidBuffer[10];
 char   AskBuffer[10];
@@ -636,13 +637,11 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		g_bDone = true;
 	}
 
-	_AvgFillPrice = pInfo->dAvgFillPrice;
 	_filled = pInfo->iFilled;
 	_unfilled = pInfo->iUnfilled;
 	_CompReason = pInfo->sCompletionReason;
 	_OrdDuration = pInfo->sOrderDuration;
 	_OrdType = pInfo->sOrderType;
-	_PriceToFill = pInfo->dPriceToFill;
 	_QtyToFill = pInfo->iQuantityToFill;
 
 	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
@@ -656,11 +655,15 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	{
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+		_PriceToFillNQ = pInfo->dPriceToFill;
+		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 	}
 	if (_sTicker == "ESU8")
 	{
 		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+		_PriceToFillES = pInfo->dPriceToFill;
+		_AvgFillPriceES = pInfo->dAvgFillPrice;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2284,6 +2287,11 @@ int main(int      argc,
 					livefile << "Bid is  : " << NBid << endl;
 					livefile << "Ask is  : " << NAsk << endl;
 					livefile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+					livefile << "Price to fill is  : " << _PriceToFill << endl;
+					livefile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+					livefile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+					livefile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+					livefile << "ES Price to fill is  : " << _PriceToFillES << endl;
 					livefile << "Account Balance is  : " << _AccBal << endl;
 					livefile << "Margin Balance is  : " << _Margin << endl;
 					livefile << "Buy Qty is  : " << _BuyQty << endl;
@@ -2352,6 +2360,11 @@ int main(int      argc,
 		myfile << "Bid is  : " << NBid << endl;
 		myfile << "Ask is  : " << NAsk << endl;
 		myfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+		myfile << "Price to fill is  : " << _PriceToFill << endl;
+		myfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+		myfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+		myfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+		myfile << "ES Price to fill is  : " << _PriceToFillES << endl;
 		myfile << "Account Balance is  : " << _AccBal << endl;
 		myfile << "Margin Balance is  : " << _Margin << endl;
 		myfile << "Buy Qty is  : " << _BuyQty << endl;
@@ -2513,6 +2526,11 @@ int main(int      argc,
 		endfile << "Bid is  : " << NBid << endl;
 		endfile << "Ask is  : " << NAsk << endl;
 		endfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+		endfile << "Price to fill is  : " << _PriceToFill << endl;
+		endfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+		endfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+		endfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+		endfile << "ES Price to fill is  : " << _PriceToFillES << endl;
 		endfile << "Account Balance is  : " << _AccBal << endl;
 		endfile << "Margin Balance is  : " << _Margin << endl;
 		endfile << "Buy Qty is  : " << _BuyQty << endl;
