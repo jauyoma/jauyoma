@@ -1,0 +1,2591 @@
+/*   =====================================================================
+
+Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
+
+Warning :
+This Software Product is protected by copyright law and international
+treaties.  Unauthorized use, reproduction or distribution of this
+Software Product (including its documentation), or any portion of it,
+may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
+
+Omnesys Technologies, Inc. will compensate individuals providing
+admissible evidence of any unauthorized use, reproduction, distribution
+or redistribution of this Software Product by any person, company or
+organization.
+
+This Software Product is licensed strictly in accordance with a separate
+Software System License Agreement, granted by Omnesys Technologies, Inc., which
+contains restrictions on use, reverse engineering, disclosure, confidentiality
+and other matters.
+
+=====================================================================   */
+/*   =====================================================================
+Compile/link commands for linux and darwin using R | API+.  These should
+work if your pwd is the ./samples directory.  You may need to change the
+name of the RApi library if you are using one of the library variants,
+like R | API or R | Diamond API.
+
+64-bit linux (2.6.32 kernel) :
+
+g++ -O3 -DLINUX -D_REENTRANT -Wall -Wno-sign-compare -Wno-write-strings -Wpointer-arith -Winline -Wno-deprecated -fno-strict-aliasing -I../include -o SampleOrder ../samples/SampleOrder.cpp -L../linux-gnu-2.6.32-x86_64/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib64 -lz -L/usr/kerberos/lib -lkrb5 -lk5crypto -lcom_err -lresolv -lm -lpthread -lrt
+
+64-bit darwin :
+
+g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpointer-arith -Winline -Wno-deprecated -Wno-write-strings -I../include -o ./SampleOrder ../samples/SampleOrder.cpp -L../darwin-10/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib -lz -L/usr/lib -lkrb5 -lresolv -lm -lpthread
+
+=====================================================================   */
+
+#include "C:\Users\User\Documents\9.9.0.0\include\RApiPlus.h"
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <string.h>
+#include <windows.h>
+#include <fstream>
+
+#ifdef WinOS
+#include <unistd.h>
+#else
+#include <Windows.h>
+#endif
+
+#define GOOD 0
+#define BAD  1
+#define BUFSIZE 512
+
+using namespace RApi;
+using namespace std;
+
+/*   =====================================================================   */
+/*   Use global variables to share between the callback thread and main      */
+/*   thread.  The booleans are a primitive method of signaling state         */
+/*   between the two threads.                                                */
+
+bool        g_bTsLoginComplete = false;
+bool        g_bRcvdAccount = false;
+bool        g_bRcvdPriceIncr = false;
+bool        g_bRcvdTradeRoutes = false;
+bool        g_bDone = false;
+
+int         g_iToExchSsboe = 0;
+int         g_iToExchUsecs = 0;
+int         g_iFromExchSsboe = 0;
+int         g_iFromExchUsecs = 0;
+
+const int   g_iMAX_LEN = 256;
+char        g_cAccountId[g_iMAX_LEN];
+char        g_cFcmId[g_iMAX_LEN];
+char        g_cIbId[g_iMAX_LEN];
+char        g_cExchange[g_iMAX_LEN];
+char        g_cTradeRoute[g_iMAX_LEN];
+AccountInfo g_oAccount;
+tsNCharcb   g_sExchange;
+tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
+
+REngine *   g_pEngine;
+
+double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
+double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
+double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk, _PnlAvgOpenPrice;
+double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES;
+long _BuyQty = 0, _SellQty = 0, _Posn = 0;
+char   BidBuffer[10];
+char   AskBuffer[10];
+int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
+int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
+int _PnlAvgOpen, _QtyToFill = 0;
+tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
+tsNCharcb _TickerNQ = { (char *)"NQU8",
+(int)strlen("NQU8") };
+tsNCharcb _TickerES = { (char *)"ESU8",
+(int)strlen("ESU8") };
+std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
+std::string _sTickerNQ, _sTickerES, _Status;
+LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+LARGE_INTEGER Frequency;
+std::string trial, test, _sExchange;
+int  hr_T = 13, min_T = 10, sec_T;
+
+bool	NQFree = false;
+bool	ESFree = false;
+
+SYSTEMTIME st, lt;
+
+int main(int      argc,
+	char * * argv,
+	char * * envp);
+
+/*   =====================================================================   */
+/*                          class declarations                               */
+/*   =====================================================================   */
+
+class MyAdmCallbacks : public AdmCallbacks
+{
+public:
+	MyAdmCallbacks() {};
+	~MyAdmCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+};
+
+/*   =====================================================================   */
+
+class MyCallbacks : public RCallbacks
+{
+public:
+	MyCallbacks() {};
+	~MyCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestAskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidAskQuote(BidInfo * pBid,
+		AskInfo * pAsk,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BinaryContractList(BinaryContractListInfo * pInfo,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int ClosePrice(ClosePriceInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int ClosingIndicator(ClosingIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int EndQuote(EndQuoteInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+		void *                         pContext,
+		int *                          aiCode);
+
+	virtual int HighPrice(HighPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+		void *                       pContext,
+		int *                        aiCode);
+
+	virtual int InstrumentSearch(InstrumentSearchInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int LimitOrderBook(LimitOrderBookInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int LowPrice(LowPriceInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int MarketMode(MarketModeInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int OpenInterest(OpenInterestInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int OpenPrice(OpenPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int OpeningIndicator(OpeningIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int OptionList(OptionListInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int RefData(RefDataInfo * pInfo,
+		void *        pContext,
+		int *         aiCode);
+
+	virtual int SettlementPrice(SettlementPriceInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int Strategy(StrategyInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int StrategyList(StrategyListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int TradeCondition(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradePrint(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradeReplay(TradeReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int TradeRoute(TradeRouteInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int TradeRouteList(TradeRouteListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int TradeVolume(TradeVolumeInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Bar(BarInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BarReplay(BarReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AccountList(AccountListInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PasswordChange(PasswordChangeInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int ExchangeList(ExchangeListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int ExecutionReplay(ExecutionReplayInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int LineUpdate(LineInfo * pInfo,
+		void *     pContext,
+		int *      aiCode);
+
+	virtual int OpenOrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int OrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PnlReplay(PnlReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int PnlUpdate(PnlInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int PriceIncrUpdate(PriceIncrInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int ProductRmsList(ProductRmsListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+		void *                  pContext,
+		int *                   aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int BustReport(OrderBustReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int CancelReport(OrderCancelReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int FailureReport(OrderFailureReport * pReport,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int FillReport(OrderFillReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int ModifyReport(OrderModifyReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int NotCancelledReport(OrderNotCancelledReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int NotModifiedReport(OrderNotModifiedReport * pReport,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int RejectReport(OrderRejectReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int StatusReport(OrderStatusReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int TradeCorrectReport(OrderTradeCorrectReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int TriggerPulledReport(OrderTriggerPulledReport * pReport,
+		void *                     pContext,
+		int *                      aiCode);
+
+	virtual int TriggerReport(OrderTriggerReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int OtherReport(OrderReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int SodUpdate(SodReport * pReport,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Quote(QuoteReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual void send(double &Bid, double &Ask);
+
+	/*   ----------------------------------------------------------------   */
+
+private:
+};
+
+/*   =====================================================================   */
+/*                          class definitions                                */
+/*   =====================================================================   */
+
+void MyCallbacks::send(double &Bid, double &Ask)
+{
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	int j = sprintf(BidBuffer, "%.3f", Bid);
+	j = sprintf(AskBuffer, "%.3f", Ask);
+
+	if (BidBuffer != "" && AskBuffer != "")
+	{
+		printf("\nBid value is :\"%s\"\n", BidBuffer);
+		printf("\nAsk value is :\"%s\"\n", AskBuffer);
+	}
+	else if (BidBuffer != "")
+	{
+		printf("\nBid value is :\"%s\"\n", BidBuffer);
+	}
+	else
+	{
+		printf("\nAsk value is :\"%s\"\n", AskBuffer);
+	}
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	printf("\nSpeed new counter is : %d microseconds\n", ElapsedMicroseconds.QuadPart);
+}
+
+
+/*   =====================================================================   */
+
+int MyAdmCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AccountList(AccountListInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	AccountInfo * pAccount;
+	int iCode;
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	if (pInfo->iArrayLen > 0)
+	{
+		pAccount = &pInfo->asAccountInfoArray[0];
+
+		/* copy the first account */
+		if ((pAccount->sAccountId.iDataLen > g_iMAX_LEN) ||
+			(pAccount->sFcmId.iDataLen     > g_iMAX_LEN) ||
+			(pAccount->sIbId.iDataLen      > g_iMAX_LEN))
+		{
+			printf("one or more of the char arrays is too small.\n");
+		}
+		else
+		{
+			memcpy(&g_cAccountId,
+				pAccount->sAccountId.pData,
+				pAccount->sAccountId.iDataLen);
+
+			g_oAccount.sAccountId.pData = g_cAccountId;
+			g_oAccount.sAccountId.iDataLen = pAccount->sAccountId.iDataLen;
+
+			/*   ------------------------------------------------------   */
+
+			memcpy(&g_cFcmId,
+				pAccount->sFcmId.pData,
+				pAccount->sFcmId.iDataLen);
+			g_oAccount.sFcmId.pData = g_cFcmId;
+			g_oAccount.sFcmId.iDataLen = pAccount->sFcmId.iDataLen;
+
+			/*   ------------------------------------------------------   */
+
+			memcpy(&g_cIbId,
+				pAccount->sIbId.pData,
+				pAccount->sIbId.iDataLen);
+			g_oAccount.sIbId.pData = g_cIbId;
+			g_oAccount.sIbId.iDataLen = pAccount->sIbId.iDataLen;
+
+			if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
+			{
+				printf("REngine::subscribeOrder() error : %d\n", iCode);
+			}
+
+			g_bRcvdAccount = true;
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PasswordChange(PasswordChangeInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   signal when the login to the trading system is complete */
+
+	if (pInfo->iAlertType == ALERT_LOGIN_COMPLETE &&
+		pInfo->iConnectionId == TRADING_SYSTEM_CONNECTION_ID)
+	{
+		g_bTsLoginComplete = true;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ExchangeList(ExchangeListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ExecutionReplay(ExecutionReplayInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::LineUpdate(LineInfo * pInfo,
+	void *     pContext,
+	int *      aiCode)
+{
+	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
+		(int)strlen("order sent to exch") };
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order was sent to the exchange... */
+
+	if (pInfo->sStatus.iDataLen == sOrderSentToExch.iDataLen &&
+		memcmp(pInfo->sStatus.pData,
+			sOrderSentToExch.pData,
+			sOrderSentToExch.iDataLen) == 0)
+	{
+		g_iToExchSsboe = pInfo->iSsboe;
+		g_iToExchUsecs = pInfo->iUsecs;
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   if there's a completion reason, the order is complete... */
+
+	if (pInfo->sCompletionReason.pData)
+	{
+		g_bDone = true;
+	}
+
+	_AvgFillPrice = pInfo->dAvgFillPrice;
+	_filled = pInfo->iFilled;
+	_unfilled = pInfo->iUnfilled;
+	_CompReason = pInfo->sCompletionReason;
+	_OrdDuration = pInfo->sOrderDuration;
+	_OrdType = pInfo->sOrderType;
+	_PriceToFill = pInfo->dPriceToFill;
+	_QtyToFill = pInfo->iQuantityToFill;
+
+	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
+	_sOrdDuration = std::string(pInfo->sOrderDuration.pData, pInfo->sOrderDuration.iDataLen);
+	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
+	_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
+	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
+	if (_sTicker == "NQU8")
+	{
+		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+	}
+	if (_sTicker == "ESU8")
+	{
+		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	_AccBalConf = pInfo->eAccountBalance;
+	_MarginConf = pInfo->eAccountBalance;
+	_maxqty = pInfo->eBuyQty;
+	_minqty = pInfo->eSellQty;
+	_AccBal = pInfo->dAccountBalance;
+	_Margin = pInfo->dMarginBalance;
+	_BuyQty = pInfo->lBuyQty;
+	_SellQty = pInfo->lSellQty;
+	_ClosedPL = pInfo->dClosedPnl;
+	_OpenPL = pInfo->dOpenPnl;
+	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
+	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
+
+	_PosnConf = pInfo->ePosition;
+	_Posn = pInfo->lPosition;
+	if (pInfo->sTicker.pData == _TickerNQ.pData)
+	{
+		_ClosedNQ = pInfo->dClosedPnl;
+		_OpenNQ = pInfo->dOpenPnl;
+	}
+	if (pInfo->sTicker.pData == _TickerES.pData)
+	{
+		_ClosedES = pInfo->dClosedPnl;
+		_OpenES = pInfo->dOpenPnl;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("error in pInfo -> dump : %d", iIgnored);
+	}
+
+	g_bRcvdPriceIncr = true;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ProductRmsList(ProductRmsListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+	void *                  pContext,
+	int *                   aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BustReport(OrderBustReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Bust Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::CancelReport(OrderCancelReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Cancel Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FailureReport(OrderFailureReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Failure Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FillReport(OrderFillReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Fill Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Modify Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived NotCancelled Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotModifiedReport(OrderNotModifiedReport * pReport,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived NotModified Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RejectReport(OrderRejectReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Reject Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StatusReport(OrderStatusReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Status Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCorrectReport(OrderTradeCorrectReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trade Correct Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerPulledReport(OrderTriggerPulledReport * pReport,
+	void *                     pContext,
+	int *                      aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trigger Pulled Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerReport(OrderTriggerReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trigger Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OtherReport(OrderReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Other Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SodUpdate(SodReport * pReport,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Sod Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Quote(QuoteReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nAsk Quote\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestAskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nBest Ask Quote\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump :") + iIgnored;
+	}
+
+	NAsk = pInfo->dPrice;
+	send(Bid, Ask);
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPAsk = pInfo->dPrice;
+	}
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPAsk = pInfo->dPrice;
+	}
+
+	trial = "";
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
+	AskInfo * pAsk,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nBest Bid/Ask\n");
+	if (!pBid->dump(&iIgnored))
+	{
+		printf("\nerror in pBid -> dump : ") + iIgnored;
+	}
+
+	if (!pAsk->dump(&iIgnored))
+	{
+		printf("\nerror in pAsk -> dump : ") + iIgnored;
+	}
+
+	NBid = pBid->dPrice;
+	NAsk = pAsk->dPrice;
+	send(Bid, Ask);
+
+	trial = std::string(pBid->sTicker.pData, pBid->sTicker.iDataLen);
+	test = std::string(pAsk->sTicker.pData, pAsk->sTicker.iDataLen);
+
+	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pAsk->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPAsk = pAsk->dPrice;
+	}
+	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESAsk = pAsk->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPAsk = pAsk->dPrice;
+	}
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pBid->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPBid = pBid->dPrice;
+	}
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESBid = pBid->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPBid = pBid->dPrice;
+	}
+
+	trial = "";
+	test = "";
+
+	/*   ----------------------------------------------------------------   */
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nBest Bid\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	NBid = pInfo->dPrice;
+	send(Bid, Ask);
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPBid = pInfo->dPrice;
+	}
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESBid = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPBid = pInfo->dPrice;
+	}
+
+	trial = "";
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nBid Quote\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BinaryContractList(BinaryContractListInfo * pInfo,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosePrice(ClosePriceInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nClose Price\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosingIndicator(ClosingIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nClosing Indicator\n");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EndQuote(EndQuoteInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nEnd Quote");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+	void *                         pContext,
+	int *                          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nHigh Price");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+	void *                       pContext,
+	int *                        aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentSearch(InstrumentSearchInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nLimit Order Book");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nLow Price");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::MarketMode(MarketModeInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nMarket Mode");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenInterest(OpenInterestInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nOpen Interest");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nOpen Price");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpeningIndicator(OpeningIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nOpening Indicator");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump :") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OptionList(OptionListInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RefData(RefDataInfo * pInfo,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SettlementPrice(SettlementPriceInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nSettlement Price");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Strategy(StrategyInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StrategyList(StrategyListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCondition(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nTrade Condition");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradePrint(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nTrade Print");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeReplay(TradeReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRoute(TradeRouteInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRouteList(TradeRouteListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	printf("We are looking for a trade route for : %*.*s::%*.*s::%*.*s\n",
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.pData,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.pData,
+		g_sExchange.iDataLen,
+		g_sExchange.iDataLen,
+		g_sExchange.pData);
+
+	tsNCharcb sFcmId;
+	tsNCharcb sIbId;
+	tsNCharcb sExchange;
+	tsNCharcb sTradeRoute;
+	tsNCharcb sStatus;
+
+	for (int i = 0; i < pInfo->iArrayLen; i++)
+	{
+		sFcmId = pInfo->asTradeRouteInfoArray[i].sFcmId;
+		sIbId = pInfo->asTradeRouteInfoArray[i].sIbId;
+		sExchange = pInfo->asTradeRouteInfoArray[i].sExchange;
+		sTradeRoute = pInfo->asTradeRouteInfoArray[i].sTradeRoute;
+		sStatus = pInfo->asTradeRouteInfoArray[i].sStatus;
+
+		printf("%*.*s::%*.*s::%*.*s::%*.*s::%*.*s\n",
+			sFcmId.iDataLen,
+			sFcmId.iDataLen,
+			sFcmId.pData,
+			sIbId.iDataLen,
+			sIbId.iDataLen,
+			sIbId.pData,
+			sExchange.iDataLen,
+			sExchange.iDataLen,
+			sExchange.pData,
+			sTradeRoute.iDataLen,
+			sTradeRoute.iDataLen,
+			sTradeRoute.pData,
+			sStatus.iDataLen,
+			sStatus.iDataLen,
+			sStatus.pData);
+
+		/* use first trade route where fcm/ib/exch matches, and status is "UP" */
+		if (g_oAccount.sFcmId.iDataLen == sFcmId.iDataLen &&
+			(memcmp(g_oAccount.sFcmId.pData,
+				sFcmId.pData,
+				g_oAccount.sFcmId.iDataLen) == 0) &&
+
+			g_oAccount.sIbId.iDataLen == sIbId.iDataLen &&
+			(memcmp(g_oAccount.sIbId.pData,
+				sIbId.pData,
+				g_oAccount.sIbId.iDataLen) == 0) &&
+
+			g_sExchange.iDataLen == sExchange.iDataLen &&
+			(memcmp(g_sExchange.pData,
+				sExchange.pData,
+				g_sExchange.iDataLen) == 0) &&
+
+			sTRADE_ROUTE_STATUS_UP.iDataLen == sStatus.iDataLen &&
+			(memcmp(sTRADE_ROUTE_STATUS_UP.pData,
+				sStatus.pData,
+				sTRADE_ROUTE_STATUS_UP.iDataLen) == 0))
+		{
+			/*   copy memory into global trade route string */
+			memcpy(&g_cTradeRoute,
+				sTradeRoute.pData,
+				sTradeRoute.iDataLen);
+
+			g_sTradeRoute.pData = g_cTradeRoute;
+			g_sTradeRoute.iDataLen = sTradeRoute.iDataLen;
+
+			break;
+		}
+
+		g_sTradeRoute.pData = NULL;
+		g_sTradeRoute.iDataLen = 0;
+	}
+
+	g_bRcvdTradeRoutes = true;
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeVolume(TradeVolumeInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\nTrade Volume");
+	if (!pInfo->dump(&iIgnored))
+	{
+		printf("\nerror in pInfo -> dump : ") + iIgnored;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Bar(BarInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BarReplay(BarReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+/*   =====================================================================   */
+
+int main(int      argc,
+	char * * argv,
+	char * * envp)
+{
+	char * USAGE = (char *)"SampleOrder user password exchange ticker [B|S]\n";
+
+	MyAdmCallbacks *  pAdmCallbacks;
+	RCallbacks *      pCallbacks;
+	REngineParams     oParams;
+	MarketOrderParams oMktOrdParams;
+	LoginParams       oLoginParams;
+	tsNCharcb         sExchange;
+	tsNCharcb         sTicker;
+	char *            fake_envp[11];
+	int               iCode;
+	int               iFlags;
+	ofstream		  myfile("RApi_Hendon.txt");
+	ofstream		  livefile("RApi_Live.txt");
+	ofstream		  endfile("RApi_End.txt");
+	int				  CLS = 0;
+	int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
+	char *			  user1;
+	char *			  user2;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (argc < 6)
+	{
+		printf("%s", USAGE);
+		return (BAD);
+	}
+
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		pAdmCallbacks = new MyAdmCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		iCode = oEx.getErrorCode();
+		printf("MyAdmCallbacks::MyAdmCallbacks() error : %d\n", iCode);
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following fake envp contains the settings for connecting to    */
+	/*   Rithmic 01 Test.  To connect to a different instance of the        */
+	/*   Rithmic trading platform, consult appropriate connection params    */
+	/*   document in your download directory.                               */
+
+	user1 = "42554PPR";
+	user2 = "andrew.kowuoche@gmail.com";
+
+	if (_stricmp(argv[1], user1) == 0)
+	{
+		fake_envp[0] = "MML_DMN_SRVR_ADDR=ritpz01004.01.rithmic.com:65000~ritpz04063.04.rithmic.com:65000~ritpz01004.01.rithmic.net:65000~ritpz04063.04.rithmic.net:65000~ritpz01004.01.theomne.net:65000~ritpz04063.04.theomne.net:65000~ritpz01004.01.theomne.com:65000~ritpz04063.04.theomne.com:65000";
+		fake_envp[1] = "MML_DOMAIN_NAME=rithmic_paper_prod_domain";
+		fake_envp[2] = "MML_LIC_SRVR_ADDR=ritpz04063.04.rithmic.com:56000~ritpz01004.01.rithmic.com:56000~ritpz04063.04.rithmic.net:56000~ritpz01004.01.rithmic.net:56000~ritpz04063.04.theomne.net:56000~ritpz01004.01.theomne.net:56000~ritpz04063.04.theomne.com:56000~ritpz01004.01.theomne.com:56000";
+		fake_envp[3] = "MML_LOC_BROK_ADDR=ritpz04063.04.rithmic.com:64100";
+		fake_envp[4] = "MML_LOGGER_ADDR=ritpz04063.04.rithmic.com:45454~ritpz01004.01.rithmic.com:45454~ritpz04063.04.rithmic.net:45454~ritpz01004.01.rithmic.net:45454~ritpz04063.04.theomne.net:45454~ritpz01004.01.theomne.net:45454~ritpz04063.04.theomne.com:45454~ritpz01004.01.theomne.com:45454";
+		fake_envp[5] = "MML_LOG_TYPE=log_net";
+
+		/*   The SSL files are located in the ./<version>/etc directory         */
+		/*   of the R | API package.  The settings below assume that those      */
+		/*   files are in the current working directory.  Normally you should   */
+		/*   specify the full path to these files.                              */
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+
+		fake_envp[9] = "USER=42554PPR";
+		fake_envp[10] = NULL;
+	}
+
+	if (_stricmp(argv[1], user2) == 0)
+	{
+		fake_envp[0] = "MML_DMN_SRVR_ADDR=rituz00100.00.rithmic.com:65000~rituz00100.00.rithmic.net:65000~rituz00100.00.theomne.net:65000~rituz00100.00.theomne.com:65000";
+		fake_envp[1] = "MML_DOMAIN_NAME=rithmic_uat_dmz_domain";
+		fake_envp[2] = "MML_LIC_SRVR_ADDR=rituz00100.00.rithmic.com:56000~rituz00100.00.rithmic.net:56000~rituz00100.00.theomne.net:56000~rituz00100.00.theomne.com:56000";
+		fake_envp[3] = "MML_LOC_BROK_ADDR=rituz00100.00.rithmic.com:64100";
+		fake_envp[4] = "MML_LOGGER_ADDR=rituz00100.00.rithmic.com:45454~rituz00100.00.rithmic.net:45454~rituz00100.00.theomne.com:45454~rituz00100.00.theomne.net:45454";
+		fake_envp[5] = "MML_LOG_TYPE=log_net";
+
+		/*   The SSL files are located in the ./<version>/etc directory         */
+		/*   of the R | API package.  The settings below assume that those      */
+		/*   files are in the current working directory.  Normally you should   */
+		/*   specify the full path to these files.                              */
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+
+		fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
+		fake_envp[10] = NULL;
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following value for REngineParams::sAdmCnnctPt assumes the     */
+	/*   app is connecting to the Rithmic 01 Test environment.              */
+	/*   REngineParams::sAppName must be changed in order to log into the   */
+	/*   Rithmic Paper Trading environment, or any production environment.  */
+
+	oParams.sAppName.pData = "anko:Hendon";
+	oParams.sAppName.iDataLen = (int)strlen(oParams.sAppName.pData);
+	oParams.sAppVersion.pData = "1.0.0.0";
+	oParams.sAppVersion.iDataLen = (int)strlen(oParams.sAppVersion.pData);
+	oParams.sAdmCnnctPt.pData = "dd_admin_sslc";
+	oParams.sAdmCnnctPt.iDataLen = (int)strlen(oParams.sAdmCnnctPt.pData);
+	oParams.envp = fake_envp;
+	oParams.pAdmCallbacks = pAdmCallbacks;
+	oParams.sLogFilePath.pData = "so.log";
+	oParams.sLogFilePath.iDataLen = (int)strlen(oParams.sLogFilePath.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		g_pEngine = new REngine(&oParams);
+	}
+	catch (OmneException& oEx)
+	{
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		printf("REngine::REngine() error : %d\n", iCode);
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   instantiate a callback object - prerequisite for logging in */
+	try
+	{
+		pCallbacks = new MyCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		delete g_pEngine;
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		printf("MyCallbacks::MyCallbacks() error : %d\n", iCode);
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Set up parameters for logging in.  Again, the MdCnnctPt and        */
+	/*   TsCnnctPt have values for Rithmic 01 Test.  Add values for other   */
+	/*   members of LoginParams to log into other subsystems of the         */
+	/*   infrastructure like like pnl and history.                          */
+
+	oLoginParams.pCallbacks = pCallbacks;
+
+	oLoginParams.sMdUser.pData = argv[1];
+	oLoginParams.sMdUser.iDataLen = (int)strlen(oLoginParams.sMdUser.pData);
+
+	oLoginParams.sMdPassword.pData = argv[2];
+	oLoginParams.sMdPassword.iDataLen = (int)strlen(oLoginParams.sMdPassword.pData);
+
+	oLoginParams.sUser.pData = argv[1];
+	oLoginParams.sUser.iDataLen = (int)strlen(oLoginParams.sUser.pData);
+
+	oLoginParams.sPassword.pData = argv[2];
+	oLoginParams.sPassword.iDataLen = (int)strlen(oLoginParams.sPassword.pData);
+
+	if (_stricmp(argv[1], user1) == 0)
+	{
+		oLoginParams.sTsCnnctPt.pData = "login_agent_op_paperc";
+		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnl_paperc";
+		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
+
+		oLoginParams.sMdCnnctPt.pData = "login_agent_tp_paperc";
+		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+	}
+
+	if (_stricmp(argv[1], user2) == 0)
+	{
+		oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
+		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnlc";
+		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
+
+		oLoginParams.sMdCnnctPt.pData = "login_agent_tpc";
+		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->login(&oLoginParams, &iCode))
+	{
+		printf("REngine::login() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   After calling REngine::login, RCallbacks::Alert will be called a   */
+	/*   number of times.  Wait for when the login to the TsCnnctPt is      */
+	/*   complete.  (See MyCallbacks::Alert() for details).                 */
+
+	while (!g_bTsLoginComplete)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Once logged in, we request price increment info for the instrument */
+	/*   that we want to trade.  This call will return price increment      */
+	/*   information as well as set up internal instrument-specific data.   */
+
+	sExchange.pData = argv[3];
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+	sTicker.pData = argv[4];
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	/*   ----------------------------------------------------------------   */
+	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+	iFlags = (MD_PRINTS | MD_BEST);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	{
+		printf("\nREngine::subscribe() error : ") + iCode;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	sExchange.pData = "CME";
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	sTicker.pData = "NQU8";
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+	iFlags = (MD_PRINTS | MD_BEST);
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	{
+		printf("\nREngine::subscribe() error : ") + iCode;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Placing an order requires a trade route to be specified.  Based    */
+	/*   on your FCM and/or IB, you may have zero to many trade routes      */
+	/*   for a given exchange.  Store the exchange where the callback can   */
+	/*   see it, and then request the list.                                 */
+
+	memcpy(&g_cExchange,
+		sExchange.pData,
+		sExchange.iDataLen);
+
+	g_sExchange.pData = g_cExchange;
+	g_sExchange.iDataLen = sExchange.iDataLen;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->listTradeRoutes(NULL, &iCode))
+	{
+		printf("REngine::listTradeRoutes() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	while (!g_bRcvdTradeRoutes)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	if (g_sTradeRoute.iDataLen == 0)
+	{
+		printf("No available trade routes for : %*.*s::%*.*s::%*.*s\n",
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.pData,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.pData,
+			g_sExchange.iDataLen,
+			g_sExchange.iDataLen,
+			g_sExchange.pData);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
+	{
+		printf("REngine::subscribePnL() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   send the order */
+
+	oMktOrdParams.sExchange = sExchange;
+	oMktOrdParams.sTicker = sTicker;
+	oMktOrdParams.pAccount = &g_oAccount;
+	oMktOrdParams.iQty = 1;
+	oMktOrdParams.sBuySellType.pData = argv[5];
+	oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+	oMktOrdParams.sDuration = sORDER_DURATION_DAY;
+	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oMktOrdParams.sTradeRoute = g_sTradeRoute;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
+	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
+	/*   for details.                                                       */
+
+	while (!g_bDone)
+	{
+		if (_Posn < 2)
+		{
+			if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
+			{
+				if (NQFree == false)
+				{
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "NQU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+					{
+						NQFree = true;
+						BNQ = 1;
+					}
+				}
+
+				if (NQFree == false)
+				{
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "NQU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+					{
+						NQFree = true;
+						SNQ = 1;
+					}
+				}
+
+				if (ESFree == false)
+				{
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "ESU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+					{
+						ESFree = true;
+						SES = 1;
+					}
+				}
+
+				if (ESFree == false)
+				{
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "ESU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+					{
+						ESFree = true;
+						BES = 1;
+					}
+				}
+
+				/*   ----------------------------------------------------------------   */
+				/*   Printout of variables		                                */
+				/*   ----------------------------------------------------------------   */
+
+				if (livefile.is_open())
+				{
+					livefile << "Bid is  : " << NBid << endl;
+					livefile << "Ask is  : " << NAsk << endl;
+					livefile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+					livefile << "Account Balance is  : " << _AccBal << endl;
+					livefile << "Margin Balance is  : " << _Margin << endl;
+					livefile << "Buy Qty is  : " << _BuyQty << endl;
+					livefile << "Sell Qty is  : " << _SellQty << endl;
+					livefile << "Position is  : " << _Posn << endl;
+					livefile << "Quantity to fill is  : " << _QtyToFill << endl;
+					livefile << "Filled quantity is  : " << _filled << endl;
+					livefile << "NQ Type is  : " << _stypeNQ << endl;
+					livefile << "ES Type is  : " << _stypeES << endl;
+					livefile << "ES Bid price is  : " << _ESBid << endl;
+					livefile << "NQ Bid price is  : " << _NQBid << endl;
+					livefile << "ES Ask price is  : " << _ESAsk << endl;
+					livefile << "NQ Ask price is  : " << _NQAsk << endl;
+					livefile << "ESP Ask price is  : " << _ESPAsk << endl;
+					livefile << "NQP Ask price is  : " << _NQPAsk << endl;
+					livefile << "ESP Bid price is  : " << _ESPBid << endl;
+					livefile << "NQP Bid price is  : " << _NQPBid << endl;
+					livefile << "Completion reason is : " << _sCompReason << endl;
+					livefile << "Order Duration is : " << _sOrdDuration << endl;
+					livefile << "Order Type is : " << _sOrdType << endl;
+					livefile << "Ticker (sTicker) is : " << _sTicker << endl;
+					livefile << "Exchange (sExchange) is : " << _sExchange << endl;
+					livefile << "g_bDone value is : " << g_bDone << endl;
+					livefile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+					livefile << "TickerES (sTicker) is : " << _sTickerES << endl;
+					livefile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+					livefile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+					livefile << "CLS value is : " << CLS << endl;
+					livefile << "Minute is : " << min_T << endl;
+					livefile << "Value of BNQ is : " << BNQ << endl;
+					livefile << "Value of BES is : " << BES << endl;
+					livefile << "Value of SNQ is : " << SNQ << endl;
+					livefile << "Value of SES is : " << SES << endl;
+					livefile << "Acc Balance is : " << _AccBal << endl;
+					livefile << "Margin Balance is : " << _Margin << endl;
+					livefile << "Position Confirmation is : " << _PosnConf << endl;
+					livefile << "Closed PnL is : " << _ClosedPL << endl;
+					livefile << "Open PnL is : " << _OpenPL << endl;
+					livefile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+					livefile << "NQ Open PnL is : " << _OpenNQ << endl;
+					livefile << "ES Closed PnL is : " << _ClosedES << endl;
+					livefile << "ES Open PnL is : " << _OpenES << endl;
+					livefile << "Status is : " << _Status << endl;
+					livefile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+					livefile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+
+					livefile.close();
+				}
+				else cout << "Unable to open file";
+			}
+
+#ifdef WinOS
+			sleep(1);
+#else
+			Sleep(1000);
+#endif
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Printout of variables		                                */
+	/*   ----------------------------------------------------------------   */
+
+	if (myfile.is_open())
+	{
+		myfile << "Bid is  : " << NBid << endl;
+		myfile << "Ask is  : " << NAsk << endl;
+		myfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+		myfile << "Account Balance is  : " << _AccBal << endl;
+		myfile << "Margin Balance is  : " << _Margin << endl;
+		myfile << "Buy Qty is  : " << _BuyQty << endl;
+		myfile << "Sell Qty is  : " << _SellQty << endl;
+		myfile << "Position is  : " << _Posn << endl;
+		myfile << "Quantity to fill is  : " << _QtyToFill << endl;
+		myfile << "Filled quantity is  : " << _filled << endl;
+		myfile << "NQ Type is  : " << _stypeNQ << endl;
+		myfile << "ES Type is  : " << _stypeES << endl;
+		myfile << "ES Bid price is  : " << _ESBid << endl;
+		myfile << "NQ Bid price is  : " << _NQBid << endl;
+		myfile << "ES Ask price is  : " << _ESAsk << endl;
+		myfile << "NQ Ask price is  : " << _NQAsk << endl;
+		myfile << "ESP Ask price is  : " << _ESPAsk << endl;
+		myfile << "NQP Ask price is  : " << _NQPAsk << endl;
+		myfile << "ESP Bid price is  : " << _ESPBid << endl;
+		myfile << "NQP Bid price is  : " << _NQPBid << endl;
+		myfile << "Completion reason is : " << _sCompReason << endl;
+		myfile << "Order Duration is : " << _sOrdDuration << endl;
+		myfile << "Order Type is : " << _sOrdType << endl;
+		myfile << "Ticker (sTicker) is : " << _sTicker << endl;
+		myfile << "Exchange (sExchange) is : " << _sExchange << endl;
+		myfile << "g_bDone value is : " << g_bDone << endl;
+		myfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+		myfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+		myfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+		myfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+		myfile << "CLS value is : " << CLS << endl;
+		myfile << "Minute is : " << min_T << endl;
+		myfile << "Value of BNQ is : " << BNQ << endl;
+		myfile << "Value of BES is : " << BES << endl;
+		myfile << "Value of SNQ is : " << SNQ << endl;
+		myfile << "Value of SES is : " << SES << endl;
+		myfile << "Acc Balance is : " << _AccBal << endl;
+		myfile << "Margin Balance is : " << _Margin << endl;
+		myfile << "Position Confirmation is : " << _PosnConf << endl;
+		myfile << "Closed PnL is : " << _ClosedPL << endl;
+		myfile << "Open PnL is : " << _OpenPL << endl;
+		myfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+		myfile << "NQ Open PnL is : " << _OpenNQ << endl;
+		myfile << "ES Closed PnL is : " << _ClosedES << endl;
+		myfile << "ES Open PnL is : " << _OpenES << endl;
+		myfile << "Status is : " << _Status << endl;
+		myfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+		myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+
+		myfile.close();
+	}
+	else cout << "Unable to open file";
+
+	ESFree = false;
+	NQFree = false;
+
+	while (CLS < 1)
+	{
+		if (_Posn < 3)
+		{
+			if (lt.wHour == hr_T && lt.wMinute >(min_T + 1))
+			{
+				if (BNQ == 1)
+				{
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "NQU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+						BNQ = 0;
+				}
+
+				if (SNQ == 1)
+				{
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "NQU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+						SNQ = 0;
+				}
+				if (BES == 1)
+				{
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "ESU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+						BES = 0;
+				}
+				if (SES == 1)
+				{
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = "ESU8";
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						printf("REngine::sendOrder() error : %d\n", iCode);
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+						break;
+					}
+					else
+						SES = 0;
+				}
+			}
+			if (BNQ == 0 && SNQ == 0 && BES == 0 && SES == 0)
+			{
+				CLS = 1;
+			}
+		}
+	}
+
+	if (endfile.is_open())
+	{
+		endfile << "Bid is  : " << NBid << endl;
+		endfile << "Ask is  : " << NAsk << endl;
+		endfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+		endfile << "Account Balance is  : " << _AccBal << endl;
+		endfile << "Margin Balance is  : " << _Margin << endl;
+		endfile << "Buy Qty is  : " << _BuyQty << endl;
+		endfile << "Sell Qty is  : " << _SellQty << endl;
+		endfile << "Position is  : " << _Posn << endl;
+		endfile << "Quantity to fill is  : " << _QtyToFill << endl;
+		endfile << "Filled quantity is  : " << _filled << endl;
+		endfile << "NQ Type is  : " << _stypeNQ << endl;
+		endfile << "ES Type is  : " << _stypeES << endl;
+		endfile << "ES Bid price is  : " << _ESBid << endl;
+		endfile << "NQ Bid price is  : " << _NQBid << endl;
+		endfile << "ES Ask price is  : " << _ESAsk << endl;
+		endfile << "NQ Ask price is  : " << _NQAsk << endl;
+		endfile << "ESP Ask price is  : " << _ESPAsk << endl;
+		endfile << "NQP Ask price is  : " << _NQPAsk << endl;
+		endfile << "ESP Bid price is  : " << _ESPBid << endl;
+		endfile << "NQP Bid price is  : " << _NQPBid << endl;
+		endfile << "Completion reason is : " << _sCompReason << endl;
+		endfile << "Order Duration is : " << _sOrdDuration << endl;
+		endfile << "Order Type is : " << _sOrdType << endl;
+		endfile << "Ticker (sTicker) is : " << _sTicker << endl;
+		endfile << "Exchange (sExchange) is : " << _sExchange << endl;
+		endfile << "g_bDone value is : " << g_bDone << endl;
+		endfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+		endfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+		endfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+		endfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+		endfile << "CLS value is : " << CLS << endl;
+		endfile << "Minute is : " << min_T << endl;
+		endfile << "Value of BNQ is : " << BNQ << endl;
+		endfile << "Value of BES is : " << BES << endl;
+		endfile << "Value of SNQ is : " << SNQ << endl;
+		endfile << "Value of SES is : " << SES << endl;
+		endfile << "Acc Balance is : " << _AccBal << endl;
+		endfile << "Margin Balance is : " << _Margin << endl;
+		endfile << "Position Confirmation is : " << _PosnConf << endl;
+		endfile << "Closed PnL is : " << _ClosedPL << endl;
+		endfile << "Open PnL is : " << _OpenPL << endl;
+		endfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+		endfile << "NQ Open PnL is : " << _OpenNQ << endl;
+		endfile << "ES Closed PnL is : " << _ClosedES << endl;
+		endfile << "ES Open PnL is : " << _OpenES << endl;
+		endfile << "Status is : " << _Status << endl;
+		endfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+		endfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+
+		endfile.close();
+	}
+	else cout << "Unable to open file";
+
+	/*   ----------------------------------------------------------------   */
+	/*   The order is complete.  Clean up and exit.                         */
+	/*   ----------------------------------------------------------------   */
+
+	int iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
+	printf("\nusecs at exchange : %d\n\n", iUsecs);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   press 'enter' to quit... */
+	if (!g_bDone)
+		fgetc(stdin);
+
+	/*   ----------------------------------------------------------------   */
+
+	delete g_pEngine;
+	delete pCallbacks;
+	delete pAdmCallbacks;
+
+	/*   ----------------------------------------------------------------   */
+
+	return (GOOD);
+}
+
+/*   =====================================================================   */
