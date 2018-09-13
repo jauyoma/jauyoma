@@ -87,7 +87,7 @@ tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 REngine *   g_pEngine;
 
 double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
-double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0;
+double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
 double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk, _PnlAvgOpenPrice;
 double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES;
 long _BuyQty = 0, _SellQty = 0, _Posn = 0;
@@ -95,7 +95,7 @@ char   BidBuffer[10];
 char   AskBuffer[10];
 int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
 int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
-int _PnlAvgOpen;
+int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _TickerNQ = { (char *)"NQU8",
 (int)strlen("NQU8") };
@@ -105,7 +105,7 @@ std::string _stype, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
 std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
-std::string trial, test, check;
+std::string trial, test, _sExchange;
 int  hr_T = 20, min_T = 47, sec_T;
 
 bool	NQFree = false;
@@ -636,19 +636,27 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		g_bDone = true;
 	}
 
-	_AvgFillPrice = pInfo->bAvgFillPriceFlag;
+	_AvgFillPrice = pInfo->dAvgFillPrice;
 	_filled = pInfo->iFilled;
 	_unfilled = pInfo->iUnfilled;
 	_CompReason = pInfo->sCompletionReason;
 	_OrdDuration = pInfo->sOrderDuration;
 	_OrdType = pInfo->sOrderType;
-	_Ticker = pInfo->sTicker;
+	_PriceToFill = pInfo->dPriceToFill;
+	_QtyToFill = pInfo->iQuantityToFill;
 
 	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
 	_sOrdDuration = std::string(pInfo->sOrderDuration.pData, pInfo->sOrderDuration.iDataLen);
 	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
 	_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
+	_stype = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
+	if(_sTicker == "NQU8")
+		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	if(_sTicker == "ESU8")
+		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -719,9 +727,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_OpenPL = pInfo->dOpenPnl;
 	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
 	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
-	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
-	check = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
-
+	
 	_PosnConf = pInfo->ePosition;
 	_Posn = pInfo->lPosition;
 	if (pInfo->sTicker.pData == _TickerNQ.pData)
@@ -2278,6 +2284,8 @@ int main(int      argc,
 					livefile << "Buy Qty is  : " << _BuyQty << endl;
 					livefile << "Sell Qty is  : " << _SellQty << endl;
 					livefile << "Position is  : " << _Posn << endl;
+					livefile << "Quantity to fill is  : " << _QtyToFill << endl;
+					livefile << "Filled quantity is  : " << _filled << endl;
 					livefile << "ES Bid price is  : " << _ESBid << endl;
 					livefile << "NQ Bid price is  : " << _NQBid << endl;
 					livefile << "ES Ask price is  : " << _ESAsk << endl;
@@ -2290,9 +2298,10 @@ int main(int      argc,
 					livefile << "Order Duration is : " << _sOrdDuration << endl;
 					livefile << "Order Type is : " << _sOrdType << endl;
 					livefile << "Ticker (sTicker) is : " << _sTicker << endl;
-					livefile << "Exchange (sExchange) is : " << check << endl;
+					livefile << "Exchange (sExchange) is : " << _sExchange << endl;
 					livefile << "g_bDone value is : " << g_bDone << endl;
-					livefile << "NQ Value is : " << std::string(_TickerNQ.pData, _TickerNQ.iDataLen) << endl;
+					livefile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+					livefile << "TickerES (sTicker) is : " << _sTickerES << endl;
 					livefile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
 					livefile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
 					livefile << "CLS value is : " << CLS << endl;
