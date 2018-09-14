@@ -1095,6 +1095,8 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	int *     aiCode)
 {
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1103,6 +1105,25 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		printf("\nerror in pInfo -> dump : ") + iIgnored;
 	}
+	
+	NAsk = pInfo->dPrice;
+	send(Bid, Ask);
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPAsk = pInfo->dPrice;
+	}
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPAsk = pInfo->dPrice;
+	}
+
+	trial = "";
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1271,6 +1292,8 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	int *     aiCode)
 {
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1279,6 +1302,26 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		printf("\nerror in pInfo -> dump : ") + iIgnored;
 	}
+	
+	NBid = pInfo->dPrice;
+	send(Bid, Ask);
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPBid = pInfo->dPrice;
+	}
+	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+		_ESBid = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_ESPBid = pInfo->dPrice;
+	}
+
+	trial = "";
 
 	*aiCode = API_OK;
 	return (OK);
@@ -2035,7 +2078,7 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-	iFlags = (MD_PRINTS | MD_BEST);
+	iFlags = (MD_QUOTES);
 
 	/*   ----------------------------------------------------------------   */
 
