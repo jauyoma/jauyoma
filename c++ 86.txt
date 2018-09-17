@@ -109,7 +109,7 @@ LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
 int  hr_T = 8, min_T = 17, sec_T;
-double ticks, profit;
+double ticks, profit, commA = 3.38, commB = 4.22;
 
 bool	NQFree = false;
 bool	ESFree = false;
@@ -2425,6 +2425,8 @@ int main(int      argc,
 						livefile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
 						livefile << "NQ Minimum price increment is : " << incrNQ << endl;
 						livefile << "ES Minimum price increment is : " << incrES << endl;
+						livefile << "Tick is : " << ticks << endl;
+						livefile << "Profit is : " << profit << endl;
 
 						livefile.close();
 					}
@@ -2500,6 +2502,8 @@ int main(int      argc,
 			myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
 			myfile << "NQ Minimum price increment is : " << incrNQ << endl;
 			myfile << "ES Minimum price increment is : " << incrES << endl;
+			myfile << "Tick is : " << ticks << endl;
+			myfile << "Profit is : " << profit << endl;
 
 			myfile.close();
 		}
@@ -2516,8 +2520,8 @@ int main(int      argc,
 				{
 					if (BNQ == 1)
 					{
-						ticks = (_NQBid - _AvgFillPriceNQ)/incrNQ;
-						profit = ticks * 5;
+						ticks = ((_NQBid - _AvgFillPriceNQ)/incrNQ)*5;
+						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "NQU8";
@@ -2541,8 +2545,8 @@ int main(int      argc,
 
 					if (SNQ == 1)
 					{
-						ticks = (_AvgFillPriceNQ - _NQAsk) / incrNQ;
-						profit = ticks * 5;
+						ticks = ((_AvgFillPriceNQ - _NQAsk) / incrNQ)*5;
+						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "NQU8";
@@ -2565,8 +2569,8 @@ int main(int      argc,
 					}
 					if (BES == 1)
 					{
-						ticks = (_ESBid - _AvgFillPriceES) / incrES;
-						profit = ticks * 12.5;
+						ticks = ((_ESBid - _AvgFillPriceES) / incrES)*12.5;
+						profit = ticks -commA;
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "ESU8";
@@ -2589,8 +2593,8 @@ int main(int      argc,
 					}
 					if (SES == 1)
 					{
-						ticks = (_AvgFillPriceES - _ESAsk) / incrES;
-						profit = ticks * 12.5;
+						ticks = ((_AvgFillPriceES - _ESAsk) / incrES)*12.5;
+						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "ESU8";
@@ -2676,6 +2680,8 @@ int main(int      argc,
 			endfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
 			endfile << "NQ Minimum price increment is : " << incrNQ << endl;
 			endfile << "ES Minimum price increment is : " << incrES << endl;
+			endfile << "Tick is : " << ticks << endl;
+			endfile << "Profit is : " << profit << endl;
 
 			endfile.close();
 		}
