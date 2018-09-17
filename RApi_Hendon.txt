@@ -1,48 +1,55 @@
-Bid is  : 2872
-Ask is  : 7513.25
-Average Fill Price is  : 7513.25
+Bid is  : 2904.75
+Ask is  : 7545.75
+Average Fill Price is  : 0
+Price to fill is  : 0
+NQ Average Fill Price is  : 7545.75
+NQ Price to fill is  : 7551.75
+ES Average Fill Price is  : 2904.75
+ES Price to fill is  : 2901.75
 Account Balance is  : 0
 Margin Balance is  : 0
-Buy Qty is  : 3
-Sell Qty is  : 2
-Position is  : 1
+Buy Qty is  : 0
+Sell Qty is  : 1
+Position is  : -1
 Quantity to fill is  : 1
 Filled quantity is  : 1
 NQ Type is  : B
 ES Type is  : S
-ES Bid price is  : 2872
-NQ Bid price is  : 7513
-ES Ask price is  : 2872.25
-NQ Ask price is  : 7513.25
-ESP Ask price is  : 2872.5
-NQP Ask price is  : 7513.25
-ESP Bid price is  : 2872.25
-NQP Bid price is  : 7513
+ES Bid price is  : 2904.75
+NQ Bid price is  : 7545.5
+ES Ask price is  : 2905
+NQ Ask price is  : 7545.75
+ESP Ask price is  : 2905
+NQP Ask price is  : 7545.75
+ESP Bid price is  : 2904.75
+NQP Bid price is  : 7545.5
 Completion reason is : F
 Order Duration is : DAY
 Order Type is : M
-Ticker (sTicker) is : NQU8
+Ticker (sTicker) is : ESU8
 Exchange (sExchange) is : CME
 g_bDone value is : 1
 TickerNQ (sTicker) is : NQU8
 TickerES (sTicker) is : ESU8
-The Local Time is : 13:10
-The System Time is : 12:10
+The Local Time is : 8:17
+The System Time is : 7:17
 CLS value is : 0
-Minute is : 10
+Minute is : 17
 Value of BNQ is : 1
-Value of BES is : 1
+Value of BES is : 0
 Value of SNQ is : 0
-Value of SES is : 0
+Value of SES is : 1
 Acc Balance is : 0
 Margin Balance is : 0
 Position Confirmation is : 2
-Closed PnL is : 5
-Open PnL is : -5
+Closed PnL is : 0
+Open PnL is : -12.5
 NQ Closed PnL is : 0
 NQ Open PnL is : 0
 ES Closed PnL is : 0
 ES Open PnL is : 0
 Status is : complete
 Avg Open Fill Price (int) is : 2
-Avg Open Fill Price (double) is : 7513.25
+Avg Open Fill Price (double) is : 2904.75
+NQ Minimum price increment is : 0.25
+ES Minimum price increment is : 0.25
