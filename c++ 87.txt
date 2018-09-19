@@ -2256,11 +2256,9 @@ int main(int      argc,
 
 	if ((lt.wHour == hr_T && lt.wMinute < min_T) || (lt.wHour < hr_T && lt.wMinute > min_T))
 	{
-		_RiskBal = _AccBal;
 		while (!g_bDone)
 		{
-			Buff = _RiskBal - _AccBal;
-			if (_Posn < 2 && Buff > (_RiskBal*-0.05))
+			if (_Posn < 2 && (Buff > (_RiskBal*-0.05) || _RiskBal == 0))
 			{
 				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
@@ -2451,6 +2449,9 @@ int main(int      argc,
 				break;
 				CLS = 1;
 			}
+			if(_RiskBal == 0)
+				_RiskBal = _AccBal;
+			Buff = _RiskBal - _AccBal;
 		}
 
 		/*   ----------------------------------------------------------------   */
