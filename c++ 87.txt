@@ -111,6 +111,7 @@ std::string trial, test, _sExchange;
 int  hr_T = 13, min_T = 13, sec_T;
 double ticks, profit, commA = 3.38, commB = 4.22;
 double _RiskBal, Buff, ticksB, profitB;
+double spreadA, spreadB;
 
 bool	NQFree = false;
 bool	ESFree = false;
@@ -2258,11 +2259,13 @@ int main(int      argc,
 	{
 		while (!g_bDone)
 		{
+			spreadA = (NQAsk - NQBid)/incrNQ;
+			spreadB = (ESAsk - ESBid)/incrES;
 			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
 			{
 				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
-					if (NQFree == false)
+					if (NQFree == false && spreadA <= 2)
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2288,7 +2291,7 @@ int main(int      argc,
 						}
 					}
 
-					if (NQFree == false)
+					if (NQFree == false && spreadA <= 2)
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2314,7 +2317,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false)
+					if (ESFree == false && spreadB <= 2)
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2340,7 +2343,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false)
+					if (ESFree == false && spreadB <= 2)
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2434,6 +2437,8 @@ int main(int      argc,
 						livefile << "ES Tick is : " << ticksB << endl;
 						livefile << "ES Profit is : " << profitB << endl;
 						livefile << "PnL Minute is : " << sec_T << endl;
+						livefile << "NQ spread is : " << spreadA << endl;
+						livefile << "ES spread is : " << spreadB << endl;
 
 						livefile.close();
 					}
@@ -2524,6 +2529,8 @@ int main(int      argc,
 			myfile << "ES Tick is : " << ticksB << endl;
 			myfile << "ES Profit is : " << profitB << endl;
 			myfile << "PnL Minute is : " << sec_T << endl;
+			myfile << "NQ spread is : " << spreadA << endl;
+			myfile << "ES spread is : " << spreadB << endl;
 
 			myfile.close();
 		}
@@ -2709,6 +2716,8 @@ int main(int      argc,
 			endfile << "ES Tick is : " << ticksB << endl;
 			endfile << "ES Profit is : " << profitB << endl;
 			endfile << "PnL Minute is : " << sec_T << endl;
+			endfile << "NQ spread is : " << spreadA << endl;
+			endfile << "ES spread is : " << spreadB << endl;
 
 			endfile.close();
 		}
