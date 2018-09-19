@@ -108,7 +108,7 @@ std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 8, min_T = 3, sec_T;
+int  hr_T = 13, min_T = 13, sec_T;
 double ticks, profit, commA = 3.38, commB = 4.22;
 double _RiskBal, Buff;
 
@@ -2258,7 +2258,7 @@ int main(int      argc,
 	{
 		while (!g_bDone)
 		{
-			if (_Posn < 2 && (Buff > (_RiskBal*-0.05) || _RiskBal == 0))
+			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
 			{
 				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
@@ -2449,9 +2449,9 @@ int main(int      argc,
 				break;
 				CLS = 1;
 			}
-			if(_RiskBal == 0)
+			if (_RiskBal == 0)
 				_RiskBal = _AccBal;
-			Buff = _RiskBal - _AccBal;
+			Buff = _AccBal - _RiskBal;
 		}
 
 		/*   ----------------------------------------------------------------   */
@@ -2532,11 +2532,13 @@ int main(int      argc,
 		{
 			if (_Posn < 3)
 			{
+				if(_AccBal != 0)
+					Buff = _AccBal - _RiskBal;
 				if ((lt.wHour == hr_T && lt.wMinute >(min_T + 1)) || (Buff < (_RiskBal*-0.05)))
 				{
 					if (BNQ == 1)
 					{
-						ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ)-1) * 5;
+						ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
 						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2561,7 +2563,7 @@ int main(int      argc,
 
 					if (SNQ == 1)
 					{
-						ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ)-1) * 5;
+						ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
 						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2585,7 +2587,7 @@ int main(int      argc,
 					}
 					if (BES == 1)
 					{
-						ticks = (((_ESBid - _AvgFillPriceES) / incrES)-1)*12.5;
+						ticks = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
 						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2609,7 +2611,7 @@ int main(int      argc,
 					}
 					if (SES == 1)
 					{
-						ticks = (((_AvgFillPriceES - _ESAsk) / incrES)-1)*12.5;
+						ticks = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
 						profit = ticks - commA;
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2718,7 +2720,7 @@ int main(int      argc,
 
 	/*   press 'enter' to quit... */
 
-	if(CLS==1)
+	if (CLS == 1)
 		fgetc(stdin);
 
 	/*   ----------------------------------------------------------------   */
