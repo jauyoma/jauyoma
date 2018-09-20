@@ -112,6 +112,8 @@ int  hr_T = 20, min_T = 28, sec_T;
 double ticks, profit, commA = 3.38, commB = 4.22;
 double _RiskBal, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
+double _NQBHigh, _NQBLow, _ESBHigh, _ESBLow;
+double _NQAHigh, _NQALow, _ESAHigh, _ESALow;
 
 bool	NQFree = false;
 bool	ESFree = false;
@@ -1123,12 +1125,26 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQAHigh)
+				_NQAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQALow)
+				_NQALow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESAHigh)
+				_ESAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESALow)
+				_ESALow = pInfo->dPrice;
+		}
 	}
 
 	trial = "";
@@ -1167,12 +1183,26 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQAHigh)
+				_NQAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQALow)
+				_NQALow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESAHigh)
+				_ESAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESALow)
+				_ESALow = pInfo->dPrice;
+		}
 	}
 
 	trial = "";
@@ -1220,24 +1250,52 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_NQAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pAsk->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQAHigh)
+				_NQAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQALow)
+				_NQALow = pInfo->dPrice;
+		}
 	}
 	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pAsk->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESAHigh)
+				_ESAHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESALow)
+				_ESALow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pBid->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQBHigh)
+				_NQBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQBLow)
+				_NQBLow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pBid->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESBHigh)
+				_ESBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESBLow)
+				_ESBLow = pInfo->dPrice;
+		}
 	}
 
 	trial = "";
@@ -1277,12 +1335,26 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQBHigh)
+				_NQBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQBLow)
+				_NQBLow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESBHigh)
+				_ESBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESBLow)
+				_ESBLow = pInfo->dPrice;
+		}
 	}
 
 	trial = "";
@@ -1321,12 +1393,26 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_NQBHigh)
+				_NQBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_NQBLow)
+				_NQBLow = pInfo->dPrice;
+		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
+		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		{
+			if(pInfo->dPrice >_ESBHigh)
+				_ESBHigh = pInfo->dPrice;
+			if(pInfo->dPrice <_ESBLow)
+				_ESBLow = pInfo->dPrice;
+		}
 	}
 
 	trial = "";
@@ -2242,7 +2328,7 @@ int main(int      argc,
 	oMktOrdParams.iQty = 1;
 	oMktOrdParams.sBuySellType.pData = argv[5];
 	oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-	oMktOrdParams.sDuration = sORDER_DURATION_DAY;
+	oMktOrdParams.sDuration = sORDER_DURATION_FOK;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
@@ -2443,6 +2529,8 @@ int main(int      argc,
 						livefile << "PnL Minute is : " << sec_T << endl;
 						livefile << "NQ spread is : " << spreadA << endl;
 						livefile << "ES spread is : " << spreadB << endl;
+						livefile << "NQ High value is : " << _NQBHigh << endl;
+						livefile << "ES High value is : " << _ESBHigh << endl;
 
 						livefile.close();
 					}
@@ -2538,6 +2626,8 @@ int main(int      argc,
 			myfile << "ES spread is : " << spreadB << endl;
 			myfile << "Largest NQ spread is : " << _NQ << endl;
 			myfile << "Largest ES spread is : " << _ES << endl;
+			myfile << "NQ High value is : " << _NQBHigh << endl;
+			myfile << "ES High value is : " << _ESBHigh << endl;
 
 			myfile.close();
 		}
@@ -2568,6 +2658,7 @@ int main(int      argc,
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "NQU8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2593,6 +2684,7 @@ int main(int      argc,
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "NQU8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2617,6 +2709,7 @@ int main(int      argc,
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "ESU8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2641,6 +2734,7 @@ int main(int      argc,
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = "ESU8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2733,6 +2827,8 @@ int main(int      argc,
 			endfile << "ES spread is : " << spreadB << endl;
 			endfile << "Largest NQ spread is : " << _NQ << endl;
 			endfile << "Largest ES spread is : " << _ES << endl;
+			endfile << "NQ High value is : " << _NQBHigh << endl;
+			endfile << "ES High value is : " << _ESBHigh << endl;
 
 			endfile.close();
 		}
