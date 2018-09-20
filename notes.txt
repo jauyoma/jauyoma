@@ -1,3 +1,4 @@
 high and low values once trade is in place
 do not re enter trade between high and low values only if values broken
+Retrieve closed instrument and time to check if can re enter trade
 FOK, GTC, DAY
