@@ -1,21 +1,3 @@
-https://www.mql5.com/en/forum/162933
-https://www.mql5.com/en/blogs/post/706665
-https://www.mql5.com/en/forum/160115/page3#comment_3817302
-https://www.mql5.com/en/forum/203049#comment_5232176
-http://expertadvisor-blog.com/mirror-ea/
-FileReadArray ;
-Print out status of writefile and readfile if successful on c++
-https://docs.mql4.com/files/filereadstruct
-https://www.uwec.edu/help/acrobat9/for-fldoptions.htm
-Create a listen server call that awaits connections from clients within the main function on cpp
-http://www.learncpp.com/cpp-tutorial/19-header-files/
-http://www.learncpp.com/cpp-tutorial/89-class-code-and-header-files/
-https://stackoverflow.com/questions/10422034/when-to-use-extern-in-c
-http://www.learncpp.com/cpp-tutorial/42-global-variables/
-https://bobobobo.wordpress.com/2009/06/04/understanding-extern-variables-in-c/
-http://www.learncpp.com/cpp-tutorial/611-references/
-printf("\nConcatenated value is :\"%s\"\n", strcat(BidBuffer, AskBuffer));
-https://social.msdn.microsoft.com/Forums/vstudio/en-US/8ce6ddef-3f1a-4033-a28b-54af91766e9f/teach-me-what-is-t?forum=vcgeneral
-https://www.forexfactory.com/showthread.php?t=337102
-USTECHIndex - Nasdaq
-US500Index - ES
+high and low values once trade is in place
+do not re enter trade between high and low values only if values broken
+FOK, GTC, DAY
