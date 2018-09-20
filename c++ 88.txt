@@ -2531,6 +2531,8 @@ int main(int      argc,
 						livefile << "ES spread is : " << spreadB << endl;
 						livefile << "NQ High value is : " << _NQBHigh << endl;
 						livefile << "ES High value is : " << _ESBHigh << endl;
+						livefile << "NQ Low value is : " << _NQALow << endl;
+						livefile << "ES Low value is : " << _ESALow << endl;
 
 						livefile.close();
 					}
@@ -2628,6 +2630,9 @@ int main(int      argc,
 			myfile << "Largest ES spread is : " << _ES << endl;
 			myfile << "NQ High value is : " << _NQBHigh << endl;
 			myfile << "ES High value is : " << _ESBHigh << endl;
+			myfile << "NQ Low value is : " << _NQALow << endl;
+			myfile << "ES Low value is : " << _ESALow << endl;
+
 
 			myfile.close();
 		}
@@ -2829,6 +2834,8 @@ int main(int      argc,
 			endfile << "Largest ES spread is : " << _ES << endl;
 			endfile << "NQ High value is : " << _NQBHigh << endl;
 			endfile << "ES High value is : " << _ESBHigh << endl;
+			endfile << "NQ Low value is : " << _NQALow << endl;
+			endfile << "ES Low value is : " << _ESALow << endl;
 
 			endfile.close();
 		}
