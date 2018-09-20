@@ -2355,7 +2355,7 @@ int main(int      argc,
 			{
 				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
-					if (NQFree == false && spreadA <= 3)
+					if (_NQBid > _NQPBid && _NQAsk > _NQPAsk && NQFree == false && spreadA <= 5)
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2381,7 +2381,7 @@ int main(int      argc,
 						}
 					}
 
-					if (NQFree == false && spreadA <= 3)
+					if (_NQBid < _NQPBid && _NQAsk < _NQPAsk && NQFree == false && spreadA <= 5)
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2407,7 +2407,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false && spreadB <= 2)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk && ESFree == false && spreadB <= 3)
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2433,7 +2433,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false && spreadB <= 2)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk && ESFree == false && spreadB <= 3)
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2655,7 +2655,7 @@ int main(int      argc,
 					Buff = _AccBal - _RiskBal;
 				if ((lt.wHour == hr_T && lt.wMinute >(min_T + 10)) || (Buff < (_RiskBal*-0.05)))
 				{
-					if (BNQ == 1)
+					if (BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh)
 					{
 						ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
 						profit = ticks - commA;
@@ -2681,7 +2681,7 @@ int main(int      argc,
 							BNQ = 0;
 					}
 
-					if (SNQ == 1)
+					if (SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow)
 					{
 						ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
 						profit = ticks - commA;
@@ -2706,7 +2706,7 @@ int main(int      argc,
 						else
 							SNQ = 0;
 					}
-					if (BES == 1)
+					if (BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 					{
 						ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
 						profitB = ticksB - commA;
@@ -2731,7 +2731,7 @@ int main(int      argc,
 						else
 							BES = 0;
 					}
-					if (SES == 1)
+					if (SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow)
 					{
 						ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
 						profitB = ticksB - commA;
