@@ -1,51 +1,51 @@
-Bid is  : 2909.75
-Ask is  : 2910
+Bid is  : 7538.25
+Ask is  : 2919.75
 Average Fill Price is  : 0
 Price to fill is  : 0
-NQ Average Fill Price is  : 7490.5
+NQ Average Fill Price is  : 7526.75
 NQ Price to fill is  : 0
-ES Average Fill Price is  : 2909.5
+ES Average Fill Price is  : 2917.5
 ES Price to fill is  : 0
-Account Balance is  : 499773
-Starting Account Balance is  : 499758
-Buffer on Account Balance is  : 15
+Account Balance is  : 500145
+Starting Account Balance is  : 500000
+Buffer on Account Balance is  : 145
 Margin Balance is  : 0
-Buy Qty is  : 21
-Sell Qty is  : 21
+Buy Qty is  : 1
+Sell Qty is  : 1
 Position is  : 0
 Quantity to fill is  : 1
 Filled quantity is  : 1
 NQ Type is  : B
 ES Type is  : S
-ES Bid price is  : 2909.75
-NQ Bid price is  : 7492
-ES Ask price is  : 2910
-NQ Ask price is  : 7492.75
-ESP Ask price is  : 2909.75
-NQP Ask price is  : 7490.25
-ESP Bid price is  : 2909.5
-NQP Bid price is  : 7489.75
+ES Bid price is  : 2919.5
+NQ Bid price is  : 7538.25
+ES Ask price is  : 2919.75
+NQ Ask price is  : 7538.5
+ESP Ask price is  : 2917.75
+NQP Ask price is  : 7526.75
+ESP Bid price is  : 2917.5
+NQP Bid price is  : 7526
 Completion reason is : F
-Order Duration is : DAY
+Order Duration is : FOK
 Order Type is : M
 Ticker (sTicker) is : ESU8
 Exchange (sExchange) is : CME
 g_bDone value is : 1
 TickerNQ (sTicker) is : NQU8
 TickerES (sTicker) is : ESU8
-The Local Time is : 20:39
-The System Time is : 19:39
+The Local Time is : 13:11
+The System Time is : 12:11
 CLS value is : 1
-Minute is : 28
+Minute is : 0
 Value of BNQ is : 0
 Value of BES is : 0
 Value of SNQ is : 0
 Value of SES is : 0
-Acc Balance is : 499773
+Acc Balance is : 500145
 Margin Balance is : 0
 Position Confirmation is : 2
-Closed PnL is : -242.5
-Open PnL is : 5
+Closed PnL is : 0
+Open PnL is : 117.5
 NQ Closed PnL is : 0
 NQ Open PnL is : 0
 ES Closed PnL is : 0
@@ -55,12 +55,14 @@ Avg Open Fill Price (int) is : 0
 Avg Open Fill Price (double) is : 0
 NQ Minimum price increment is : 0.25
 ES Minimum price increment is : 0.25
-NQ Tick is : 25
-NQ Profit is : 21.62
-ES Tick is : -37.5
-ES Profit is : -40.88
-PnL Minute is : 38
-NQ spread is : 3
+NQ Tick is : 225
+NQ Profit is : 221.62
+ES Tick is : -125
+ES Profit is : -128.38
+PnL Minute is : 10
+NQ spread is : 1
 ES spread is : 1
-Largest NQ spread is : 5
+Largest NQ spread is : 6
 Largest ES spread is : 2
+NQ High value is : 7539.25
+ES High value is : 2920

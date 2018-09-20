@@ -1,30 +1,30 @@
-Bid is  : 2909.5
-Ask is  : 7490.5
+Bid is  : 2917.5
+Ask is  : 2917.75
 Average Fill Price is  : 0
 Price to fill is  : 0
 NQ Average Fill Price is  : 0
 NQ Price to fill is  : 0
 ES Average Fill Price is  : 0
 ES Price to fill is  : 0
-Account Balance is  : 499758
-Starting Account Balance is  : 499758
+Account Balance is  : 0
+Starting Account Balance is  : 0
 Buffer on Account Balance is  : 0
 Margin Balance is  : 0
-Buy Qty is  : 20
-Sell Qty is  : 20
+Buy Qty is  : 0
+Sell Qty is  : 0
 Position is  : 0
 Quantity to fill is  : 0
 Filled quantity is  : 0
 NQ Type is  : 
 ES Type is  : 
-ES Bid price is  : 2909.5
-NQ Bid price is  : 7490
-ES Ask price is  : 2909.75
-NQ Ask price is  : 7490.5
-ESP Ask price is  : 2909.75
-NQP Ask price is  : 7490.25
-ESP Bid price is  : 2909.5
-NQP Bid price is  : 7489.75
+ES Bid price is  : 2917.5
+NQ Bid price is  : 7526
+ES Ask price is  : 2917.75
+NQ Ask price is  : 7526.75
+ESP Ask price is  : 2917.75
+NQP Ask price is  : 7526.75
+ESP Bid price is  : 2917.5
+NQP Bid price is  : 7526
 Completion reason is : 
 Order Duration is : 
 Order Type is : 
@@ -33,18 +33,18 @@ Exchange (sExchange) is :
 g_bDone value is : 0
 TickerNQ (sTicker) is : 
 TickerES (sTicker) is : 
-The Local Time is : 20:28
-The System Time is : 19:28
+The Local Time is : 13:0
+The System Time is : 12:0
 CLS value is : 0
-Minute is : 28
+Minute is : 0
 Value of BNQ is : 1
 Value of BES is : 0
 Value of SNQ is : 0
 Value of SES is : 1
-Acc Balance is : 499758
+Acc Balance is : 0
 Margin Balance is : 0
-Position Confirmation is : 2
-Closed PnL is : -242.5
+Position Confirmation is : 0
+Closed PnL is : 0
 Open PnL is : 0
 NQ Closed PnL is : 0
 NQ Open PnL is : 0
@@ -59,6 +59,8 @@ NQ Tick is : 0
 NQ Profit is : 0
 ES Tick is : 0
 ES Profit is : 0
-PnL Minute is : 28
-NQ spread is : 2
+PnL Minute is : 0
+NQ spread is : 3
 ES spread is : 1
+NQ High value is : 0
+ES High value is : 2917.5
