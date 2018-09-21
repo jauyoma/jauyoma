@@ -1965,6 +1965,7 @@ int main(int      argc,
 	int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
 	char *			  user1;
 	char *			  user2;
+	int 		  iUsecs;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2342,19 +2343,19 @@ int main(int      argc,
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
 
-	if ((lt.wHour == hr_T && lt.wMinute < min_T) || (lt.wHour < hr_T && lt.wMinute > min_T))
+	while (lt.wHour <= hr_T && lt.wMinute <= (min_T + 5))
 	{
-		while (!g_bDone)
+		spreadA = (_NQAsk - _NQBid) / incrNQ;
+		spreadB = (_ESAsk - _ESBid) / incrES;
+		if (spreadA > _NQ)
+			_NQ = spreadA;
+		if (spreadB > _ES)
+			_ES = spreadB;
+		if (NQFree == false || ESFree == false)
 		{
-			spreadA = (_NQAsk - _NQBid) / incrNQ;
-			spreadB = (_ESAsk - _ESBid) / incrES;
-			if (spreadA > _NQ)
-				_NQ = spreadA;
-			if (spreadB > _ES)
-				_ES = spreadB;
 			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
 			{
-				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 10))
+				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 5))
 				{
 					if(lt.wSecond < 6 && lt.wMinute == min_T)
 						_Activ = 1;
@@ -2383,6 +2384,9 @@ int main(int      argc,
 						{
 							NQFree = true;
 							BNQ = 1;
+							CLS = 0;
+							iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
 						}
 					}
 
@@ -2409,6 +2413,9 @@ int main(int      argc,
 						{
 							NQFree = true;
 							SNQ = 1;
+							CLS = 0;
+							iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
 						}
 					}
 
@@ -2435,6 +2442,9 @@ int main(int      argc,
 						{
 							ESFree = true;
 							SES = 1;
+							CLS = 0;
+							iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
 						}
 					}
 
@@ -2461,6 +2471,9 @@ int main(int      argc,
 						{
 							ESFree = true;
 							BES = 1;
+							CLS = 0;
+							iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
 						}
 					}
 
@@ -2538,6 +2551,7 @@ int main(int      argc,
 						livefile << "ES High value is : " << _ESBHigh << endl;
 						livefile << "NQ Low value is : " << _NQALow << endl;
 						livefile << "ES Low value is : " << _ESALow << endl;
+						livefile << "usecs at exchange is : " << iUsecs << endl;
 
 						livefile.close();
 					}
@@ -2637,16 +2651,14 @@ int main(int      argc,
 			myfile << "ES High value is : " << _ESBHigh << endl;
 			myfile << "NQ Low value is : " << _NQALow << endl;
 			myfile << "ES Low value is : " << _ESALow << endl;
+			myfile << "usecs at exchange is : " << iUsecs << endl;
 
 
 			myfile.close();
 		}
 		else cout << "Unable to open file";
 
-		ESFree = false;
-		NQFree = false;
-
-		while (CLS < 1)
+		if (CLS < 1)
 		{
 			spreadA = (_NQAsk - _NQBid) / incrNQ;
 			spreadB = (_ESAsk - _ESBid) / incrES;
@@ -2861,6 +2873,7 @@ int main(int      argc,
 			endfile << "ES High value is : " << _ESBHigh << endl;
 			endfile << "NQ Low value is : " << _NQALow << endl;
 			endfile << "ES Low value is : " << _ESALow << endl;
+			endfile << "usecs at exchange is : " << iUsecs << endl;
 
 			endfile.close();
 		}
