@@ -1125,11 +1125,11 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQAHigh)
+			if (pInfo->dPrice >_NQAHigh)
 				_NQAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQALow)
+			if (pInfo->dPrice <_NQALow)
 				_NQALow = pInfo->dPrice;
 		}
 	}
@@ -1138,11 +1138,11 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESAHigh)
+			if (pInfo->dPrice >_ESAHigh)
 				_ESAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESALow)
+			if (pInfo->dPrice <_ESALow)
 				_ESALow = pInfo->dPrice;
 		}
 	}
@@ -1183,11 +1183,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQAHigh)
+			if (pInfo->dPrice >_NQAHigh)
 				_NQAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQALow)
+			if (pInfo->dPrice <_NQALow)
 				_NQALow = pInfo->dPrice;
 		}
 	}
@@ -1196,11 +1196,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESAHigh)
+			if (pInfo->dPrice >_ESAHigh)
 				_ESAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESALow)
+			if (pInfo->dPrice <_ESALow)
 				_ESALow = pInfo->dPrice;
 		}
 	}
@@ -1250,12 +1250,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_NQAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pAsk->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQAHigh)
-				_NQAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQALow)
-				_NQALow = pInfo->dPrice;
+			if (pAsk->dPrice >_NQAHigh)
+				_NQAHigh = pAsk->dPrice;
+			if (pAsk->dPrice <_NQALow)
+				_NQALow = pAsk->dPrice;
 		}
 	}
 	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -1263,12 +1263,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_ESAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pAsk->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESAHigh)
-				_ESAHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESALow)
-				_ESALow = pInfo->dPrice;
+			if (pAsk->dPrice >_ESAHigh)
+				_ESAHigh = pAsk->dPrice;
+			if (pAsk->dPrice <_ESALow)
+				_ESALow = pAsk->dPrice;
 		}
 	}
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
@@ -1276,12 +1276,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_NQBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pBid->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQBHigh)
-				_NQBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQBLow)
-				_NQBLow = pInfo->dPrice;
+			if (pBid->dPrice >_NQBHigh)
+				_NQBHigh = pBid->dPrice;
+			if (pBid->dPrice <_NQBLow)
+				_NQBLow = pBid->dPrice;
 		}
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -1289,12 +1289,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_ESBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pBid->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESBHigh)
-				_ESBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESBLow)
-				_ESBLow = pInfo->dPrice;
+			if (pBid->dPrice >_ESBHigh)
+				_ESBHigh = pBid->dPrice;
+			if (pBid->dPrice <_ESBLow)
+				_ESBLow = pBid->dPrice;
 		}
 	}
 
@@ -1335,11 +1335,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQBHigh)
+			if (pInfo->dPrice >_NQBHigh)
 				_NQBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQBLow)
+			if (pInfo->dPrice <_NQBLow)
 				_NQBLow = pInfo->dPrice;
 		}
 	}
@@ -1348,11 +1348,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESBHigh)
+			if (pInfo->dPrice >_ESBHigh)
 				_ESBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESBLow)
+			if (pInfo->dPrice <_ESBLow)
 				_ESBLow = pInfo->dPrice;
 		}
 	}
@@ -1393,11 +1393,11 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_NQBHigh)
+			if (pInfo->dPrice >_NQBHigh)
 				_NQBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_NQBLow)
+			if (pInfo->dPrice <_NQBLow)
 				_NQBLow = pInfo->dPrice;
 		}
 	}
@@ -1406,11 +1406,11 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
-		if(lt.wHour == hr_T && lt.wMinute >= min_T)
+		if (lt.wHour == hr_T && lt.wMinute >= min_T)
 		{
-			if(pInfo->dPrice >_ESBHigh)
+			if (pInfo->dPrice >_ESBHigh)
 				_ESBHigh = pInfo->dPrice;
-			if(pInfo->dPrice <_ESBLow)
+			if (pInfo->dPrice <_ESBLow)
 				_ESBLow = pInfo->dPrice;
 		}
 	}
@@ -2552,7 +2552,7 @@ int main(int      argc,
 			}
 			if (_RiskBal == 0)
 				_RiskBal = _AccBal;
-			if(_RiskBal > 0 && _AccBal > 0)
+			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
 		}
 
