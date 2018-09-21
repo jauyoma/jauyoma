@@ -108,7 +108,8 @@ std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 20, min_T = 28, sec_T;
+int  hr_T = 20, min_T = 28, sec_T, _Activ = 0;
+int  NQ_hr, ES_hr, NQ_min, ES_min;
 double ticks, profit, commA = 3.38, commB = 4.22;
 double _RiskBal, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
@@ -2353,9 +2354,13 @@ int main(int      argc,
 				_ES = spreadB;
 			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
 			{
-				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
+				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 10))
 				{
-					if (_NQBid > _NQPBid && _NQAsk > _NQPAsk && NQFree == false && spreadA <= 5)
+					if(lt.wSecond < 6 && lt.wMinute == min_T)
+						_Activ = 1;
+					else
+						_Activ = 0;
+					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0 && sec_T < 6 && _Activ == 1) ||(BNQ == 2 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2381,7 +2386,7 @@ int main(int      argc,
 						}
 					}
 
-					if (_NQBid < _NQPBid && _NQAsk < _NQPAsk && NQFree == false && spreadA <= 5)
+					if (NQFree == false && spreadA <= 5 && ((_NQBid < _NQPBid && _NQAsk < _NQPAsk && SNQ == 0 && sec_T < 6 && _Activ == 1) ||(SNQ == 2 && _NQBid < _NQBLow && _NQAsk < _NQALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2407,7 +2412,7 @@ int main(int      argc,
 						}
 					}
 
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk && ESFree == false && spreadB <= 3)
+					if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0 && sec_T < 6 && _Activ == 1) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2433,7 +2438,7 @@ int main(int      argc,
 						}
 					}
 
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk && ESFree == false && spreadB <= 3)
+					if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0 && sec_T < 6 && _Activ == 1) || (BES == 2 && _ESBid > _ESBLow && _ESAsk > _ESALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2653,7 +2658,7 @@ int main(int      argc,
 			{
 				if (_AccBal > 0)
 					Buff = _AccBal - _RiskBal;
-				if ((lt.wHour == hr_T && lt.wMinute >(min_T + 10)) || (Buff < (_RiskBal*-0.05)))
+				if ((lt.wHour == hr_T && lt.wMinute >(min_T + 2)) || (Buff < (_RiskBal*-0.05)))
 				{
 					if (BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh)
 					{
@@ -2678,7 +2683,12 @@ int main(int      argc,
 							break;
 						}
 						else
-							BNQ = 0;
+						{
+							BNQ = 2;
+							NQ_hr = lt.wHour;
+							NQ_min = lt.wMinute;
+							NQFree = false;
+						}
 					}
 
 					if (SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow)
@@ -2704,7 +2714,12 @@ int main(int      argc,
 							break;
 						}
 						else
-							SNQ = 0;
+						{
+							SNQ = 2;
+							NQ_hr = lt.wHour;
+							NQ_min = lt.wMinute;
+							NQFree = false;
+						}
 					}
 					if (BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 					{
@@ -2729,7 +2744,12 @@ int main(int      argc,
 							break;
 						}
 						else
-							BES = 0;
+						{
+							BES = 2;
+							ES_hr = lt.wHour;
+							ES_min = lt.wMinute;
+							ESFree = false;
+						}
 					}
 					if (SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow)
 					{
@@ -2754,10 +2774,15 @@ int main(int      argc,
 							break;
 						}
 						else
-							SES = 0;
+						{
+							SES = 2;
+							ES_hr = lt.wHour;
+							ES_min = lt.wMinute;
+							ESFree = false;
+						}
 					}
 				}
-				if (BNQ == 0 && SNQ == 0 && BES == 0 && SES == 0)
+				if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
 				{
 					CLS = 1;
 				}
