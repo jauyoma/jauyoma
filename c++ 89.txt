@@ -99,6 +99,7 @@ int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
 int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
+tsNCharcb _OrderNumNQ, OrderNumES;
 tsNCharcb _TickerNQ = { (char *)"NQU8",
 (int)strlen("NQU8") };
 tsNCharcb _TickerES = { (char *)"ESU8",
@@ -117,8 +118,8 @@ double _NQBHigh, _NQBLow, _ESBHigh, _ESBLow;
 double _NQAHigh, _NQALow, _ESAHigh, _ESALow;
 int _Disparity = 0;
 
-bool	NQFree = false;
-bool	ESFree = false;
+bool	NQFree = false, NQLFree = false;
+bool	ESFree = false, ESLFree = false;
 
 SYSTEMTIME st, lt;
 
@@ -664,6 +665,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
+		_OrderNumNQ = pInfo->sOrderNum;
 	}
 	if (_sTicker == "ESU8")
 	{
@@ -671,6 +673,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillES = pInfo->dPriceToFill;
 		_AvgFillPriceES = pInfo->dAvgFillPrice;
+		_OrderNumES = pInfo->sOrderNum;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1865,6 +1868,7 @@ int main(int      argc,
 	REngineParams     oParams;
 	MarketOrderParams oMktOrdParams;
 	LimitOrderParams  oLmtOrdParams;
+	ModifyLimitOrderParams	oModLmtOrdParams;
 	LoginParams       oLoginParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
@@ -2235,7 +2239,7 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	/*   send the market order */
+	/*   send market order */
 
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
@@ -2248,24 +2252,130 @@ int main(int      argc,
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
 	/*   ----------------------------------------------------------------   */
-	/*   send the limit order */
+	/*   send limit order */
 
 	oLmtOrdParams.sExchange = sExchange;
 	oLmtOrdParams.sTicker = sTicker;
 	oLmtOrdParams.pAccount = &g_oAccount;
 	oLmtOrdParams.iQty = 1;
-	oLmtOrdParams.dPrice = 1;
 	oLmtOrdParams.sBuySellType.pData = argv[5];
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 	oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
+	
+	/*   ----------------------------------------------------------------   */
+	/*   modify limit order */
 
+	oModLmtOrdParams.sExchange = sExchange;
+	oModLmtOrdParams.sTicker = sTicker;
+	oModLmtOrdParams.pAccount = &g_oAccount;
+	oModLmtOrdParams.iQty = 1;
+	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oLmtOrdParams.sOrderNum = g_sTradeRoute;
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
+	
+	while ((lt.wHour == hr_T && lt.wMinute < min_T && lt.wMinute >= (min_T - 5)) || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
+	{
+		if(NQLFree = false)
+		{
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			oLmtOrdParams.sTicker.pData = "NQV8";
+			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
+			oLmtOrdParams.dPrice = _NQAsk + (incrNQ*5);
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				printf("REngine::sendOrder() error : %d\n", iCode);
+
+				delete g_pEngine;
+				delete pCallbacks;
+				delete pAdmCallbacks;
+
+				g_bDone = true;
+
+				return (BAD);
+				break;
+			}
+			else
+			{
+				NQLFree = true;
+			}
+			
+			if(NQLFree == true)
+			{
+				oLmtOrdParams.sBuySellType.pData = "S";
+				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+				oLmtOrdParams.dPrice = _NQBid - (incrNQ*5);
+				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			
+			}
+		}
+		
+		if(ESLFree = false)
+		{
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			oLmtOrdParams.sTicker.pData = "ESV8";
+			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
+			oLmtOrdParams.dPrice = _ESAsk + (incrES*5);
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				printf("REngine::sendOrder() error : %d\n", iCode);
+
+				delete g_pEngine;
+				delete pCallbacks;
+				delete pAdmCallbacks;
+
+				g_bDone = true;
+
+				return (BAD);
+				break;
+			}
+			else
+			{
+				ESLFree = true;
+			}
+			
+			if(ESLFree == true)
+			{
+				oLmtOrdParams.sBuySellType.pData = "S";
+				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+				oLmtOrdParams.dPrice = _ESBid - (incrES*5);
+				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+			
+			}
+		}
+	
+	}
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 5) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
@@ -2473,6 +2583,8 @@ int main(int      argc,
 						livefile << "NQ Low value is : " << _NQALow << endl;
 						livefile << "ES Low value is : " << _ESALow << endl;
 						livefile << "usecs at exchange is : " << iUsecs << endl;
+						livefile << "NQ Order Number is : " << _OrderNumNQ << endl;
+						livefile << "ES Order Number is : " << _OrderNumES << endl;
 
 						livefile.close();
 					}
@@ -2576,6 +2688,8 @@ int main(int      argc,
 			myfile << "ES Low value is : " << _ESALow << endl;
 			myfile << "usecs at exchange is : " << iUsecs << endl;
 			myfile << "Disparity value is : " << _Disparity << endl;
+			myfile << "NQ Order Number is : " << _OrderNumNQ << endl;
+			myfile << "ES Order Number is : " << _OrderNumES << endl;
 
 			myfile.close();
 		}
@@ -2816,6 +2930,8 @@ int main(int      argc,
 			endfile << "ES Low value is : " << _ESALow << endl;
 			endfile << "usecs at exchange is : " << iUsecs << endl;
 			endfile << "Processing speed is : " << ElapsedMicroseconds.QuadPart << endl;
+			endfile << "NQ Order Number is : " << _OrderNumNQ << endl;
+			endfile << "ES Order Number is : " << _OrderNumES << endl;
 
 			endfile.close();
 		}
