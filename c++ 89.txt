@@ -115,6 +115,7 @@ double _RiskBal, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
 double _NQBHigh, _NQBLow, _ESBHigh, _ESBLow;
 double _NQAHigh, _NQALow, _ESAHigh, _ESALow;
+int _Disparity = 0;
 
 bool	NQFree = false;
 bool	ESFree = false;
@@ -1118,7 +1119,6 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	}
 
 	NAsk = pInfo->dPrice;
-	send(Bid, Ask);
 
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
@@ -1162,7 +1162,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	}
 
 	NAsk = pInfo->dPrice;
-	send(Bid, Ask);
 
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
@@ -1213,7 +1212,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 	NBid = pBid->dPrice;
 	NAsk = pAsk->dPrice;
-	send(Bid, Ask);
 
 	trial = std::string(pBid->sTicker.pData, pBid->sTicker.iDataLen);
 	test = std::string(pAsk->sTicker.pData, pAsk->sTicker.iDataLen);
@@ -1271,7 +1269,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	}
 
 	NBid = pInfo->dPrice;
-	send(Bid, Ask);
 
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
@@ -1315,7 +1312,6 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	}
 
 	NBid = pInfo->dPrice;
-	send(Bid, Ask);
 
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
@@ -2259,8 +2255,10 @@ int main(int      argc,
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
 
-	while ((lt.wHour <= hr_T && lt.wMinute <= (min_T + 5)) || _Posn > 0 || CLS == 1)
+	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 5) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
+		QueryPerformanceFrequency(&Frequency);
+		QueryPerformanceCounter(&StartingTime);
 		spreadA = (_NQAsk - _NQBid) / incrNQ;
 		spreadB = (_ESAsk - _ESBid) / incrES;
 		if (spreadA > _NQ)
@@ -2277,7 +2275,7 @@ int main(int      argc,
 						_Activ = 1;
 					else
 						_Activ = 0;
-					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0 && _Activ == 1) || (BNQ == 2 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
+					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0 && _Activ == 1) || (_Activ == 0 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2304,7 +2302,7 @@ int main(int      argc,
 						}
 					}
 
-					if (NQFree == false && spreadA <= 5 && ((_NQBid < _NQPBid && _NQAsk < _NQPAsk && SNQ == 0 && _Activ == 1) || (SNQ == 2 && _NQBid < _NQBLow && _NQAsk < _NQALow)))
+					if (NQFree == false && spreadA <= 5 && ((_NQBid < _NQPBid && _NQAsk < _NQPAsk && SNQ == 0 && _Activ == 1) || (_Activ == 0 && _NQBid < _NQBLow && _NQAsk < _NQALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2331,7 +2329,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0 && _Activ == 1) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
+					if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0 && _Activ == 1) || (_Activ == 0 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2358,7 +2356,7 @@ int main(int      argc,
 						}
 					}
 
-					if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0 && _Activ == 1) || (BES == 2 && _ESBid > _ESBLow && _ESAsk > _ESALow)))
+					if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0 && _Activ == 1) || (_Activ == 0 && _ESBid > _ESBLow && _ESAsk > _ESALow)))
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2484,6 +2482,9 @@ int main(int      argc,
 			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
 		}
+		
+		if(CLS == 1 && _Posn == 0)
+			_Disparity = 2;
 
 		/*   ----------------------------------------------------------------   */
 		/*   Printout of variables		                                */
@@ -2562,7 +2563,7 @@ int main(int      argc,
 			myfile << "NQ Low value is : " << _NQALow << endl;
 			myfile << "ES Low value is : " << _ESALow << endl;
 			myfile << "usecs at exchange is : " << iUsecs << endl;
-
+			myfile << "Disparity value is : " << _Disparity << endl;
 
 			myfile.close();
 		}
@@ -2710,6 +2711,29 @@ int main(int      argc,
 				}
 			}
 		}
+		
+		if (_NQBid > _NQBHigh)
+			_NQBHigh = _NQBid;
+		if (_NQAsk > _NQAHigh)
+			_NQAHigh = _NQAsk;
+		if (_ESBid > _ESBHigh)
+			_ESBHigh = _ESBid;
+		if (_ESAsk > _ESAHigh)
+			_ESAHigh = _ESAsk;
+
+		if (_NQBid < _NQBLow)
+			_NQBLow = _NQBid;
+		if (_NQAsk < _NQALow)
+			_NQALow = _NQAsk;
+		if (_ESBid < _ESBLow)
+			_ESBLow = _ESBid;
+		if (_ESAsk < _ESALow)
+			_ESALow = _ESAsk;
+		
+		QueryPerformanceCounter(&EndingTime);
+		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+		ElapsedMicroseconds.QuadPart *= 1000000;
+		ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
 
 		if (endfile.is_open())
 		{
@@ -2784,27 +2808,11 @@ int main(int      argc,
 			endfile << "NQ Low value is : " << _NQALow << endl;
 			endfile << "ES Low value is : " << _ESALow << endl;
 			endfile << "usecs at exchange is : " << iUsecs << endl;
+			endfile << "Processing speed is : " << ElapsedMicroseconds.QuadPart << endl;
 
 			endfile.close();
 		}
 		else cout << "Unable to open file";
-		if (_NQBid > _NQBHigh)
-			_NQBHigh = _NQBid;
-		if (_NQAsk > _NQAHigh)
-			_NQAHigh = _NQAsk;
-		if (_ESBid > _ESBHigh)
-			_ESBHigh = _ESBid;
-		if (_ESAsk > _ESAHigh)
-			_ESAHigh = _ESAsk;
-
-		if (_NQBid < _NQBLow)
-			_NQBLow = _NQBid;
-		if (_NQAsk < _NQALow)
-			_NQALow = _NQAsk;
-		if (_ESBid < _ESBLow)
-			_ESBLow = _ESBid;
-		if (_ESAsk < _ESALow)
-			_ESALow = _ESAsk;
 	}
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
