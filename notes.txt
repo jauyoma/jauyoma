@@ -3,3 +3,6 @@ do not re enter trade between high and low values only if values broken
 Retrieve closed instrument and time to check if can re enter trade
 FOK, GTC, DAY
 check limit orders
+Send modify orders
+Confirm if buy and sell orders can be simultaneously placed
+Set stop orders for both market and limit orders as a risk management tool
