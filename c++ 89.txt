@@ -1864,6 +1864,7 @@ int main(int      argc,
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	MarketOrderParams oMktOrdParams;
+	LimitOrderParams  oLmtOrdParams;
 	LoginParams       oLoginParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
@@ -2234,7 +2235,7 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	/*   send the order */
+	/*   send the market order */
 
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
@@ -2247,7 +2248,18 @@ int main(int      argc,
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
 	/*   ----------------------------------------------------------------   */
+	/*   send the limit order */
 
+	oLmtOrdParams.sExchange = sExchange;
+	oLmtOrdParams.sTicker = sTicker;
+	oLmtOrdParams.pAccount = &g_oAccount;
+	oLmtOrdParams.iQty = 1;
+	oLmtOrdParams.dPrice = 1;
+	oLmtOrdParams.sBuySellType.pData = argv[5];
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+	oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
+	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
 
 
 	/*   ----------------------------------------------------------------   */
@@ -2577,44 +2589,39 @@ int main(int      argc,
 				_NQ = spreadA;
 			if (spreadB > _ES)
 				_ES = spreadB;
-			if (_Posn < 3)
+			if (_AccBal > 0)
+				Buff = _AccBal - _RiskBal;
+			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)))
 			{
-				if (_AccBal > 0)
-					Buff = _AccBal - _RiskBal;
-				if ((lt.wHour == hr_T && lt.wMinute >(min_T + 2)) || (Buff < (_RiskBal*-0.05)))
+				ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
+				profit = ticks - commA;
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
-					if (BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh)
-					{
-						ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
-						profit = ticks - commA;
-						oMktOrdParams.sBuySellType.pData = "S";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "NQU8";
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-						{
-							printf("REngine::sendOrder() error : %d\n", iCode);
+					printf("REngine::sendOrder() error : %d\n", iCode);
 
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
 
-							g_bDone = true;
+					g_bDone = true;
+					return (BAD);
+					break;
+				}
+				else
+				{
+					BNQ = 2;
+					NQ_hr = lt.wHour;
+					NQ_min = lt.wMinute;
+					NQFree = false;
+				}
+			}
 
-							return (BAD);
-							break;
-						}
-						else
-						{
-							BNQ = 2;
-							NQ_hr = lt.wHour;
-							NQ_min = lt.wMinute;
-							NQFree = false;
-						}
-					}
-
-					if (SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow)
+					if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)))
 					{
 						ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
 						profit = ticks - commA;
@@ -2644,7 +2651,8 @@ int main(int      argc,
 							NQFree = false;
 						}
 					}
-					if (BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					
+					if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)))
 					{
 						ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
 						profitB = ticksB - commA;
@@ -2674,7 +2682,8 @@ int main(int      argc,
 							ESFree = false;
 						}
 					}
-					if (SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow)
+					
+					if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)))
 					{
 						ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
 						profitB = ticksB - commA;
@@ -2704,12 +2713,10 @@ int main(int      argc,
 							ESFree = false;
 						}
 					}
-				}
-				if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
-				{
-					CLS = 2;
-				}
-			}
+		}
+		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
+		{
+			CLS = 2;
 		}
 		
 		if (_NQBid > _NQBHigh)
