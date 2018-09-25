@@ -99,17 +99,17 @@ int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
 int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
-std::string _OrderNumNQ, _OrderNumES;
-tsNCharcb _TickerNQ = { (char *)"NQU8",
-(int)strlen("NQU8") };
-tsNCharcb _TickerES = { (char *)"ESU8",
-(int)strlen("ESU8") };
+tsNCharcb _OrderNumNQ, _OrderNumES;
+tsNCharcb _TickerNQ = { (char *)"NQZ8",
+(int)strlen("NQZ8") };
+tsNCharcb _TickerES = { (char *)"ESZ8",
+(int)strlen("ESZ8") };
 std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
 std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 20, min_T = 28, sec_T, _Activ = 0;
+int  hr_T = 13, min_T = 19, sec_T, _Activ = 0;
 int  NQ_hr, ES_hr, NQ_min, ES_min;
 double ticks, profit, commA = 3.38, commB = 4.22;
 double _RiskBal, Buff, ticksB, profitB;
@@ -659,21 +659,21 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
 	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
-	if (_sTicker == "NQU8")
+	if (_sTicker == "NQZ8")
 	{
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
-		_OrderNumNQ = std::string(pInfo->sOrderNum.pData, pInfo->sOrderNum.iDataLen);
+		_OrderNumNQ = pInfo->sOrderNum;
 	}
-	if (_sTicker == "ESU8")
+	if (_sTicker == "ESZ8")
 	{
 		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillES = pInfo->dPriceToFill;
 		_AvgFillPriceES = pInfo->dAvgFillPrice;
-		_OrderNumES = std::string(pInfo->sOrderNum.pData, pInfo->sOrderNum.iDataLen);
+		_OrderNumES = pInfo->sOrderNum;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -782,9 +782,9 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 		printf("error in pInfo -> dump : %d", iIgnored);
 	}
 
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "NQU8")
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "NQZ8")
 		incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "ESU8")
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "ESZ8")
 		incrES = pInfo->asPriceIncrArray->dPriceIncr;
 
 	g_bRcvdPriceIncr = true;
@@ -2126,7 +2126,7 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	sTicker.pData = "NQU8";
+	sTicker.pData = "NQZ8";
 	sTicker.iDataLen = (int)strlen(sTicker.pData);
 
 	/*   ----------------------------------------------------------------   */
@@ -2286,10 +2286,10 @@ int main(int      argc,
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			oLmtOrdParams.sTicker.pData = "NQV8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
-			oLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
+			oLmtOrdParams.dPrice = _NQAsk + (incrNQ * 5);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
-				printf("REngine::sendOrder() error : %d\n", iCode);
+				printf("REngine::LimitOrder() error : %d\n", iCode);
 
 				delete g_pEngine;
 				delete pCallbacks;
@@ -2311,12 +2311,12 @@ int main(int      argc,
 		{
 			oLmtOrdParams.sBuySellType.pData = "S";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-			oLmtOrdParams.sTicker.pData = "ESV8";
+			oLmtOrdParams.sTicker.pData = "ESZ8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
 			oLmtOrdParams.dPrice = _ESBid - (incrES * 3);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
-				printf("REngine::sendOrder() error : %d\n", iCode);
+				printf("REngine::LimitOrder() error : %d\n", iCode);
 
 				delete g_pEngine;
 				delete pCallbacks;
@@ -2333,19 +2333,45 @@ int main(int      argc,
 			}
 
 		}
-		
+
 		if (NQLFree = true)
 		{
 			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
-			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
+			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 5);
+			if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+			{
+				printf("REngine::modifyOrder() error : %d\n", iCode);
+
+				delete g_pEngine;
+				delete pCallbacks;
+				delete pAdmCallbacks;
+
+				g_bDone = true;
+
+				return (BAD);
+				break;
+			}
 		}
-		
+
 		if (ESLFree = true)
 		{
-			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
-			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
+			oModLmtOrdParams.sOrderNum = _OrderNumES;
+			oModLmtOrdParams.dPrice = _ESBid - (incrES * 3);
+			if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+			{
+				printf("REngine::modifyOrder() error : %d\n", iCode);
+
+				delete g_pEngine;
+				delete pCallbacks;
+				delete pAdmCallbacks;
+
+				g_bDone = true;
+
+				return (BAD);
+				break;
+			}
 		}
-		
+
 	}
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 5) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
@@ -2372,7 +2398,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "NQU8";
+						oMktOrdParams.sTicker.pData = "NQZ8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2399,7 +2425,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "NQU8";
+						oMktOrdParams.sTicker.pData = "NQZ8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2426,7 +2452,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "ESU8";
+						oMktOrdParams.sTicker.pData = "ESZ8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2453,7 +2479,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "ESU8";
+						oMktOrdParams.sTicker.pData = "ESZ8";
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2554,8 +2580,8 @@ int main(int      argc,
 						livefile << "NQ Low value is : " << _NQALow << endl;
 						livefile << "ES Low value is : " << _ESALow << endl;
 						livefile << "usecs at exchange is : " << iUsecs << endl;
-						livefile << "NQ Order Number is : " << _OrderNumNQ << endl;
-						livefile << "ES Order Number is : " << _OrderNumES << endl;
+						livefile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+						livefile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
 
 						livefile.close();
 					}
@@ -2659,8 +2685,8 @@ int main(int      argc,
 			myfile << "ES Low value is : " << _ESALow << endl;
 			myfile << "usecs at exchange is : " << iUsecs << endl;
 			myfile << "Disparity value is : " << _Disparity << endl;
-			myfile << "NQ Order Number is : " << _OrderNumNQ << endl;
-			myfile << "ES Order Number is : " << _OrderNumES << endl;
+			myfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+			myfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
 
 			myfile.close();
 		}
@@ -2682,7 +2708,7 @@ int main(int      argc,
 				profit = ticks - commA;
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.pData = "NQZ8";
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -2712,7 +2738,7 @@ int main(int      argc,
 				profit = ticks - commA;
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.pData = "NQZ8";
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -2743,7 +2769,7 @@ int main(int      argc,
 				profitB = ticksB - commA;
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.pData = "ESZ8";
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -2774,7 +2800,7 @@ int main(int      argc,
 				profitB = ticksB - commA;
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.pData = "ESZ8";
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -2901,8 +2927,8 @@ int main(int      argc,
 			endfile << "ES Low value is : " << _ESALow << endl;
 			endfile << "usecs at exchange is : " << iUsecs << endl;
 			endfile << "Processing speed is : " << ElapsedMicroseconds.QuadPart << endl;
-			endfile << "NQ Order Number is : " << _OrderNumNQ << endl;
-			endfile << "ES Order Number is : " << _OrderNumES << endl;
+			endfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+			endfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
 
 			endfile.close();
 		}
