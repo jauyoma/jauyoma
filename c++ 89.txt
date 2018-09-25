@@ -2272,7 +2272,6 @@ int main(int      argc,
 	oModLmtOrdParams.pAccount = &g_oAccount;
 	oModLmtOrdParams.iQty = 1;
 	oModLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
-	oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
@@ -2287,7 +2286,7 @@ int main(int      argc,
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			oLmtOrdParams.sTicker.pData = "NQV8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
-			oLmtOrdParams.dPrice = _NQAsk + (incrNQ * 5);
+			oLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
 				printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2306,35 +2305,15 @@ int main(int      argc,
 				NQLFree = true;
 			}
 
-			if (NQLFree == true)
-			{
-				oLmtOrdParams.sBuySellType.pData = "S";
-				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.dPrice = _NQBid - (incrNQ * 2);
-				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-				{
-					printf("REngine::sendOrder() error : %d\n", iCode);
-
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					g_bDone = true;
-
-					return (BAD);
-					break;
-				}
-
-			}
 		}
 
 		if (ESLFree = false)
 		{
-			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.pData = "S";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			oLmtOrdParams.sTicker.pData = "ESV8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
-			oLmtOrdParams.dPrice = _ESAsk + (incrES * 5);
+			oLmtOrdParams.dPrice = _ESBid - (incrES * 3);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
 				printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2353,28 +2332,20 @@ int main(int      argc,
 				ESLFree = true;
 			}
 
-			if (ESLFree == true)
-			{
-				oLmtOrdParams.sBuySellType.pData = "S";
-				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.dPrice = _ESBid - (incrES * 2);
-				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-				{
-					printf("REngine::sendOrder() error : %d\n", iCode);
-
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					g_bDone = true;
-
-					return (BAD);
-					break;
-				}
-
-			}
 		}
-
+		
+		if (NQLFree = true)
+		{
+			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
+		}
+		
+		if (ESLFree = true)
+		{
+			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 3);
+		}
+		
 	}
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 5) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
