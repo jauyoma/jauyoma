@@ -2269,7 +2269,7 @@ int main(int      argc,
 
 	oModLmtOrdParams.sExchange = sExchange;
 	oModLmtOrdParams.sTicker = sTicker;
-	oModLmtOrdParams.pAccount = &g_oAccount;
+	oModLmtOrdParams.pAccount = &g_oAccount;;
 	oModLmtOrdParams.iQty = 1;
 	oModLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 
@@ -2334,7 +2334,7 @@ int main(int      argc,
 
 		}
 
-		if (NQLFree = true)
+		if (NQLFree = true && _OrderNumNQ.iDataLen > 0)
 		{
 			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 			oModLmtOrdParams.dPrice = _NQAsk + (incrNQ * 5);
@@ -2353,7 +2353,7 @@ int main(int      argc,
 			}
 		}
 
-		if (ESLFree = true)
+		if (ESLFree = true && _OrderNumES.iDataLen > 0)
 		{
 			oModLmtOrdParams.sOrderNum = _OrderNumES;
 			oModLmtOrdParams.dPrice = _ESBid - (incrES * 3);
