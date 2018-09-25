@@ -99,7 +99,7 @@ int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
 int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
-tsNCharcb _OrderNumNQ, OrderNumES;
+std::string _OrderNumNQ, _OrderNumES;
 tsNCharcb _TickerNQ = { (char *)"NQU8",
 (int)strlen("NQU8") };
 tsNCharcb _TickerES = { (char *)"ESU8",
@@ -665,7 +665,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
-		_OrderNumNQ = pInfo->sOrderNum;
+		_OrderNumNQ = std::string(pInfo->sOrderNum.pData, pInfo->sOrderNum.iDataLen);
 	}
 	if (_sTicker == "ESU8")
 	{
@@ -673,7 +673,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillES = pInfo->dPriceToFill;
 		_AvgFillPriceES = pInfo->dAvgFillPrice;
-		_OrderNumES = pInfo->sOrderNum;
+		_OrderNumES = std::string(pInfo->sOrderNum.pData, pInfo->sOrderNum.iDataLen);
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2263,7 +2263,7 @@ int main(int      argc,
 	oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
-	
+
 	/*   ----------------------------------------------------------------   */
 	/*   modify limit order */
 
@@ -2271,23 +2271,23 @@ int main(int      argc,
 	oModLmtOrdParams.sTicker = sTicker;
 	oModLmtOrdParams.pAccount = &g_oAccount;
 	oModLmtOrdParams.iQty = 1;
-	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
-	oLmtOrdParams.sOrderNum = g_sTradeRoute;
+	oModLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
-	
+
 	while ((lt.wHour == hr_T && lt.wMinute < min_T && lt.wMinute >= (min_T - 5)) || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
-		if(NQLFree = false)
+		if (NQLFree = false)
 		{
 			oLmtOrdParams.sBuySellType.pData = "B";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			oLmtOrdParams.sTicker.pData = "NQV8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
-			oLmtOrdParams.dPrice = _NQAsk + (incrNQ*5);
+			oLmtOrdParams.dPrice = _NQAsk + (incrNQ * 5);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
 				printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2305,12 +2305,12 @@ int main(int      argc,
 			{
 				NQLFree = true;
 			}
-			
-			if(NQLFree == true)
+
+			if (NQLFree == true)
 			{
 				oLmtOrdParams.sBuySellType.pData = "S";
 				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.dPrice = _NQBid - (incrNQ*5);
+				oLmtOrdParams.dPrice = _NQBid - (incrNQ * 2);
 				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 				{
 					printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2324,17 +2324,17 @@ int main(int      argc,
 					return (BAD);
 					break;
 				}
-			
+
 			}
 		}
-		
-		if(ESLFree = false)
+
+		if (ESLFree = false)
 		{
 			oLmtOrdParams.sBuySellType.pData = "B";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			oLmtOrdParams.sTicker.pData = "ESV8";
 			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oLmtOrdParams.sTicker.pData);
-			oLmtOrdParams.dPrice = _ESAsk + (incrES*5);
+			oLmtOrdParams.dPrice = _ESAsk + (incrES * 5);
 			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 			{
 				printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2352,12 +2352,12 @@ int main(int      argc,
 			{
 				ESLFree = true;
 			}
-			
-			if(ESLFree == true)
+
+			if (ESLFree == true)
 			{
 				oLmtOrdParams.sBuySellType.pData = "S";
 				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.dPrice = _ESBid - (incrES*5);
+				oLmtOrdParams.dPrice = _ESBid - (incrES * 2);
 				if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 				{
 					printf("REngine::sendOrder() error : %d\n", iCode);
@@ -2371,10 +2371,10 @@ int main(int      argc,
 					return (BAD);
 					break;
 				}
-			
+
 			}
 		}
-	
+
 	}
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 5) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
@@ -2606,8 +2606,8 @@ int main(int      argc,
 			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
 		}
-		
-		if(CLS == 1 && _Posn == 0)
+
+		if (CLS == 1 && _Posn == 0)
 			_Disparity = 2;
 
 		/*   ----------------------------------------------------------------   */
@@ -2735,104 +2735,104 @@ int main(int      argc,
 				}
 			}
 
-					if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)))
-					{
-						ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
-						profit = ticks - commA;
-						oMktOrdParams.sBuySellType.pData = "B";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "NQU8";
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-						{
-							printf("REngine::sendOrder() error : %d\n", iCode);
+			if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)))
+			{
+				ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
+				profit = ticks - commA;
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "NQU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
 
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
 
-							g_bDone = true;
+					g_bDone = true;
 
-							return (BAD);
-							break;
-						}
-						else
-						{
-							SNQ = 2;
-							NQ_hr = lt.wHour;
-							NQ_min = lt.wMinute;
-							NQFree = false;
-						}
-					}
-					
-					if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)))
-					{
-						ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
-						profitB = ticksB - commA;
-						oMktOrdParams.sBuySellType.pData = "S";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "ESU8";
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-						{
-							printf("REngine::sendOrder() error : %d\n", iCode);
+					return (BAD);
+					break;
+				}
+				else
+				{
+					SNQ = 2;
+					NQ_hr = lt.wHour;
+					NQ_min = lt.wMinute;
+					NQFree = false;
+				}
+			}
 
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
+			if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)))
+			{
+				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
+				profitB = ticksB - commA;
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
 
-							g_bDone = true;
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
 
-							return (BAD);
-							break;
-						}
-						else
-						{
-							BES = 2;
-							ES_hr = lt.wHour;
-							ES_min = lt.wMinute;
-							ESFree = false;
-						}
-					}
-					
-					if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)))
-					{
-						ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
-						profitB = ticksB - commA;
-						oMktOrdParams.sBuySellType.pData = "B";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = "ESU8";
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-						{
-							printf("REngine::sendOrder() error : %d\n", iCode);
+					g_bDone = true;
 
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
+					return (BAD);
+					break;
+				}
+				else
+				{
+					BES = 2;
+					ES_hr = lt.wHour;
+					ES_min = lt.wMinute;
+					ESFree = false;
+				}
+			}
 
-							g_bDone = true;
+			if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)))
+			{
+				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
+				profitB = ticksB - commA;
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = "ESU8";
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					printf("REngine::sendOrder() error : %d\n", iCode);
 
-							return (BAD);
-							break;
-						}
-						else
-						{
-							SES = 2;
-							ES_hr = lt.wHour;
-							ES_min = lt.wMinute;
-							ESFree = false;
-						}
-					}
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+					break;
+				}
+				else
+				{
+					SES = 2;
+					ES_hr = lt.wHour;
+					ES_min = lt.wMinute;
+					ESFree = false;
+				}
+			}
 		}
 		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
 		{
 			CLS = 2;
 		}
-		
+
 		if (_NQBid > _NQBHigh)
 			_NQBHigh = _NQBid;
 		if (_NQAsk > _NQAHigh)
@@ -2850,7 +2850,7 @@ int main(int      argc,
 			_ESBLow = _ESBid;
 		if (_ESAsk < _ESALow)
 			_ESALow = _ESAsk;
-		
+
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 		ElapsedMicroseconds.QuadPart *= 1000000;
