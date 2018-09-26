@@ -2463,6 +2463,7 @@ int main(int      argc,
 						livefile << "usecs at exchange is : " << iUsecs << endl;
 						livefile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
 						livefile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+						livefile << "Cumulative profit is : " << CumProfit << endl;
 
 						livefile.close();
 					}
@@ -2569,6 +2570,7 @@ int main(int      argc,
 			myfile << "Disparity value is : " << _Disparity << endl;
 			myfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
 			myfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+			myfile << "Cumulative profit is : " << CumProfit << endl;
 
 			myfile.close();
 		}
@@ -2818,6 +2820,7 @@ int main(int      argc,
 			endfile << "Processing speed is : " << ElapsedMicroseconds.QuadPart << endl;
 			endfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
 			endfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+			endfile << "Cumulative profit is : " << CumProfit << endl;
 
 			endfile.close();
 		}
