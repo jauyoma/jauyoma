@@ -2825,6 +2825,16 @@ int main(int      argc,
 			endfile.close();
 		}
 		else cout << "Unable to open file";
+		
+		if (fgetc(stdin))
+		{
+			printf("Exit System");
+
+			delete g_pEngine;
+			delete pCallbacks;
+			delete pAdmCallbacks;
+			break;
+		}
 	}
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
