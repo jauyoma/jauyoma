@@ -100,19 +100,19 @@ int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _OrderNumNQ, _OrderNumES;
-tsNCharcb _TickerNQ = { (char *)"NQZ8",
-(int)strlen("NQZ8") };
-tsNCharcb _TickerES = { (char *)"ESZ8",
-(int)strlen("ESZ8") };
+tsNCharcb _TickerNQ = { (char *)"6EV8",
+(int)strlen("6EV8") };
+tsNCharcb _TickerES = { (char *)"6BV8",
+(int)strlen("6BV8") };
 std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
 std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 13, min_T = 19, sec_T, _Activ = 0;
+int  hr_T = 15, min_T = 30, sec_T, _Activ = 0;
 int  NQ_hr, ES_hr, NQ_min, ES_min;
 double ticks, profit, commA = 3.38, commB = 4.22;
-double _RiskBal, Buff, ticksB, profitB;
+double _RiskBal = 499906.25, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
 double _NQBHigh, _NQBLow, _ESBHigh, _ESBLow;
 double _NQAHigh, _NQALow, _ESAHigh, _ESALow;
@@ -659,7 +659,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
 	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
-	if (_sTicker == "NQZ8")
+	if (_sTicker == "6EV8")
 	{
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
@@ -667,7 +667,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
 	}
-	if (_sTicker == "ESZ8")
+	if (_sTicker == "6BV8")
 	{
 		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
@@ -782,9 +782,9 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 		printf("error in pInfo -> dump : %d", iIgnored);
 	}
 
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "NQZ8")
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6EV8")
 		incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "ESZ8")
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6BV8")
 		incrES = pInfo->asPriceIncrArray->dPriceIncr;
 
 	g_bRcvdPriceIncr = true;
@@ -2071,11 +2071,11 @@ int main(int      argc,
 
 	while (!g_bTsLoginComplete)
 	{
-		#ifdef WinOS
-			sleep(1);
-		#else
-			Sleep(1000);
-		#endif
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2269,7 +2269,7 @@ int main(int      argc,
 		{
 			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
 			{
-				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 5))
+				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
 					if (lt.wSecond < 6 && lt.wMinute == min_T)
 						_Activ = 1;
@@ -2479,7 +2479,7 @@ int main(int      argc,
 			{
 				break;
 			}
-			
+
 			if (_RiskBal == 0)
 				_RiskBal = _AccBal;
 			if (_RiskBal > 0 && _AccBal > 0)
@@ -2582,6 +2582,8 @@ int main(int      argc,
 				_NQ = spreadA;
 			if (spreadB > _ES)
 				_ES = spreadB;
+			if (_RiskBal == 0)
+				_RiskBal = _AccBal;
 			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
 			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)))
@@ -2721,13 +2723,13 @@ int main(int      argc,
 		if (_ESAsk > _ESAHigh)
 			_ESAHigh = _ESAsk;
 
-		if (_NQBid < _NQBLow)
+		if ((_NQBid < _NQBLow) || (_NQBLow = 0))
 			_NQBLow = _NQBid;
-		if (_NQAsk < _NQALow)
+		if ((_NQAsk < _NQALow) || (_NQALow = 0))
 			_NQALow = _NQAsk;
-		if (_ESBid < _ESBLow)
+		if ((_ESBid < _ESBLow) || (_ESBLow = 0))
 			_ESBLow = _ESBid;
-		if (_ESAsk < _ESALow)
+		if ((_ESAsk < _ESALow) || (_ESALow = 0))
 			_ESALow = _ESAsk;
 
 		QueryPerformanceCounter(&EndingTime);
