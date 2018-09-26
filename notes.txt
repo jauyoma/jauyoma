@@ -6,3 +6,4 @@ check limit orders
 Send modify orders
 Confirm if buy and sell orders can be simultaneously placed
 Set stop orders for both market and limit orders as a risk management tool
+remodel algo for speed. seperate blocks
