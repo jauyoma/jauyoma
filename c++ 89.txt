@@ -45,7 +45,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <windows.h>
 #include <fstream>
 #include <vector>
-
+o
 #ifdef WinOS
 #include <unistd.h>
 #else
@@ -111,7 +111,7 @@ LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
 int  hr_T = 15, min_T = 30, sec_T, _Activ = 0;
 int  NQ_hr, ES_hr, NQ_min, ES_min;
-double ticks, profit, commA = 3.38, commB = 4.22;
+double ticks, profit, commA = 3.38, commB = 4.22, CumProfit = 0;
 double _RiskBal = 499906.25, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
 double _NQBHigh, _NQBLow, _ESBHigh, _ESBLow;
@@ -2267,7 +2267,7 @@ int main(int      argc,
 			_ES = spreadB;
 		if (NQFree == false || ESFree == false)
 		{
-			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0))
+			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0) && (CumProfit > (_RiskBal*-0.05)))
 			{
 				if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 				{
@@ -2586,7 +2586,7 @@ int main(int      argc,
 				_RiskBal = _AccBal;
 			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
-			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)))
+			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 			{
 				ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
 				profit = ticks - commB;
@@ -2613,10 +2613,11 @@ int main(int      argc,
 					NQ_hr = lt.wHour;
 					NQ_min = lt.wMinute;
 					NQFree = false;
+					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)))
+			if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 			{
 				ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
 				profit = ticks - commB;
@@ -2644,10 +2645,11 @@ int main(int      argc,
 					NQ_hr = lt.wHour;
 					NQ_min = lt.wMinute;
 					NQFree = false;
+					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)))
+			if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 			{
 				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
 				profitB = ticksB - commB;
@@ -2675,10 +2677,11 @@ int main(int      argc,
 					ES_hr = lt.wHour;
 					ES_min = lt.wMinute;
 					ESFree = false;
+					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)))
+			if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 			{
 				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
 				profitB = ticksB - commB;
@@ -2706,9 +2709,11 @@ int main(int      argc,
 					ES_hr = lt.wHour;
 					ES_min = lt.wMinute;
 					ESFree = false;
+					CumProfit = CumProfit + profit;
 				}
 			}
 		}
+		
 		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
 		{
 			CLS = 2;
