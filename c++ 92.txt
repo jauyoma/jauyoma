@@ -119,8 +119,9 @@ double _NQBHigh = 0, _NQBLow = 0, _ESBHigh = 0, _ESBLow = 0;
 double _NQAHigh = 0, _NQALow = 0, _ESAHigh = 0, _ESALow = 0;
 int _Disparity = 0;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
-std::string SymbNQ, SymbES;
-
+tsNCharcb SymbNQ, SymbES;
+int				  CLS = 0, iCode, Sign;           ;
+int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
 bool	NQFree = false, NQLFree = false, print = false;
 bool	ESFree = false, ESLFree = false;
 
@@ -432,103 +433,79 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 	if (CLS == 1)
 	{
-	
-	if (Signal == 1)
-	{
-		oMktOrdParams.sBuySellType.pData = "S";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbNQ;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-		
-		if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+
+		if (Signal == 1)
 		{
-					printf("REngine::sendOrder() error : %d\n", iCode);
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					return (BAD);
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("REngine::CloseOrder() error : %d\n", iCode);
+			}
+			else
+			{
+				BNQ = 2;
+			}
 		}
-		else
+
+		if (Signal == 2)
 		{
-					BNQ = 2;
-		}
-	}
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-	if (Signal == 2)
-	{
-		oMktOrdParams.sBuySellType.pData = "B";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbNQ;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-	
-		if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("REngine::CloseOrder() error : %d\n", iCode);
+			}
+			else
+			{
+				SNQ = 2;
+			}
+		}
+
+		if (Signal == 3)
 		{
-					printf("REngine::sendOrder() error : %d\n", iCode);
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbES.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					return (BAD);
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("REngine::CloseOrder() error : %d\n", iCode);
+			}
+			else
+			{
+				BES = 2;
+			}
 		}
-		else
+
+		if (Signal == 4)
 		{
-					SNQ = 2;
-		}
-	}
-	
-	if (Signal == 3)
-	{
-		oMktOrdParams.sBuySellType.pData = "S";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbES;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-		
-		if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-		{
-					printf("REngine::sendOrder() error : %d\n", iCode);
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbES.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("REngine::CloseOrder() error : %d\n", iCode);
+			}
+			else
+			{
+				SES = 2;
+			}
+		}
 
-					return (BAD);
-		}
-		else
-		{
-					BES = 2;
-		}
-	}
-	
-	if (Signal == 4)
-	{
-		oMktOrdParams.sBuySellType.pData = "B";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbES;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-	
-		if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-		{
-					printf("REngine::sendOrder() error : %d\n", iCode);
-
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					return (BAD);
-		}
-		else
-		{
-					SES = 2;
-		}
-	}
-	
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -688,7 +665,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
 		(int)strlen("order sent to exch") };
 	int iIgnored;
-	
+
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
@@ -746,12 +723,12 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
+
 	SpdLineUpd = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -801,7 +778,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
@@ -834,12 +811,12 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
+
 	SpdPnL = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1180,19 +1157,21 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		if ((_NQAsk < _NQALow) || (_NQALow == 0))
 			_NQALow = _NQAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
@@ -1207,26 +1186,28 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		if ((_ESAsk < _ESALow) || (_ESALow == 0))
 			_ESALow = _ESAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
 
 	trial = "";
-	
+
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
 	spreadB = (_ESAsk - _ESBid) / incrES;
 
@@ -1264,24 +1245,26 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		if ((_NQAsk < _NQALow) || (_NQALow == 0))
 			_NQALow = _NQAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
-	
+
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pInfo->dPrice;
@@ -1292,36 +1275,38 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		if ((_ESAsk < _ESALow) || (_ESALow == 0))
 			_ESALow = _ESAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
 
 	trial = "";
-	
+
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
 	spreadB = (_ESAsk - _ESBid) / incrES;
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
+
 	SpdBAsk = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1359,19 +1344,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		if ((_NQAsk < _NQALow) || (_NQALow == 0))
 			_NQALow = _NQAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
@@ -1386,19 +1373,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		if ((_ESAsk < _ESALow) || (_ESALow == 0))
 			_ESALow = _ESAsk;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
@@ -1413,24 +1402,26 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		if ((_NQBid < _NQBLow) || (_NQBLow == 0))
 			_NQBLow = _NQBid;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
-	
+
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pBid->dPrice;
@@ -1441,19 +1432,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		if ((_ESBid < _ESBLow) || (_ESBLow == 0))
 			_ESBLow = _ESBid;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
@@ -1461,19 +1454,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 	trial = "";
 	test = "";
-	
+
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
 	spreadB = (_ESAsk - _ESBid) / incrES;
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
+
 	SpdBAskBid = ElapsedMicroseconds.QuadPart;
-	
+
 	*aiCode = API_OK;
 	return (OK);
 }
@@ -1508,24 +1501,26 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
-	
+
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pInfo->dPrice;
@@ -1538,36 +1533,38 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
 
 	trial = "";
-	
+
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
 	spreadB = (_ESAsk - _ESBid) / incrES;
 
 	/*   ----------------------------------------------------------------   */
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
+
 	SpdBBid = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1602,19 +1599,21 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
 		if (CLS == 1)
-		{	
+		{
 			if (BNQ == 1)
 			{
 				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
 				{
-					CloseOrder(1);
+					Sign = 1;
+					CloseOrder(Sign);
 				}
 			}
 			if (SNQ == 1)
 			{
 				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
 				{
-					CloseOrder(2);
+					Sign = 2;
+					CloseOrder(Sign);
 				}
 			}
 		}
@@ -1629,24 +1628,26 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
 		if (CLS == 1)
-		{	
+		{
 			if (BES == 1)
 			{
 				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
 				{
-					CloseOrder(3);
+					Sign = 3;
+					CloseOrder(Sign);
 				}
 			}
 			if (SES == 1)
 			{
 				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
 				{
-					CloseOrder(4);
+					Sign = 4;
+					CloseOrder(Sign);
 				}
 			}
 		}
 	}
-	
+
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
 	spreadB = (_ESAsk - _ESBid) / incrES;
 
@@ -2135,13 +2136,10 @@ int main(int      argc,
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
-	int               iCode;
 	int               iFlags;
 	ofstream		  myfile("RApi_Hendon.txt");
 	ofstream		  livefile("RApi_Live.txt");
 	ofstream		  endfile("RApi_End.txt");
-	int				  CLS = 0;
-	int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
 	char *			  user1;
 	char *			  user2;
 	int 		  iUsecs;
@@ -2337,9 +2335,11 @@ int main(int      argc,
 		Sleep(1000);
 #endif
 	}
-	
-	SymbNQ = argv[4];
-	SymbES = argv[6];
+
+	SymbNQ.pData = argv[4];
+	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
+	SymbES.pData = argv[6];
+	SymbES.iDataLen = (int)strlen(SymbES.pData);
 
 	/*   ----------------------------------------------------------------   */
 	/*   Once logged in, we request price increment info for the instrument */
@@ -2522,21 +2522,21 @@ int main(int      argc,
 	{
 		if (_RiskBal == 0)
 			_RiskBal = _AccBal;
-			
+
 		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
 		{
-			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0) && (CumProfit > (_RiskBal*-0.05)))
+			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0) && (CumProfit >(_RiskBal*-0.05)))
 			{
 				while (NQFree == false || ESFree == false)
 				{
 					QueryPerformanceFrequency(&Frequency);
 					QueryPerformanceCounter(&StartingTime);
-		
+
 					if (spreadA > _NQ)
 						_NQ = spreadA;
 					if (spreadB > _ES)
 						_ES = spreadB;
-			
+
 					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0) || (BNQ == 2 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
@@ -2655,17 +2655,17 @@ int main(int      argc,
 
 					iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
 						(g_iFromExchUsecs - g_iToExchUsecs);
-					
+
 					QueryPerformanceCounter(&EndingTime);
 					ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 					ElapsedMicroseconds.QuadPart *= 1000000;
 					ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-					
+
 					SpdProc = ElapsedMicroseconds.QuadPart;
 				}
 
 			}
-			
+
 			if (CLS == 1 && _Posn == 0)
 				_Disparity = 2;
 			if (_RiskBal == 0)
@@ -2682,7 +2682,7 @@ int main(int      argc,
 		{
 			if (_RiskBal > 0 && _AccBal > 0)
 				Buff = _AccBal - _RiskBal;
-			
+
 			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 			{
 				ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
@@ -2801,7 +2801,7 @@ int main(int      argc,
 					CumProfit = CumProfit + profit;
 				}
 			}
-			
+
 			if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
 			{
 				CLS = 2;
