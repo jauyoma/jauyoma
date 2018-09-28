@@ -436,6 +436,10 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 		if (Signal == 1)
 		{
+			ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * (incrNQ * 125000);
+			profit = ticks - commB;
+			CumProfit += profit;
+			
 			oMktOrdParams.sBuySellType.pData = "S";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 			oMktOrdParams.sTicker.pData = SymbNQ.pData;
@@ -449,11 +453,16 @@ void MyCallbacks::CloseOrder(int &Signal)
 			else
 			{
 				BNQ = 2;
+				NQFree = false;
 			}
 		}
 
 		if (Signal == 2)
 		{
+			ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * (incrNQ * 125000);
+			profit = ticks - commB;
+			CumProfit += profit;
+			
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 			oMktOrdParams.sTicker.pData = SymbNQ.pData;
@@ -467,11 +476,16 @@ void MyCallbacks::CloseOrder(int &Signal)
 			else
 			{
 				SNQ = 2;
+				NQFree = false;
 			}
 		}
 
 		if (Signal == 3)
 		{
+			ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
+			profitB = ticksB - commB;
+			CumProfit += profitB;
+			
 			oMktOrdParams.sBuySellType.pData = "S";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 			oMktOrdParams.sTicker.pData = SymbES.pData;
@@ -485,11 +499,16 @@ void MyCallbacks::CloseOrder(int &Signal)
 			else
 			{
 				BES = 2;
+				ESFree = false;
 			}
 		}
 
 		if (Signal == 4)
 		{
+			ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
+			profitB = ticksB - commB;
+			CumProfit += profitB;
+			
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 			oMktOrdParams.sTicker.pData = SymbES.pData;
@@ -503,6 +522,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 			else
 			{
 				SES = 2;
+				ESFree = false;
 			}
 		}
 
@@ -1152,10 +1172,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pInfo->dPrice;
-		if (_NQAsk > _NQAHigh)
-			_NQAHigh = _NQAsk;
-		if ((_NQAsk < _NQALow) || (_NQALow == 0))
-			_NQALow = _NQAsk;
+		
 		if (CLS == 1)
 		{
 			if (BNQ == 1)
@@ -1181,10 +1198,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
-		if (_ESAsk > _ESAHigh)
-			_ESAHigh = _ESAsk;
-		if ((_ESAsk < _ESALow) || (_ESALow == 0))
-			_ESALow = _ESAsk;
+		
 		if (CLS == 1)
 		{
 			if (BES == 1)
@@ -1240,10 +1254,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_NQAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
 			_NQPAsk = pInfo->dPrice;
-		if (_NQAsk > _NQAHigh)
-			_NQAHigh = _NQAsk;
-		if ((_NQAsk < _NQALow) || (_NQALow == 0))
-			_NQALow = _NQAsk;
+		
 		if (CLS == 1)
 		{
 			if (BNQ == 1)
@@ -1270,10 +1281,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pInfo->dPrice;
-		if (_ESAsk > _ESAHigh)
-			_ESAHigh = _ESAsk;
-		if ((_ESAsk < _ESALow) || (_ESALow == 0))
-			_ESALow = _ESAsk;
+		
 		if (CLS == 1)
 		{
 			if (BES == 1)
@@ -1339,10 +1347,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_NQAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPAsk = pAsk->dPrice;
-		if (_NQAsk > _NQAHigh)
-			_NQAHigh = _NQAsk;
-		if ((_NQAsk < _NQALow) || (_NQALow == 0))
-			_NQALow = _NQAsk;
+		
 		if (CLS == 1)
 		{
 			if (BNQ == 1)
@@ -1368,10 +1373,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_ESAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPAsk = pAsk->dPrice;
-		if (_ESAsk > _ESAHigh)
-			_ESAHigh = _ESAsk;
-		if ((_ESAsk < _ESALow) || (_ESALow == 0))
-			_ESALow = _ESAsk;
+		
 		if (CLS == 1)
 		{
 			if (BES == 1)
@@ -1397,10 +1399,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_NQBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pBid->dPrice;
-		if (_NQBid > _NQBHigh)
-			_NQBHigh = _NQBid;
-		if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-			_NQBLow = _NQBid;
+		
 		if (CLS == 1)
 		{
 			if (BNQ == 1)
@@ -1427,10 +1426,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		_ESBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pBid->dPrice;
-		if (_ESBid > _ESBHigh)
-			_ESBHigh = _ESBid;
-		if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			_ESBLow = _ESBid;
+		
 		if (CLS == 1)
 		{
 			if (BES == 1)
@@ -1494,12 +1490,10 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
-		if (_NQBid > _NQBHigh)
-			_NQBHigh = _NQBid;
-		if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-			_NQBLow = _NQBid;
+		
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
+			
 		if (CLS == 1)
 		{
 			if (BNQ == 1)
@@ -1526,10 +1520,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
-		if (_ESBid > _ESBHigh)
-			_ESBHigh = _ESBid;
-		if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			_ESBLow = _ESBid;
+		
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
 		if (CLS == 1)
@@ -1592,10 +1583,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pInfo->dPrice;
-		if (_NQBid > _NQBHigh)
-			_NQBHigh = _NQBid;
-		if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-			_NQBLow = _NQBid;
+		
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_NQPBid = pInfo->dPrice;
 		if (CLS == 1)
@@ -1621,10 +1609,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pInfo->dPrice;
-		if (_ESBid > _ESBHigh)
-			_ESBHigh = _ESBid;
-		if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			_ESBLow = _ESBid;
+		
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			_ESPBid = pInfo->dPrice;
 		if (CLS == 1)
@@ -2518,14 +2503,17 @@ int main(int      argc,
 	/*   for details.                                                       */
 
 
-	if ((lt.wHour == hr_T && lt.wMinute <= (min_T + 2) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
+	if ((lt.wHour == hr_T && lt.wMinute <= (min_T + 3) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
+		std::cout << "Hendon Black box initiated" << endl;
 		if (_RiskBal == 0)
 			_RiskBal = _AccBal;
+		if (_RiskBal > 0 && _AccBal > 0)
+				Buff = _AccBal - _RiskBal;
 
-		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 2))
+		if (_RiskBal > 3000 && lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
 		{
-			if (_Posn < 2 && (Buff >(_RiskBal*-0.05) || _RiskBal == 0) && (CumProfit >(_RiskBal*-0.05)))
+			if ((_Posn < 2 || CLS != 1) && (Buff >(_RiskBal*-0.05)) && (CumProfit >(_RiskBal*-0.05)))
 			{
 				while (NQFree == false || ESFree == false)
 				{
@@ -2655,6 +2643,23 @@ int main(int      argc,
 
 					iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
 						(g_iFromExchUsecs - g_iToExchUsecs);
+						
+					if (_NQBid > _NQBHigh)
+						_NQBHigh = _NQBid;
+					if ((_NQBid < _NQBLow) || (_NQBLow == 0))
+						_NQBLow = _NQBid;
+					if (_NQAsk > _NQAHigh)
+						_NQAHigh = _NQAsk;
+					if ((_NQAsk < _NQALow) || (_NQALow == 0))
+						_NQALow = _NQAsk;
+					if (_ESBid > _ESBHigh)
+						_ESBHigh = _ESBid;
+					if ((_ESBid < _ESBLow) || (_ESBLow == 0))
+						_ESBLow = _ESBid;
+					if (_ESAsk > _ESAHigh)
+						_ESAHigh = _ESAsk;
+					if ((_ESAsk < _ESALow) || (_ESALow == 0))
+						_ESALow = _ESAsk;
 
 					QueryPerformanceCounter(&EndingTime);
 					ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -2668,25 +2673,17 @@ int main(int      argc,
 
 			if (CLS == 1 && _Posn == 0)
 				_Disparity = 2;
-			if (_RiskBal == 0)
-				_RiskBal = _AccBal;
-			if (_RiskBal > 0 && _AccBal > 0)
-				Buff = _AccBal - _RiskBal;
 		}
 
 		/*   ----------------------------------------------------------------   */
 		/*   Printout of variables		                                */
 		/*   ----------------------------------------------------------------   */
 
-		if (CLS == 1)
+		if ((Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
 		{
-			if (_RiskBal > 0 && _AccBal > 0)
-				Buff = _AccBal - _RiskBal;
 
-			if ((BNQ == 1 && _NQBid < _NQBHigh && _NQAsk < _NQAHigh) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+			if ((BNQ == 1)
 			{
-				ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * 5;
-				profit = ticks - commB;
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 				oMktOrdParams.sTicker.pData = argv[4];
@@ -2708,11 +2705,10 @@ int main(int      argc,
 				{
 					BNQ = 2;
 					NQFree = false;
-					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((SNQ == 1 && _NQBid > _NQBLow && _NQAsk > _NQALow) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+			if (SNQ == 1)
 			{
 				ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
 				profit = ticks - commB;
@@ -2738,11 +2734,10 @@ int main(int      argc,
 				{
 					SNQ = 2;
 					NQFree = false;
-					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((BES == 1 && _ESBid < _ESBHigh && _ESAsk < _ESAHigh) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+			if (BES == 1))
 			{
 				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
 				profitB = ticksB - commB;
@@ -2768,11 +2763,10 @@ int main(int      argc,
 				{
 					BES = 2;
 					ESFree = false;
-					CumProfit = CumProfit + profit;
 				}
 			}
 
-			if ((SES == 1 && _ESBid > _ESBLow && _ESAsk > _ESALow) || (Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+			if (SES == 1)
 			{
 				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
 				profitB = ticksB - commB;
@@ -2798,20 +2792,14 @@ int main(int      argc,
 				{
 					SES = 2;
 					ESFree = false;
-					CumProfit = CumProfit + profit;
 				}
 			}
-
-			if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
-			{
-				CLS = 2;
-			}
 		}
-
-		QueryPerformanceCounter(&EndingTime);
-		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-		ElapsedMicroseconds.QuadPart *= 1000000;
-		ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+		
+		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
+		{
+			CLS = 2;
+		}
 
 		std::cout << "Bid is  : " << NBid << endl;
 		std::cout << "Ask is  : " << NAsk << endl;
@@ -2894,7 +2882,7 @@ int main(int      argc,
 		std::cout << "Disparity value is : " << _Disparity << endl;
 		std::cout << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
 		std::cout << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
-		std::cout << "Algo Processing speed is : " << ElapsedMicroseconds.QuadPart << endl;
+		std::cout << "Algo Processing speed is : " << SpdProc << endl;
 		std::cout << "Line update Processing speed is : " << SpdLineUpd << endl;
 		std::cout << "PnL Processing speed is : " << SpdPnL << endl;
 		std::cout << "Best Ask Processing speed is : " << SpdBAsk << endl;
