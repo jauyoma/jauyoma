@@ -110,7 +110,7 @@ std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
 LARGE_INTEGER Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 8, min_T = 2, sec_T, _Activ = 0;
+int  hr_T = 13, min_T = 12, sec_T, _Activ = 0;
 int  NQ_hr, ES_hr, NQ_min, ES_min;
 double ticks, profit, commA = 3.38, commB = 4.22, CumProfit = 0;
 double _RiskBal = 499906.25, Buff, ticksB, profitB;
@@ -1197,7 +1197,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 				}
 			}
 		}
-		
+
 		NQLHr = lt.wHour;
 		NQLMin = lt.wMinute;
 	}
@@ -1396,7 +1396,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 		}
 	}
-	
+
 	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pAsk->dPrice;
@@ -1426,7 +1426,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 			}
 		}
-		
+
 	}
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
@@ -1457,7 +1457,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 			}
 		}
-		
+
 	}
 
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -2560,18 +2560,11 @@ int main(int      argc,
 	std::cout << "\n\nReading algorithm..." << endl;
 
 	_OpenNQ = incrNQ * 125000;
-	_NQBHigh = _NQBid;
-	_NQBLow = _NQBid;
-	_NQAHigh = _NQAsk;
-	_ESBHigh = _ESBid;
-					_ESBLow = _ESBid;
-					_ESAHigh = _ESAsk;
-					_ESALow = _ESAsk;
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 2) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
 		if (CLS != Hold)
-		{	
+		{
 			if (CLS == 0)
 			{
 				if (livefile.is_open())
@@ -2999,21 +2992,45 @@ int main(int      argc,
 						(g_iFromExchUsecs - g_iToExchUsecs);
 
 					if (_NQBid > _NQBHigh)
+					{
 						_NQBHigh = _NQBid;
+						std::cout << "NQ High Bid value assigned is : " << _NQBHigh << endl;
+					}
 					if ((_NQBid < _NQBLow) || (_NQBLow == 0))
+					{
 						_NQBLow = _NQBid;
+						std::cout << "NQ Low Bid value assigned is : " << _NQBLow << endl;
+					}
 					if (_NQAsk > _NQAHigh)
+					{
 						_NQAHigh = _NQAsk;
+						std::cout << "NQ High Ask value assigned is : " << _NQAHigh << endl;
+					}
 					if ((_NQAsk < _NQALow) || (_NQALow == 0))
+					{
 						_NQALow = _NQAsk;
+						std::cout << "NQ Low Ask value assigned is : " << _NQALow << endl;
+					}
 					if (_ESBid > _ESBHigh)
+					{
 						_ESBHigh = _ESBid;
+						std::cout << "ES High Ask value assigned is : " << _ESBHigh << endl;
+					}
 					if ((_ESBid < _ESBLow) || (_ESBLow == 0))
+					{
 						_ESBLow = _ESBid;
+						std::cout << "ES Low Ask value assigned is : " << _ESBLow << endl;
+					}
 					if (_ESAsk > _ESAHigh)
+					{
 						_ESAHigh = _ESAsk;
+						std::cout << "ES High Ask value assigned is : " << _ESAHigh << endl;
+					}
 					if ((_ESAsk < _ESALow) || (_ESALow == 0))
+					{
 						_ESALow = _ESAsk;
+						std::cout << "ES Low Ask value assigned is : " << _ESALow << endl;
+					}
 
 					if ((lt.wMinute >(min_T + 2)) || (lt.wHour > hr_T))
 					{
@@ -3152,16 +3169,16 @@ int main(int      argc,
 			}
 		}
 
-		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1)
+		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1 && CLS == 1)
 		{
 			CLS = 2;
 		}
 
-		if (((lt.wMinute >(min_T + 2)) || (lt.wHour > hr_T)) && CLS == 2)
+		if (((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T)) && CLS == 2)
 		{
-			std::cout << "\n\nExiting algobox is..." << endl;
+			std::cout << "\n\nExiting algobox..." << endl;
 			break;
-		}	
+		}
 
 	}
 	/*   ----------------------------------------------------------------   */
@@ -3174,7 +3191,7 @@ int main(int      argc,
 	/*   press 'enter' to quit... */
 
 	fgetc(stdin);
-	
+
 	delete g_pEngine;
 	delete pCallbacks;
 	delete pAdmCallbacks;
@@ -3184,7 +3201,7 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	
+
 }
 
 /*   =====================================================================   */
