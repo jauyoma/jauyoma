@@ -124,6 +124,7 @@ int				  CLS = 0, iCode, Sign, Hold = 1;
 int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
 bool	NQFree = false, NQLFree = false, print = false;
 bool	ESFree = false, ESLFree = false;
+int	NQLHr, ESLHr, NQLMin, ESLMin;
 
 SYSTEMTIME st, lt;
 
@@ -1170,8 +1171,12 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_NQPAsk = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1192,12 +1197,19 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 				}
 			}
 		}
+		
+		NQLHr = lt.wHour;
+		NQLMin = lt.wMinute;
 	}
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_ESPAsk = pInfo->dPrice;
+			ESLHr = lt.wHour;
+			ESLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1254,8 +1266,12 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		{
 			_NQPAsk = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1282,7 +1298,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	{
 		_ESAsk = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_ESPAsk = pInfo->dPrice;
+			ESLHr = lt.wHour;
+			ESLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1349,8 +1369,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQAsk = pAsk->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		{
 			_NQPAsk = pAsk->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1372,11 +1396,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 		}
 	}
+	
 	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESAsk = pAsk->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_ESPAsk = pAsk->dPrice;
+			ESLHr = lt.wHour;
+			ESLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1397,12 +1426,17 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 			}
 		}
+		
 	}
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_NQPBid = pBid->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1423,13 +1457,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 			}
 		}
+		
 	}
 
 	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 	{
 		_ESBid = pBid->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_ESPBid = pBid->dPrice;
+			ESLHr = lt.wHour;
+			ESLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1495,10 +1534,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	{
 		_NQBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_NQPBid = pInfo->dPrice;
-
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-			_NQPBid = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
 		if (CLS == 1)
 		{
@@ -1525,10 +1565,12 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	{
 		_ESBid = pInfo->dPrice;
 		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
 			_ESPBid = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
 
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-			_ESPBid = pInfo->dPrice;
 		if (CLS == 1)
 		{
 			if (BES == 1)
@@ -2518,6 +2560,13 @@ int main(int      argc,
 	std::cout << "\n\nReading algorithm..." << endl;
 
 	_OpenNQ = incrNQ * 125000;
+	_NQBHigh = _NQBid;
+	_NQBLow = _NQBid;
+	_NQAHigh = _NQAsk;
+	_ESBHigh = _ESBid;
+					_ESBLow = _ESBid;
+					_ESAHigh = _ESAsk;
+					_ESALow = _ESAsk;
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 2) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
