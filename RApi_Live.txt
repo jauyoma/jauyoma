@@ -64,7 +64,7 @@ ES Tick is : 0
 ES Profit is : 0
 PnL Minute is : 0
 NQ spread is : 2
-ES spread is : 2
+ES spread is : 2 
 NQ High value is : 0
 ES High value is : 0
 NQ Low value is : 0
