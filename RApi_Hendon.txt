@@ -1,89 +1,89 @@
 
 
 Hendon Black box initiated
-Bid is  : 1.1618
-Ask is  : 1.1619
+Bid is  : 1.15875
+Ask is  : 1.15885
 Average Fill Price is  : 0
 Price to fill is  : 0
-NQ Average Fill Price is  : 1.1619
+NQ Average Fill Price is  : 0
 NQ Price to fill is  : 0
 ES Average Fill Price is  : 0
 ES Price to fill is  : 0
-Account Balance is  : 0
+Account Balance is  : 499531
 Starting Account Balance is  : 499906
-Buffer on Account Balance is  : -75
+Buffer on Account Balance is  : -375
 Margin Balance is  : 0
-Buy Qty is  : 7
-Sell Qty is  : 6
-Position is  : 1
-Quantity to fill is  : 1
-Filled quantity is  : 1
-NQ Type is  : B
+Buy Qty is  : 29
+Sell Qty is  : 29
+Position is  : 0
+Quantity to fill is  : 0
+Filled quantity is  : 0
+NQ Type is  : 
 ES Type is  : 
-ES Bid price is  : 1.3038
-NQ Bid price is  : 1.1618
-ES Ask price is  : 1.304
-NQ Ask price is  : 1.1619
-ESP Ask price is  : 1.3039
-NQP Ask price is  : 1.16185
-ESP Bid price is  : 1.3037
-NQP Bid price is  : 1.16175
-Completion reason is : F
-Order Duration is : FOK
-Order Type is : M
-Ticker (sTicker) is : 6EV8
-Exchange (sExchange) is : CME
-g_bDone value is : 1
-TickerNQ (sTicker) is : 6EV8
+ES Bid price is  : 1.3047
+NQ Bid price is  : 1.15875
+ES Ask price is  : 1.3049
+NQ Ask price is  : 1.15885
+ESP Ask price is  : 1.3048
+NQP Ask price is  : 1.1588
+ESP Bid price is  : 1.3046
+NQP Bid price is  : 1.1587
+Completion reason is : 
+Order Duration is : 
+Order Type is : 
+Ticker (sTicker) is : 
+Exchange (sExchange) is : 
+g_bDone value is : 0
+TickerNQ (sTicker) is : 
 TickerES (sTicker) is : 
-The Local Time is : 13:12
-The System Time is : 12:12
+The Local Time is : 19:36
+The System Time is : 18:36
 CLS value is : 1
-Minute is : 12
-Value of BNQ is : 1
+Minute is : 36
+Value of BNQ is : 0
 Value of BES is : 1
 Value of SNQ is : 0
 Value of SES is : 0
-Acc Balance is : 0
+Acc Balance is : 499531
 Margin Balance is : 0
 Position Confirmation is : 2
-Closed PnL is : -93.75
-Open PnL is : -12.5
+Closed PnL is : -468.75
+Open PnL is : 0
 NQ Closed PnL is : 0
 NQ Open PnL is : 6.25
 ES Closed PnL is : 0
 ES Open PnL is : 0
-Status is : complete
-Avg Open Fill Price (int) is : 2
-Avg Open Fill Price (double) is : 1.1619
+Status is : 
+Avg Open Fill Price (int) is : 0
+Avg Open Fill Price (double) is : 0
 NQ Minimum price increment is : 5e-05
 ES Minimum price increment is : 0.0001
 NQ Tick is : 0
 NQ Profit is : 0
 ES Tick is : 0
 ES Profit is : 0
-PnL Minute is : 12
+PnL Minute is : 36
 NQ spread is : 2
 ES spread is : 2
-NQ High value is : 1.1618
-ES High value is : 1.3038
-NQ Low value is : 1.16185
-ES Low value is : 1.3039
-NQ High value is : 1.1619
-ES High value is : 1.304
-NQ Low value is : 1.16175
-ES Low value is : 1.3037
-usecs at exchange is : 5
-Cumulative profit is : 0 
-Largest NQ spread is : 3
+NQ High value is : 1.15875
+ES High value is : 1.3047
+NQ Low value is : 1.1588
+ES Low value is : 1.3048
+NQ High value is : 1.15885
+ES High value is : 1.3049
+NQ Low value is : 1.1587
+ES Low value is : 1.3046
+usecs at exchange is : 0
+Cumulative profit is : 0
+Largest NQ spread is : 2
 Largest ES spread is : 2
 Disparity value is : 0
-NQ Order Number is : 849207)w  
+NQ Order Number is : 
 ES Order Number is : 
-Algo Processing speed is : 293
+Algo Processing speed is : 0
 Line update Processing speed is : 0
 PnL Processing speed is : 0
 Best Ask Processing speed is : 0
-Best Bid Processing speed is : 1
-Best Ask & Bid Processing speed is : 0
+Best Bid Processing speed is : 0
+Best Ask & Bid Processing speed is : 1
 Close order Processing speed is : 0
