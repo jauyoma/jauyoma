@@ -449,12 +449,13 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 			{
-				std::cout << "REngine::CloseOrder() error : %d\n" << iCode;
+				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 			}
 			else
 			{
 				BNQ = 2;
 				NQFree = false;
+				std::cout << "Signal 1 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 			}
 		}
 
@@ -472,12 +473,13 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 			{
-				std::cout << "REngine::CloseOrder() error : %d\n" << iCode;
+				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 			}
 			else
 			{
 				SNQ = 2;
 				NQFree = false;
+				std::cout << "Signal 2 REngine::CloseOrder() -> CumProfit is : " << CumProfit  << endl;
 			}
 		}
 
@@ -485,7 +487,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 		{
 			ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
 			profitB = ticksB - commB;
-			CumProfit = CumProfit + profit;
+			CumProfit = CumProfit + profitB;
 
 			oMktOrdParams.sBuySellType.pData = "S";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -495,12 +497,13 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 			{
-				std::cout << "REngine::CloseOrder() error : %d\n" << iCode;
+				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 			}
 			else
 			{
 				BES = 2;
 				ESFree = false;
+				std::cout << "Signal 3 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 			}
 		}
 
@@ -508,7 +511,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 		{
 			ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
 			profitB = ticksB - commB;
-			CumProfit = CumProfit + profit;
+			CumProfit = CumProfit + profitB;
 
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -524,6 +527,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 			{
 				SES = 2;
 				ESFree = false;
+				std::cout << "Signal 4 REngine::CloseOrder() -> CumProfit is : " << CumProfit  << endl;
 			}
 		}
 
@@ -2563,10 +2567,8 @@ int main(int      argc,
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 2) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
-		if (CLS != Hold)
+		if (CLS != Hold && CLS == 0)
 		{
-			if (CLS == 0)
-			{
 				if (livefile.is_open())
 				{
 					livefile << "\n\nHendon Black box initiated" << endl;
@@ -2658,197 +2660,6 @@ int main(int      argc,
 					livefile << "Close order Processing speed is : " << SpdClOrd << endl;
 					livefile.close();
 				}
-			}
-
-			if (CLS == 1)
-			{
-				if (myfile.is_open())
-				{
-					myfile << "\n\nHendon Black box initiated" << endl;
-					myfile << "Bid is  : " << NBid << endl;
-					myfile << "Ask is  : " << NAsk << endl;
-					myfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
-					myfile << "Price to fill is  : " << _PriceToFill << endl;
-					myfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
-					myfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
-					myfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
-					myfile << "ES Price to fill is  : " << _PriceToFillES << endl;
-					myfile << "Account Balance is  : " << _AccBal << endl;
-					myfile << "Starting Account Balance is  : " << _RiskBal << endl;
-					myfile << "Buffer on Account Balance is  : " << Buff << endl;
-					myfile << "Margin Balance is  : " << _Margin << endl;
-					myfile << "Buy Qty is  : " << _BuyQty << endl;
-					myfile << "Sell Qty is  : " << _SellQty << endl;
-					myfile << "Position is  : " << _Posn << endl;
-					myfile << "Quantity to fill is  : " << _QtyToFill << endl;
-					myfile << "Filled quantity is  : " << _filled << endl;
-					myfile << "NQ Type is  : " << _stypeNQ << endl;
-					myfile << "ES Type is  : " << _stypeES << endl;
-					myfile << "ES Bid price is  : " << _ESBid << endl;
-					myfile << "NQ Bid price is  : " << _NQBid << endl;
-					myfile << "ES Ask price is  : " << _ESAsk << endl;
-					myfile << "NQ Ask price is  : " << _NQAsk << endl;
-					myfile << "ESP Ask price is  : " << _ESPAsk << endl;
-					myfile << "NQP Ask price is  : " << _NQPAsk << endl;
-					myfile << "ESP Bid price is  : " << _ESPBid << endl;
-					myfile << "NQP Bid price is  : " << _NQPBid << endl;
-					myfile << "Completion reason is : " << _sCompReason << endl;
-					myfile << "Order Duration is : " << _sOrdDuration << endl;
-					myfile << "Order Type is : " << _sOrdType << endl;
-					myfile << "Ticker (sTicker) is : " << _sTicker << endl;
-					myfile << "Exchange (sExchange) is : " << _sExchange << endl;
-					myfile << "g_bDone value is : " << g_bDone << endl;
-					myfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
-					myfile << "TickerES (sTicker) is : " << _sTickerES << endl;
-					myfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
-					myfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
-					myfile << "CLS value is : " << CLS << endl;
-					myfile << "Minute is : " << min_T << endl;
-					myfile << "Value of BNQ is : " << BNQ << endl;
-					myfile << "Value of BES is : " << BES << endl;
-					myfile << "Value of SNQ is : " << SNQ << endl;
-					myfile << "Value of SES is : " << SES << endl;
-					myfile << "Acc Balance is : " << _AccBal << endl;
-					myfile << "Margin Balance is : " << _Margin << endl;
-					myfile << "Position Confirmation is : " << _PosnConf << endl;
-					myfile << "Closed PnL is : " << _ClosedPL << endl;
-					myfile << "Open PnL is : " << _OpenPL << endl;
-					myfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
-					myfile << "NQ Open PnL is : " << _OpenNQ << endl;
-					myfile << "ES Closed PnL is : " << _ClosedES << endl;
-					myfile << "ES Open PnL is : " << _OpenES << endl;
-					myfile << "Status is : " << _Status << endl;
-					myfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
-					myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
-					myfile << "NQ Minimum price increment is : " << incrNQ << endl;
-					myfile << "ES Minimum price increment is : " << incrES << endl;
-					myfile << "NQ Tick is : " << ticks << endl;
-					myfile << "NQ Profit is : " << profit << endl;
-					myfile << "ES Tick is : " << ticksB << endl;
-					myfile << "ES Profit is : " << profitB << endl;
-					myfile << "PnL Minute is : " << sec_T << endl;
-					myfile << "NQ spread is : " << spreadA << endl;
-					myfile << "ES spread is : " << spreadB << endl;
-					myfile << "NQ High value is : " << _NQBHigh << endl;
-					myfile << "ES High value is : " << _ESBHigh << endl;
-					myfile << "NQ Low value is : " << _NQALow << endl;
-					myfile << "ES Low value is : " << _ESALow << endl;
-					myfile << "NQ High value is : " << _NQAHigh << endl;
-					myfile << "ES High value is : " << _ESAHigh << endl;
-					myfile << "NQ Low value is : " << _NQBLow << endl;
-					myfile << "ES Low value is : " << _ESBLow << endl;
-					myfile << "usecs at exchange is : " << iUsecs << endl;
-					myfile << "Cumulative profit is : " << CumProfit << endl;
-					myfile << "Largest NQ spread is : " << _NQ << endl;
-					myfile << "Largest ES spread is : " << _ES << endl;
-					myfile << "Disparity value is : " << _Disparity << endl;
-					myfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
-					myfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
-					myfile << "Algo Processing speed is : " << SpdProc << endl;
-					myfile << "Line update Processing speed is : " << SpdLineUpd << endl;
-					myfile << "PnL Processing speed is : " << SpdPnL << endl;
-					myfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
-					myfile << "Best Bid Processing speed is : " << SpdBBid << endl;
-					myfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
-					myfile << "Close order Processing speed is : " << SpdClOrd << endl;
-					myfile.close();
-				}
-			}
-
-			if (CLS == 2)
-			{
-				if (endfile.is_open())
-				{
-					endfile << "\n\nHendon Black box initiated" << endl;
-					endfile << "Bid is  : " << NBid << endl;
-					endfile << "Ask is  : " << NAsk << endl;
-					endfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
-					endfile << "Price to fill is  : " << _PriceToFill << endl;
-					endfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
-					endfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
-					endfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
-					endfile << "ES Price to fill is  : " << _PriceToFillES << endl;
-					endfile << "Account Balance is  : " << _AccBal << endl;
-					endfile << "Starting Account Balance is  : " << _RiskBal << endl;
-					endfile << "Buffer on Account Balance is  : " << Buff << endl;
-					endfile << "Margin Balance is  : " << _Margin << endl;
-					endfile << "Buy Qty is  : " << _BuyQty << endl;
-					endfile << "Sell Qty is  : " << _SellQty << endl;
-					endfile << "Position is  : " << _Posn << endl;
-					endfile << "Quantity to fill is  : " << _QtyToFill << endl;
-					endfile << "Filled quantity is  : " << _filled << endl;
-					endfile << "NQ Type is  : " << _stypeNQ << endl;
-					endfile << "ES Type is  : " << _stypeES << endl;
-					endfile << "ES Bid price is  : " << _ESBid << endl;
-					endfile << "NQ Bid price is  : " << _NQBid << endl;
-					endfile << "ES Ask price is  : " << _ESAsk << endl;
-					endfile << "NQ Ask price is  : " << _NQAsk << endl;
-					endfile << "ESP Ask price is  : " << _ESPAsk << endl;
-					endfile << "NQP Ask price is  : " << _NQPAsk << endl;
-					endfile << "ESP Bid price is  : " << _ESPBid << endl;
-					endfile << "NQP Bid price is  : " << _NQPBid << endl;
-					endfile << "Completion reason is : " << _sCompReason << endl;
-					endfile << "Order Duration is : " << _sOrdDuration << endl;
-					endfile << "Order Type is : " << _sOrdType << endl;
-					endfile << "Ticker (sTicker) is : " << _sTicker << endl;
-					endfile << "Exchange (sExchange) is : " << _sExchange << endl;
-					endfile << "g_bDone value is : " << g_bDone << endl;
-					endfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
-					endfile << "TickerES (sTicker) is : " << _sTickerES << endl;
-					endfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
-					endfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
-					endfile << "CLS value is : " << CLS << endl;
-					endfile << "Minute is : " << min_T << endl;
-					endfile << "Value of BNQ is : " << BNQ << endl;
-					endfile << "Value of BES is : " << BES << endl;
-					endfile << "Value of SNQ is : " << SNQ << endl;
-					endfile << "Value of SES is : " << SES << endl;
-					endfile << "Acc Balance is : " << _AccBal << endl;
-					endfile << "Margin Balance is : " << _Margin << endl;
-					endfile << "Position Confirmation is : " << _PosnConf << endl;
-					endfile << "Closed PnL is : " << _ClosedPL << endl;
-					endfile << "Open PnL is : " << _OpenPL << endl;
-					endfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
-					endfile << "NQ Open PnL is : " << _OpenNQ << endl;
-					endfile << "ES Closed PnL is : " << _ClosedES << endl;
-					endfile << "ES Open PnL is : " << _OpenES << endl;
-					endfile << "Status is : " << _Status << endl;
-					endfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
-					endfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
-					endfile << "NQ Minimum price increment is : " << incrNQ << endl;
-					endfile << "ES Minimum price increment is : " << incrES << endl;
-					endfile << "NQ Tick is : " << ticks << endl;
-					endfile << "NQ Profit is : " << profit << endl;
-					endfile << "ES Tick is : " << ticksB << endl;
-					endfile << "ES Profit is : " << profitB << endl;
-					endfile << "PnL Minute is : " << sec_T << endl;
-					endfile << "NQ spread is : " << spreadA << endl;
-					endfile << "ES spread is : " << spreadB << endl;
-					endfile << "NQ High value is : " << _NQBHigh << endl;
-					endfile << "ES High value is : " << _ESBHigh << endl;
-					endfile << "NQ Low value is : " << _NQALow << endl;
-					endfile << "ES Low value is : " << _ESALow << endl;
-					endfile << "NQ High value is : " << _NQAHigh << endl;
-					endfile << "ES High value is : " << _ESAHigh << endl;
-					endfile << "NQ Low value is : " << _NQBLow << endl;
-					endfile << "ES Low value is : " << _ESBLow << endl;
-					endfile << "usecs at exchange is : " << iUsecs << endl;
-					endfile << "Cumulative profit is : " << CumProfit << endl;
-					endfile << "Largest NQ spread is : " << _NQ << endl;
-					endfile << "Largest ES spread is : " << _ES << endl;
-					endfile << "Disparity value is : " << _Disparity << endl;
-					endfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
-					endfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
-					endfile << "Algo Processing speed is : " << SpdProc << endl;
-					endfile << "Line update Processing speed is : " << SpdLineUpd << endl;
-					endfile << "PnL Processing speed is : " << SpdPnL << endl;
-					endfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
-					endfile << "Best Bid Processing speed is : " << SpdBBid << endl;
-					endfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
-					endfile << "Close order Processing speed is : " << SpdClOrd << endl;
-					endfile.close();
-				}
-			}
 
 			Hold = CLS;
 		}
@@ -2994,48 +2805,140 @@ int main(int      argc,
 					if (_NQBid > _NQBHigh)
 					{
 						_NQBHigh = _NQBid;
-						std::cout << "NQ High Bid value assigned is : " << _NQBHigh << endl;
 					}
 					if ((_NQBid < _NQBLow) || (_NQBLow == 0))
 					{
 						_NQBLow = _NQBid;
-						std::cout << "NQ Low Bid value assigned is : " << _NQBLow << endl;
 					}
 					if (_NQAsk > _NQAHigh)
 					{
 						_NQAHigh = _NQAsk;
-						std::cout << "NQ High Ask value assigned is : " << _NQAHigh << endl;
 					}
 					if ((_NQAsk < _NQALow) || (_NQALow == 0))
 					{
 						_NQALow = _NQAsk;
-						std::cout << "NQ Low Ask value assigned is : " << _NQALow << endl;
 					}
 					if (_ESBid > _ESBHigh)
 					{
 						_ESBHigh = _ESBid;
-						std::cout << "ES High Ask value assigned is : " << _ESBHigh << endl;
 					}
 					if ((_ESBid < _ESBLow) || (_ESBLow == 0))
 					{
 						_ESBLow = _ESBid;
-						std::cout << "ES Low Ask value assigned is : " << _ESBLow << endl;
 					}
 					if (_ESAsk > _ESAHigh)
 					{
 						_ESAHigh = _ESAsk;
-						std::cout << "ES High Ask value assigned is : " << _ESAHigh << endl;
 					}
 					if ((_ESAsk < _ESALow) || (_ESALow == 0))
 					{
 						_ESALow = _ESAsk;
-						std::cout << "ES Low Ask value assigned is : " << _ESALow << endl;
 					}
+					
+					if(_ESALow == 0 || _ESAHigh == 0 || _ESBLow == 0 || __ESBHigh == 0 || _NQALow == 0 || _NQAHigh == 0 || _NQBLow == 0 || __NQBHigh == 0)
+						std::cout << "Failure to assign either high or low value!!" << endl;
+						
 
 					if ((lt.wMinute >(min_T + 2)) || (lt.wHour > hr_T))
 					{
 						std::cout << "\n\nExiting open order algo..." << endl;
 						break;
+					}
+					
+					if (CLS == 1 && CLS != Hold)
+					{
+						if (myfile.is_open())
+						{
+					myfile << "\n\nHendon Black box initiated" << endl;
+					myfile << "Bid is  : " << NBid << endl;
+					myfile << "Ask is  : " << NAsk << endl;
+					myfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+					myfile << "Price to fill is  : " << _PriceToFill << endl;
+					myfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+					myfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+					myfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+					myfile << "ES Price to fill is  : " << _PriceToFillES << endl;
+					myfile << "Account Balance is  : " << _AccBal << endl;
+					myfile << "Starting Account Balance is  : " << _RiskBal << endl;
+					myfile << "Buffer on Account Balance is  : " << Buff << endl;
+					myfile << "Margin Balance is  : " << _Margin << endl;
+					myfile << "Buy Qty is  : " << _BuyQty << endl;
+					myfile << "Sell Qty is  : " << _SellQty << endl;
+					myfile << "Position is  : " << _Posn << endl;
+					myfile << "Quantity to fill is  : " << _QtyToFill << endl;
+					myfile << "Filled quantity is  : " << _filled << endl;
+					myfile << "NQ Type is  : " << _stypeNQ << endl;
+					myfile << "ES Type is  : " << _stypeES << endl;
+					myfile << "ES Bid price is  : " << _ESBid << endl;
+					myfile << "NQ Bid price is  : " << _NQBid << endl;
+					myfile << "ES Ask price is  : " << _ESAsk << endl;
+					myfile << "NQ Ask price is  : " << _NQAsk << endl;
+					myfile << "ESP Ask price is  : " << _ESPAsk << endl;
+					myfile << "NQP Ask price is  : " << _NQPAsk << endl;
+					myfile << "ESP Bid price is  : " << _ESPBid << endl;
+					myfile << "NQP Bid price is  : " << _NQPBid << endl;
+					myfile << "Completion reason is : " << _sCompReason << endl;
+					myfile << "Order Duration is : " << _sOrdDuration << endl;
+					myfile << "Order Type is : " << _sOrdType << endl;
+					myfile << "Ticker (sTicker) is : " << _sTicker << endl;
+					myfile << "Exchange (sExchange) is : " << _sExchange << endl;
+					myfile << "g_bDone value is : " << g_bDone << endl;
+					myfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+					myfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+					myfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+					myfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+					myfile << "CLS value is : " << CLS << endl;
+					myfile << "Minute is : " << min_T << endl;
+					myfile << "Value of BNQ is : " << BNQ << endl;
+					myfile << "Value of BES is : " << BES << endl;
+					myfile << "Value of SNQ is : " << SNQ << endl;
+					myfile << "Value of SES is : " << SES << endl;
+					myfile << "Acc Balance is : " << _AccBal << endl;
+					myfile << "Margin Balance is : " << _Margin << endl;
+					myfile << "Position Confirmation is : " << _PosnConf << endl;
+					myfile << "Closed PnL is : " << _ClosedPL << endl;
+					myfile << "Open PnL is : " << _OpenPL << endl;
+					myfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+					myfile << "NQ Open PnL is : " << _OpenNQ << endl;
+					myfile << "ES Closed PnL is : " << _ClosedES << endl;
+					myfile << "ES Open PnL is : " << _OpenES << endl;
+					myfile << "Status is : " << _Status << endl;
+					myfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+					myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+					myfile << "NQ Minimum price increment is : " << incrNQ << endl;
+					myfile << "ES Minimum price increment is : " << incrES << endl;
+					myfile << "NQ Tick is : " << ticks << endl;
+					myfile << "NQ Profit is : " << profit << endl;
+					myfile << "ES Tick is : " << ticksB << endl;
+					myfile << "ES Profit is : " << profitB << endl;
+					myfile << "PnL Minute is : " << sec_T << endl;
+					myfile << "NQ spread is : " << spreadA << endl;
+					myfile << "ES spread is : " << spreadB << endl;
+					myfile << "NQ High value is : " << _NQBHigh << endl;
+					myfile << "ES High value is : " << _ESBHigh << endl;
+					myfile << "NQ Low value is : " << _NQALow << endl;
+					myfile << "ES Low value is : " << _ESALow << endl;
+					myfile << "NQ High value is : " << _NQAHigh << endl;
+					myfile << "ES High value is : " << _ESAHigh << endl;
+					myfile << "NQ Low value is : " << _NQBLow << endl;
+					myfile << "ES Low value is : " << _ESBLow << endl;
+					myfile << "usecs at exchange is : " << iUsecs << endl;
+					myfile << "Cumulative profit is : " << CumProfit << endl;
+					myfile << "Largest NQ spread is : " << _NQ << endl;
+					myfile << "Largest ES spread is : " << _ES << endl;
+					myfile << "Disparity value is : " << _Disparity << endl;
+					myfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+					myfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+					myfile << "Algo Processing speed is : " << SpdProc << endl;
+					myfile << "Line update Processing speed is : " << SpdLineUpd << endl;
+					myfile << "PnL Processing speed is : " << SpdPnL << endl;
+					myfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
+					myfile << "Best Bid Processing speed is : " << SpdBBid << endl;
+					myfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+					myfile << "Close order Processing speed is : " << SpdClOrd << endl;
+					myfile.close();
+						}
+						Hold = CLS;
 					}
 
 					QueryPerformanceCounter(&EndingTime);
@@ -3068,7 +2971,7 @@ int main(int      argc,
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
-					std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+					std::cout << "REngine::sendOrder() error : " << iCode << endl;
 
 					delete g_pEngine;
 					delete pCallbacks;
@@ -3081,6 +2984,7 @@ int main(int      argc,
 				{
 					BNQ = 2;
 					NQFree = false;
+					std::cout << "BNQ Risk Management Closure : " << endl;
 				}
 			}
 
@@ -3095,7 +2999,7 @@ int main(int      argc,
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
-					std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+					std::cout << "REngine::sendOrder() error :" << iCode << endl;
 
 					delete g_pEngine;
 					delete pCallbacks;
@@ -3109,6 +3013,7 @@ int main(int      argc,
 				{
 					SNQ = 2;
 					NQFree = false;
+					std::cout << "SNQ Risk Management Closure : " << endl;
 				}
 			}
 
@@ -3123,7 +3028,7 @@ int main(int      argc,
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
-					std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+					std::cout << "REngine::sendOrder() error :" << iCode << endl;
 
 					delete g_pEngine;
 					delete pCallbacks;
@@ -3137,6 +3042,7 @@ int main(int      argc,
 				{
 					BES = 2;
 					ESFree = false;
+					std::cout << "BES Risk Management Closure : " << endl;
 				}
 			}
 
@@ -3151,7 +3057,7 @@ int main(int      argc,
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
-					std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+					std::cout << "REngine::sendOrder() error : " << iCode << endl;
 
 					delete g_pEngine;
 					delete pCallbacks;
@@ -3165,6 +3071,7 @@ int main(int      argc,
 				{
 					SES = 2;
 					ESFree = false;
+					std::cout << "SES Risk Management Closure : " << endl;
 				}
 			}
 		}
@@ -3172,6 +3079,101 @@ int main(int      argc,
 		if (BNQ != 1 && SNQ != 1 && BES != 1 && SES != 1 && CLS == 1)
 		{
 			CLS = 2;
+			if (CLS == 2 && CLS != Hold)
+			{
+				if (endfile.is_open())
+				{
+					endfile << "\n\nHendon Black box initiated" << endl;
+					endfile << "Bid is  : " << NBid << endl;
+					endfile << "Ask is  : " << NAsk << endl;
+					endfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+					endfile << "Price to fill is  : " << _PriceToFill << endl;
+					endfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+					endfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+					endfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+					endfile << "ES Price to fill is  : " << _PriceToFillES << endl;
+					endfile << "Account Balance is  : " << _AccBal << endl;
+					endfile << "Starting Account Balance is  : " << _RiskBal << endl;
+					endfile << "Buffer on Account Balance is  : " << Buff << endl;
+					endfile << "Margin Balance is  : " << _Margin << endl;
+					endfile << "Buy Qty is  : " << _BuyQty << endl;
+					endfile << "Sell Qty is  : " << _SellQty << endl;
+					endfile << "Position is  : " << _Posn << endl;
+					endfile << "Quantity to fill is  : " << _QtyToFill << endl;
+					endfile << "Filled quantity is  : " << _filled << endl;
+					endfile << "NQ Type is  : " << _stypeNQ << endl;
+					endfile << "ES Type is  : " << _stypeES << endl;
+					endfile << "ES Bid price is  : " << _ESBid << endl;
+					endfile << "NQ Bid price is  : " << _NQBid << endl;
+					endfile << "ES Ask price is  : " << _ESAsk << endl;
+					endfile << "NQ Ask price is  : " << _NQAsk << endl;
+					endfile << "ESP Ask price is  : " << _ESPAsk << endl;
+					endfile << "NQP Ask price is  : " << _NQPAsk << endl;
+					endfile << "ESP Bid price is  : " << _ESPBid << endl;
+					endfile << "NQP Bid price is  : " << _NQPBid << endl;
+					endfile << "Completion reason is : " << _sCompReason << endl;
+					endfile << "Order Duration is : " << _sOrdDuration << endl;
+					endfile << "Order Type is : " << _sOrdType << endl;
+					endfile << "Ticker (sTicker) is : " << _sTicker << endl;
+					endfile << "Exchange (sExchange) is : " << _sExchange << endl;
+					endfile << "g_bDone value is : " << g_bDone << endl;
+					endfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+					endfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+					endfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+					endfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+					endfile << "CLS value is : " << CLS << endl;
+					endfile << "Minute is : " << min_T << endl;
+					endfile << "Value of BNQ is : " << BNQ << endl;
+					endfile << "Value of BES is : " << BES << endl;
+					endfile << "Value of SNQ is : " << SNQ << endl;
+					endfile << "Value of SES is : " << SES << endl;
+					endfile << "Acc Balance is : " << _AccBal << endl;
+					endfile << "Margin Balance is : " << _Margin << endl;
+					endfile << "Position Confirmation is : " << _PosnConf << endl;
+					endfile << "Closed PnL is : " << _ClosedPL << endl;
+					endfile << "Open PnL is : " << _OpenPL << endl;
+					endfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+					endfile << "NQ Open PnL is : " << _OpenNQ << endl;
+					endfile << "ES Closed PnL is : " << _ClosedES << endl;
+					endfile << "ES Open PnL is : " << _OpenES << endl;
+					endfile << "Status is : " << _Status << endl;
+					endfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+					endfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+					endfile << "NQ Minimum price increment is : " << incrNQ << endl;
+					endfile << "ES Minimum price increment is : " << incrES << endl;
+					endfile << "NQ Tick is : " << ticks << endl;
+					endfile << "NQ Profit is : " << profit << endl;
+					endfile << "ES Tick is : " << ticksB << endl;
+					endfile << "ES Profit is : " << profitB << endl;
+					endfile << "PnL Minute is : " << sec_T << endl;
+					endfile << "NQ spread is : " << spreadA << endl;
+					endfile << "ES spread is : " << spreadB << endl;
+					endfile << "NQ High value is : " << _NQBHigh << endl;
+					endfile << "ES High value is : " << _ESBHigh << endl;
+					endfile << "NQ Low value is : " << _NQALow << endl;
+					endfile << "ES Low value is : " << _ESALow << endl;
+					endfile << "NQ High value is : " << _NQAHigh << endl;
+					endfile << "ES High value is : " << _ESAHigh << endl;
+					endfile << "NQ Low value is : " << _NQBLow << endl;
+					endfile << "ES Low value is : " << _ESBLow << endl;
+					endfile << "usecs at exchange is : " << iUsecs << endl;
+					endfile << "Cumulative profit is : " << CumProfit << endl;
+					endfile << "Largest NQ spread is : " << _NQ << endl;
+					endfile << "Largest ES spread is : " << _ES << endl;
+					endfile << "Disparity value is : " << _Disparity << endl;
+					endfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+					endfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+					endfile << "Algo Processing speed is : " << SpdProc << endl;
+					endfile << "Line update Processing speed is : " << SpdLineUpd << endl;
+					endfile << "PnL Processing speed is : " << SpdPnL << endl;
+					endfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
+					endfile << "Best Bid Processing speed is : " << SpdBBid << endl;
+					endfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+					endfile << "Close order Processing speed is : " << SpdClOrd << endl;
+					endfile.close();
+				}
+				Hold = CLS;
+			}
 		}
 
 		if (((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T)) && CLS == 2)
