@@ -45,6 +45,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <windows.h>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
 #ifdef WinOS
 #include <unistd.h>
@@ -482,55 +483,55 @@ void MyCallbacks::CloseOrder(int &Signal)
 			}
 		}
 
-		if(contract)
+		if (contract)
 		{
-		if (Signal == 3)
-		{
-			ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
-			profitB = ticksB - commB;
-			CumProfit = CumProfit + profitB;
-
-			oMktOrdParams.sBuySellType.pData = "S";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-			oMktOrdParams.sTicker.pData = SymbES.pData;
-			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-
-			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (Signal == 3)
 			{
-				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
-			}
-			else
-			{
-				BES = 2;
-				ESFree = false;
-				std::cout << "\nSignal 3 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
-			}
-		}
+				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
+				profitB = ticksB - commB;
+				CumProfit = CumProfit + profitB;
 
-		if (Signal == 4)
-		{
-			ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
-			profitB = ticksB - commB;
-			CumProfit = CumProfit + profitB;
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-			oMktOrdParams.sBuySellType.pData = "B";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-			oMktOrdParams.sTicker.pData = SymbES.pData;
-			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+				}
+				else
+				{
+					BES = 2;
+					ESFree = false;
+					std::cout << "\nSignal 3 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+				}
+			}
 
-			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (Signal == 4)
 			{
-				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
+				profitB = ticksB - commB;
+				CumProfit = CumProfit + profitB;
+
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+				}
+				else
+				{
+					SES = 2;
+					ESFree = false;
+					std::cout << "\nSignal 4 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+				}
 			}
-			else
-			{
-				SES = 2;
-				ESFree = false;
-				std::cout << "\nSignal 4 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
-			}
-		}
 		}
 
 	}
@@ -539,8 +540,8 @@ void MyCallbacks::CloseOrder(int &Signal)
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdClOrd)
+
+	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
 		SpdClOrd = ElapsedMicroseconds.QuadPart;
 }
 
@@ -741,17 +742,17 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
 	}
-	
-	if(contract)
+
+	if (contract)
 	{
-	if (_sTicker == "6BV8")
-	{
-		_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
-		_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
-		_PriceToFillES = pInfo->dPriceToFill;
-		_AvgFillPriceES = pInfo->dAvgFillPrice;
-		_OrderNumES = pInfo->sOrderNum;
-	}
+		if (_sTicker == "6BV8")
+		{
+			_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+			_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+			_PriceToFillES = pInfo->dPriceToFill;
+			_AvgFillPriceES = pInfo->dAvgFillPrice;
+			_OrderNumES = pInfo->sOrderNum;
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -760,8 +761,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdLineUpd)
+
+	if (ElapsedMicroseconds.QuadPart > SpdLineUpd)
 		SpdLineUpd = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -837,14 +838,14 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_ClosedNQ = pInfo->dClosedPnl;
 		_OpenNQ = pInfo->dOpenPnl;
 	}
-	
-	if(contract)
+
+	if (contract)
 	{
-	if (pInfo->sTicker.pData == _TickerES.pData)
-	{
-		_ClosedES = pInfo->dClosedPnl;
-		_OpenES = pInfo->dOpenPnl;
-	}
+		if (pInfo->sTicker.pData == _TickerES.pData)
+		{
+			_ClosedES = pInfo->dClosedPnl;
+			_OpenES = pInfo->dOpenPnl;
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -853,8 +854,8 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdPnL)
+
+	if (ElapsedMicroseconds.QuadPart > SpdPnL)
 		SpdPnL = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -874,10 +875,10 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 
 	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6EV8")
 		incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
-	if(contract)
+	if (contract)
 	{
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6BV8")
-		incrES = pInfo->asPriceIncrArray->dPriceIncr;
+		if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6BV8")
+			incrES = pInfo->asPriceIncrArray->dPriceIncr;
 	}
 
 	g_bRcvdPriceIncr = true;
@@ -1231,51 +1232,51 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		NQLHr = lt.wHour;
 		NQLMin = lt.wMinute;
 	}
-	
-	if(contract)
+
+	if (contract)
 	{
-	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESPAsk = pInfo->dPrice;
-			ESLHr = lt.wHour;
-			ESLMin = lt.wMinute;
+			_ESAsk = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPAsk = pInfo->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
+					}
+				}
+			}
 		}
 
-		if (CLS == 1)
-		{
-			if (BES == 1)
-			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
-				{
-					Sign = 3;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Buy ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask High price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid High price is : " << _ESBHigh << endl;
-				}
-			}
-			if (SES == 1)
-			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
-				{
-					Sign = 4;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Sell ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask Low price is : " << _ESALow << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid Low price is : " << _ESBLow << endl;
-				}
-			}
-		}
-	}
-	
-	spreadB = (_ESAsk - _ESBid) / incrES;
+		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	trial = "";
@@ -1348,50 +1349,50 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			}
 		}
 	}
-	
-	if(contract)
-	{
-	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-		{
-			_ESPAsk = pInfo->dPrice;
-			ESLHr = lt.wHour;
-			ESLMin = lt.wMinute;
-		}
 
-		if (CLS == 1)
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			if (BES == 1)
+			_ESAsk = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
-				{
-					Sign = 3;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Buy ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask High price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid High price is : " << _ESBHigh << endl;
-				}
+				_ESPAsk = pInfo->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
 			}
-			if (SES == 1)
+
+			if (CLS == 1)
 			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+				if (BES == 1)
 				{
-					Sign = 4;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Sell ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
 				}
 			}
 		}
-	}
-	spreadB = (_ESAsk - _ESBid) / incrES;
+		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	trial = "";
@@ -1404,8 +1405,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdBAsk)
+
+	if (ElapsedMicroseconds.QuadPart > SpdBAsk)
 		SpdBAsk = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1475,7 +1476,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 		}
 	}
-	
+
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_NQBid = pBid->dPrice;
@@ -1517,92 +1518,92 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		}
 
 	}
-	
-	if(contract)
+
+	if (contract)
 	{
-	if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESAsk = pAsk->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESPAsk = pAsk->dPrice;
-			ESLHr = lt.wHour;
-			ESLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BES == 1)
+			_ESAsk = pAsk->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+				_ESPAsk = pAsk->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
 				{
-					Sign = 3;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Buy ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask High price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
 				}
 			}
-			if (SES == 1)
-			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
-				{
-					Sign = 4;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Sell ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
-				}
-			}
+
 		}
 
-	}
-
-	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESBid = pBid->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESPBid = pBid->dPrice;
-			ESLHr = lt.wHour;
-			ESLMin = lt.wMinute;
-		}
+			_ESBid = pBid->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPBid = pBid->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
 
-		if (CLS == 1)
-		{
-			if (BES == 1)
+			if (CLS == 1)
 			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+				if (BES == 1)
 				{
-					Sign = 3;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Buy ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask High price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
 				}
-			}
-			if (SES == 1)
-			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+				if (SES == 1)
 				{
-					Sign = 4;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Sell ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
 				}
 			}
 		}
-	}
-	spreadB = (_ESAsk - _ESBid) / incrES;
+		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	trial = "";
@@ -1616,8 +1617,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdBAskBid)
+
+	if (ElapsedMicroseconds.QuadPart > SpdBAskBid)
 		SpdBAskBid = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1684,50 +1685,50 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			}
 		}
 	}
-	
-	if(contract)
-	{
-	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESBid = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-		{
-			_ESPBid = pInfo->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
 
-		if (CLS == 1)
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			if (BES == 1)
+			_ESBid = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
 			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
-				{
-					Sign = 3;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Buy ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask High price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid High price is : " << _ESBHigh << endl;
-				}
+				_ESPBid = pInfo->dPrice;
+				NQLHr = lt.wHour;
+				NQLMin = lt.wMinute;
 			}
-			if (SES == 1)
+
+			if (CLS == 1)
 			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+				if (BES == 1)
 				{
-					Sign = 4;
-					CloseOrder(Sign);
-					std::cout << "\nClose Open Sell ES : " << endl;
-					std::cout << "ES Ask price is : " << _ESAsk << endl;
-					std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
-					std::cout << "ES Bid price is : " << _ESBid << endl;
-					std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
 				}
 			}
 		}
-	}
-	spreadB = (_ESAsk - _ESBid) / incrES;
+		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	trial = "";
@@ -1740,8 +1741,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	
-	if(ElapsedMicroseconds.QuadPart > SpdBBid)
+
+	if (ElapsedMicroseconds.QuadPart > SpdBBid)
 		SpdBBid = ElapsedMicroseconds.QuadPart;
 
 	*aiCode = API_OK;
@@ -1792,36 +1793,36 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 			}
 		}
 	}
-	
-	if(contract)
-	{
-	if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
-	{
-		_ESBid = pInfo->dPrice;
 
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-			_ESPBid = pInfo->dPrice;
-		if (CLS == 1)
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			if (BES == 1)
+			_ESBid = pInfo->dPrice;
+
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+				_ESPBid = pInfo->dPrice;
+			if (CLS == 1)
 			{
-				if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+				if (BES == 1)
 				{
-					Sign = 3;
-					CloseOrder(Sign);
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+					}
 				}
-			}
-			if (SES == 1)
-			{
-				if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+				if (SES == 1)
 				{
-					Sign = 4;
-					CloseOrder(Sign);
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+					}
 				}
 			}
 		}
-	}
-	spreadB = (_ESAsk - _ESBid) / incrES;
+		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	spreadA = (_NQAsk - _NQBid) / incrNQ;
@@ -2318,8 +2319,9 @@ int main(int      argc,
 	char *			  user1;
 	char *			  user2;
 	int 			  iUsecs;
-	int count = 0;
+	int				  count = 0;
 	std::string		  OpenFile;
+	stringstream	  strValue;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2328,8 +2330,8 @@ int main(int      argc,
 		std::cout << USAGE << endl;
 		return (BAD);
 	}
-	
-	if(argc == 9)
+
+	if (argc == 9)
 		contract = true;
 
 	GetSystemTime(&st);
@@ -2354,10 +2356,14 @@ int main(int      argc,
 	/*   Rithmic trading platform, consult appropriate connection params    */
 	/*   document in your download directory.                               */
 
+	strValue << argv[3];
+	strValue >> hr_T;
+	strValue.clear();
+	strValue << argv[4];
+	strValue >> min_T;
+	strValue.clear();
 	user1 = "42554PPR";
 	user2 = "andrew.kowuoche@gmail.com";
-	hr_T = argv[3];
-	min_T = argv[4];
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
@@ -2522,10 +2528,10 @@ int main(int      argc,
 
 	SymbNQ.pData = argv[6];
 	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
-	if(contract)
+	if (contract)
 	{
-	SymbES.pData = argv[8];
-	SymbES.iDataLen = (int)strlen(SymbES.pData);
+		SymbES.pData = argv[8];
+		SymbES.iDataLen = (int)strlen(SymbES.pData);
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2570,46 +2576,46 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	
-	if(contract)
+
+	if (contract)
 	{
-	sExchange.pData = argv[7];
-	sExchange.iDataLen = (int)strlen(sExchange.pData);
+		sExchange.pData = argv[7];
+		sExchange.iDataLen = (int)strlen(sExchange.pData);
 
-	/*   ----------------------------------------------------------------   */
+		/*   ----------------------------------------------------------------   */
 
-	sTicker.pData = argv[8];
-	sTicker.iDataLen = (int)strlen(sTicker.pData);
+		sTicker.pData = argv[8];
+		sTicker.iDataLen = (int)strlen(sTicker.pData);
 
-	/*   ----------------------------------------------------------------   */
+		/*   ----------------------------------------------------------------   */
 
-	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+		/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-	iFlags = (MD_BEST);
+		iFlags = (MD_BEST);
 
-	/*   ----------------------------------------------------------------   */
+		/*   ----------------------------------------------------------------   */
 
-	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
-	{
-		std::cout << "\nREngine::subscribe() error : " << iCode << endl;
+		if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+		{
+			std::cout << "\nREngine::subscribe() error : " << iCode << endl;
 
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
+			delete g_pEngine;
+			delete pCallbacks;
+			delete pAdmCallbacks;
 
-		return (BAD);
-	}
+			return (BAD);
+		}
 
-	if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
-	{
-		std::cout << "REngine::getPriceIncrInfo() error : %d\n" << iCode << endl;
+		if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
+		{
+			std::cout << "REngine::getPriceIncrInfo() error : %d\n" << iCode << endl;
 
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
+			delete g_pEngine;
+			delete pCallbacks;
+			delete pAdmCallbacks;
 
-		return (BAD);
-	}
+			return (BAD);
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2709,8 +2715,9 @@ int main(int      argc,
 
 	iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
 		(g_iFromExchUsecs - g_iToExchUsecs);
-	std::cout << "\n\nusecs at exchange : " << iUsecs << endl;
-	std::cout << "\n\nReading algorithm..." << endl;
+	std::cout << "\nHour Value is : " << hr_T << endl;
+	std::cout << "\nMinute Value is : " << min_T << endl;
+	std::cout << "\nReading algorithm..." << endl;
 
 	_OpenNQ = incrNQ * 125000;
 
@@ -2808,7 +2815,7 @@ int main(int      argc,
 				livefile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
 				livefile << "Close order Processing speed is : " << SpdClOrd << endl;
 				livefile.close();
-				
+
 				std::cout << "\n\nWritten text file CLS = 0..." << endl;
 			}
 			Hold = CLS;
@@ -2830,7 +2837,7 @@ int main(int      argc,
 
 					if (spreadA > _NQ)
 						_NQ = spreadA;
-					if(contract)
+					if (contract)
 					{
 						if (spreadB > _ES)
 							_ES = spreadB;
@@ -2907,80 +2914,80 @@ int main(int      argc,
 							std::cout << "NQ Pivot Ask price is : " << _NQPAsk << endl;
 						}
 					}
-					
-					if(contract)
+
+					if (contract)
 					{
-					if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
-					{
-						oMktOrdParams.sBuySellType.pData = "S";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = argv[8];
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+						if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
 						{
-							std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+							oMktOrdParams.sBuySellType.pData = "S";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							{
+								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
 
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
+								delete g_pEngine;
+								delete pCallbacks;
+								delete pAdmCallbacks;
 
-							g_bDone = true;
+								g_bDone = true;
 
-							return (BAD);
-							break;
+								return (BAD);
+								break;
+							}
+							else
+							{
+								ESFree = true;
+								SES = 1;
+								CLS = 1;
+								ES_hr = lt.wHour;
+								ES_min = lt.wMinute;
+								std::cout << "\nES Sell market order placed : SES value is :->" << SES << endl;
+								std::cout << "ES Bid price is : " << _ESBid << endl;
+								std::cout << "ES Low Bid price is : " << _ESBLow << endl;
+								std::cout << "ES Ask price is : " << _ESAsk << endl;
+								std::cout << "ES Low Ask price is : " << _ESALow << endl;
+								std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
+								std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
+							}
 						}
-						else
+
+						if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0) || (BES == 2 && _ESBid > _ESBHigh && _ESAsk > _ESAHigh)))
 						{
-							ESFree = true;
-							SES = 1;
-							CLS = 1;
-							ES_hr = lt.wHour;
-							ES_min = lt.wMinute;
-							std::cout << "\nES Sell market order placed : SES value is :->" << SES << endl;
-							std::cout << "ES Bid price is : " << _ESBid << endl;
-							std::cout << "ES Low Bid price is : " << _ESBLow << endl;
-							std::cout << "ES Ask price is : " << _ESAsk << endl;
-							std::cout << "ES Low Ask price is : " << _ESALow << endl;
-							std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
-							std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
+							oMktOrdParams.sBuySellType.pData = "B";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							{
+								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+
+								delete g_pEngine;
+								delete pCallbacks;
+								delete pAdmCallbacks;
+
+								g_bDone = true;
+
+								return (BAD);
+								break;
+							}
+							else
+							{
+								ESFree = true;
+								BES = 1;
+								CLS = 1;
+								ES_hr = lt.wHour;
+								ES_min = lt.wMinute;
+								std::cout << "\nES Buy market order placed : BES value is :->" << BES << endl;
+								std::cout << "ES Bid price is : " << _ESBid << endl;
+								std::cout << "ES High Bid price is : " << _ESBHigh << endl;
+								std::cout << "ES Ask price is : " << _ESAsk << endl;
+								std::cout << "ES High Ask price is : " << _ESAHigh << endl;
+								std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
+								std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
+							}
 						}
-					}
-
-					if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0) || (BES == 2 && _ESBid > _ESBHigh && _ESAsk > _ESAHigh)))
-					{
-						oMktOrdParams.sBuySellType.pData = "B";
-						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = argv[8];
-						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-						{
-							std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
-
-							delete g_pEngine;
-							delete pCallbacks;
-							delete pAdmCallbacks;
-
-							g_bDone = true;
-
-							return (BAD);
-							break;
-						}
-						else
-						{
-							ESFree = true;
-							BES = 1;
-							CLS = 1;
-							ES_hr = lt.wHour;
-							ES_min = lt.wMinute;
-							std::cout << "\nES Buy market order placed : BES value is :->" << BES << endl;
-							std::cout << "ES Bid price is : " << _ESBid << endl;
-							std::cout << "ES High Bid price is : " << _ESBHigh << endl;
-							std::cout << "ES Ask price is : " << _ESAsk << endl;
-							std::cout << "ES High Ask price is : " << _ESAHigh << endl;
-							std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
-							std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
-						}
-					}
 					}
 
 					iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
@@ -3002,25 +3009,25 @@ int main(int      argc,
 					{
 						_NQALow = _NQAsk;
 					}
-					
-					if(contract)
+
+					if (contract)
 					{
-					if (_ESBid > _ESBHigh)
-					{
-						_ESBHigh = _ESBid;
-					}
-					if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-					{
-						_ESBLow = _ESBid;
-					}
-					if (_ESAsk > _ESAHigh)
-					{
-						_ESAHigh = _ESAsk;
-					}
-					if ((_ESAsk < _ESALow) || (_ESALow == 0))
-					{
-						_ESALow = _ESAsk;
-					}
+						if (_ESBid > _ESBHigh)
+						{
+							_ESBHigh = _ESBid;
+						}
+						if ((_ESBid < _ESBLow) || (_ESBLow == 0))
+						{
+							_ESBLow = _ESBid;
+						}
+						if (_ESAsk > _ESAHigh)
+						{
+							_ESAHigh = _ESAsk;
+						}
+						if ((_ESAsk < _ESALow) || (_ESALow == 0))
+						{
+							_ESALow = _ESAsk;
+						}
 					}
 
 					if (_NQALow == 0 || _NQAHigh == 0 || _NQBLow == 0 || _NQBHigh == 0 || (contract == true && (_ESALow == 0 || _ESAHigh == 0 || _ESBLow == 0 || _ESBHigh == 0)))
@@ -3134,8 +3141,8 @@ int main(int      argc,
 					ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 					ElapsedMicroseconds.QuadPart *= 1000000;
 					ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-					
-					if(ElapsedMicroseconds.QuadPart > SpdProc)
+
+					if (ElapsedMicroseconds.QuadPart > SpdProc)
 						SpdProc = ElapsedMicroseconds.QuadPart;
 				}
 
@@ -3206,66 +3213,66 @@ int main(int      argc,
 					std::cout << "SNQ Risk Management Closure : " << endl;
 				}
 			}
-			
-			if(contract)
+
+			if (contract)
 			{
-			if (BES == 1)
-			{
-				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
-				profitB = ticksB - commB;
-				oMktOrdParams.sBuySellType.pData = "S";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = argv[8];
-				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				if (BES == 1)
 				{
-					std::cout << "REngine::sendOrder() error :" << iCode << endl;
+					ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
+					profitB = ticksB - commB;
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						std::cout << "REngine::sendOrder() error :" << iCode << endl;
 
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
 
-					g_bDone = true;
+						g_bDone = true;
 
-					return (BAD);
+						return (BAD);
+					}
+					else
+					{
+						BES = 2;
+						ESFree = false;
+						std::cout << "BES Risk Management Closure : " << endl;
+					}
 				}
-				else
+
+				if (SES == 1)
 				{
-					BES = 2;
-					ESFree = false;
-					std::cout << "BES Risk Management Closure : " << endl;
+					ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
+					profitB = ticksB - commB;
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						std::cout << "REngine::sendOrder() error : " << iCode << endl;
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+					}
+					else
+					{
+						SES = 2;
+						ESFree = false;
+						std::cout << "SES Risk Management Closure : " << endl;
+					}
 				}
-			}
-
-			if (SES == 1)
-			{
-				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
-				profitB = ticksB - commB;
-				oMktOrdParams.sBuySellType.pData = "B";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = argv[8];
-				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
-				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-				{
-					std::cout << "REngine::sendOrder() error : " << iCode << endl;
-
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					g_bDone = true;
-
-					return (BAD);
-				}
-				else
-				{
-					SES = 2;
-					ESFree = false;
-					std::cout << "SES Risk Management Closure : " << endl;
-				}
-			}
 			}
 		}
 
@@ -3377,7 +3384,7 @@ int main(int      argc,
 		}
 
 	}
-	
+
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
