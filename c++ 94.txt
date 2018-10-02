@@ -2720,6 +2720,18 @@ int main(int      argc,
 	std::cout << "\nReading algorithm..." << endl;
 
 	_OpenNQ = incrNQ * 125000;
+	
+	while ((lt.wHour == hr_T && lt.wMinute < (min_T - 5)) || (lt.wHour == (hr_T-1) && lt.wMinute < 55) || (lt.wHour < (hr_T-1)))
+	{
+		long Slp_T;
+		int trade, curr;
+		
+		trade = (hr_T*60) + min_T;
+		curr = (lt.wHour*60) + lt.wMinute;
+		Slp_T = ((trade - curr) - 4) * 1000000;
+		std::cout << "\nSleep time is : " << Slp_T << endl;
+		sleep(Slp_T);
+	}
 
 	while ((lt.wHour == hr_T && lt.wMinute <= (min_T + 2) && lt.wMinute >= (min_T - 5)) || _Posn > 0 || CLS == 1 || (lt.wHour == (hr_T - 1) && lt.wMinute >= 55))
 	{
