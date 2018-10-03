@@ -1,0 +1,3426 @@
+/*   =====================================================================
+
+Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
+
+Warning :
+This Software Product is protected by copyright law and international
+treaties.  Unauthorized use, reproduction or distribution of this
+Software Product (including its documentation), or any portion of it,
+may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
+
+Omnesys Technologies, Inc. will compensate individuals providing
+admissible evidence of any unauthorized use, reproduction, distribution
+or redistribution of this Software Product by any person, company or
+organization.
+
+This Software Product is licensed strictly in accordance with a separate
+Software System License Agreement, granted by Omnesys Technologies, Inc., which
+contains restrictions on use, reverse engineering, disclosure, confidentiality
+and other matters.
+
+=====================================================================   */
+/*   =====================================================================
+Compile/link commands for linux and darwin using R | API+.  These should
+work if your pwd is the ./samples directory.  You may need to change the
+name of the RApi library if you are using one of the library variants,
+like R | API or R | Diamond API.
+
+64-bit linux (2.6.32 kernel) :
+
+g++ -O3 -DLINUX -D_REENTRANT -Wall -Wno-sign-compare -Wno-write-strings -Wpointer-arith -Winline -Wno-deprecated -fno-strict-aliasing -I../include -o SampleOrder ../samples/SampleOrder.cpp -L../linux-gnu-2.6.32-x86_64/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib64 -lz -L/usr/kerberos/lib -lkrb5 -lk5crypto -lcom_err -lresolv -lm -lpthread -lrt
+
+64-bit darwin :
+
+g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpointer-arith -Winline -Wno-deprecated -Wno-write-strings -I../include -o ./SampleOrder ../samples/SampleOrder.cpp -L../darwin-10/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib -lz -L/usr/lib -lkrb5 -lresolv -lm -lpthread
+
+=====================================================================   */
+
+#include "C:\Users\User\Documents\9.9.0.0\include\RApiPlus.h"
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <string.h>
+#include <windows.h>
+#include <fstream>
+#include <vector>
+#include <sstream>
+
+#ifdef WinOS
+#include <unistd.h>
+#else
+#include <Windows.h>
+#endif
+
+#define GOOD 0
+#define BAD  1
+#define BUFSIZE 512
+
+using namespace RApi;
+using namespace std;
+
+/*   =====================================================================   */
+/*   Use global variables to share between the callback thread and main      */
+/*   thread.  The booleans are a primitive method of signaling state         */
+/*   between the two threads.                                                */
+
+bool        g_bTsLoginComplete = false;
+bool        g_bRcvdAccount = false;
+bool        g_bRcvdPriceIncr = false;
+bool        g_bRcvdTradeRoutes = false;
+bool        g_bDone = false;
+
+int         g_iToExchSsboe = 0;
+int         g_iToExchUsecs = 0;
+int         g_iFromExchSsboe = 0;
+int         g_iFromExchUsecs = 0;
+
+const int   g_iMAX_LEN = 256;
+char        g_cAccountId[g_iMAX_LEN];
+char        g_cFcmId[g_iMAX_LEN];
+char        g_cIbId[g_iMAX_LEN];
+char        g_cExchange[g_iMAX_LEN];
+char        g_cTradeRoute[g_iMAX_LEN];
+AccountInfo g_oAccount;
+tsNCharcb   g_sExchange;
+tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
+
+REngine *   g_pEngine;
+MarketOrderParams oMktOrdParams;
+
+double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
+double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
+double _ESPBid, _ESPAsk, _NQPBid, _NQPAsk, _PnlAvgOpenPrice;
+double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES, incrNQ = 0, incrES = 0;
+double _AvgFillPriceNQ = 0, _AvgFillPriceES = 0, _PriceToFillNQ = 0, _PriceToFillES = 0;
+long _BuyQty = 0, _SellQty = 0, _Posn = 0;
+char   BidBuffer[10];
+char   AskBuffer[10];
+int inst = 0, _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
+int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
+int _PnlAvgOpen, _QtyToFill = 0;
+tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
+tsNCharcb _OrderNumNQ, _OrderNumES;
+tsNCharcb _TickerNQ = { (char *)"6EV8",
+(int)strlen("6EV8") };
+tsNCharcb _TickerES = { (char *)"6BV8",
+(int)strlen("6BV8") };
+std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
+std::string _sTickerNQ, _sTickerES, _Status;
+LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+LARGE_INTEGER Frequency;
+std::string trial, test, _sExchange;
+int  hr_T = 19, min_T = 36, sec_T, _Activ = 0;
+int  NQ_hr, ES_hr, NQ_min, ES_min;
+double ticks, profit, commA = 3.38, commB = 4.22, CumProfit = 0;
+double _RiskBal = 499906.25, Buff, ticksB, profitB;
+double spreadA, spreadB, _NQ = 0, _ES = 0;
+double _NQBHigh = 0, _NQBLow = 0, _ESBHigh = 0, _ESBLow = 0;
+double _NQAHigh = 0, _NQALow = 0, _ESAHigh = 0, _ESALow = 0;
+int _Disparity = 0;
+long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
+tsNCharcb SymbNQ, SymbES;
+int				  CLS = 0, iCode, Sign, Hold = 1;
+int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
+bool	NQFree = false, NQLFree = false, print = false;
+bool	ESFree = false, ESLFree = false, contract = false;
+int	NQLHr, ESLHr, NQLMin, ESLMin;
+
+SYSTEMTIME st, lt;
+
+int main(int      argc,
+	char * * argv,
+	char * * envp);
+
+/*   =====================================================================   */
+/*                          class declarations                               */
+/*   =====================================================================   */
+
+class MyAdmCallbacks : public AdmCallbacks
+{
+public:
+	MyAdmCallbacks() {};
+	~MyAdmCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+};
+
+/*   =====================================================================   */
+
+class MyCallbacks : public RCallbacks
+{
+public:
+	MyCallbacks() {};
+	~MyCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestAskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidAskQuote(BidInfo * pBid,
+		AskInfo * pAsk,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BinaryContractList(BinaryContractListInfo * pInfo,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int ClosePrice(ClosePriceInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int ClosingIndicator(ClosingIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int EndQuote(EndQuoteInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+		void *                         pContext,
+		int *                          aiCode);
+
+	virtual int HighPrice(HighPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+		void *                       pContext,
+		int *                        aiCode);
+
+	virtual int InstrumentSearch(InstrumentSearchInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int LimitOrderBook(LimitOrderBookInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int LowPrice(LowPriceInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int MarketMode(MarketModeInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int OpenInterest(OpenInterestInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int OpenPrice(OpenPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int OpeningIndicator(OpeningIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int OptionList(OptionListInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int RefData(RefDataInfo * pInfo,
+		void *        pContext,
+		int *         aiCode);
+
+	virtual int SettlementPrice(SettlementPriceInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int Strategy(StrategyInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int StrategyList(StrategyListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int TradeCondition(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradePrint(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradeReplay(TradeReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int TradeRoute(TradeRouteInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int TradeRouteList(TradeRouteListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int TradeVolume(TradeVolumeInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Bar(BarInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BarReplay(BarReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AccountList(AccountListInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PasswordChange(PasswordChangeInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int ExchangeList(ExchangeListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int ExecutionReplay(ExecutionReplayInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int LineUpdate(LineInfo * pInfo,
+		void *     pContext,
+		int *      aiCode);
+
+	virtual int OpenOrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int OrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PnlReplay(PnlReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int PnlUpdate(PnlInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int PriceIncrUpdate(PriceIncrInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int ProductRmsList(ProductRmsListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+		void *                  pContext,
+		int *                   aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int BustReport(OrderBustReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int CancelReport(OrderCancelReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int FailureReport(OrderFailureReport * pReport,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int FillReport(OrderFillReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int ModifyReport(OrderModifyReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int NotCancelledReport(OrderNotCancelledReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int NotModifiedReport(OrderNotModifiedReport * pReport,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int RejectReport(OrderRejectReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int StatusReport(OrderStatusReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int TradeCorrectReport(OrderTradeCorrectReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int TriggerPulledReport(OrderTriggerPulledReport * pReport,
+		void *                     pContext,
+		int *                      aiCode);
+
+	virtual int TriggerReport(OrderTriggerReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int OtherReport(OrderReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int SodUpdate(SodReport * pReport,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Quote(QuoteReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual void CloseOrder(int &Signal);
+
+	/*   ----------------------------------------------------------------   */
+
+private:
+};
+
+/*   =====================================================================   */
+/*                          class definitions                                */
+/*   =====================================================================   */
+
+void MyCallbacks::CloseOrder(int &Signal)
+{
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	if (CLS == 1)
+	{
+		if (Signal == 1)
+		{
+			ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * _OpenNQ;
+			profit = ticks - commB;
+			CumProfit = CumProfit + profit;
+
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+			}
+			else
+			{
+				BNQ = 2;
+				NQFree = false;
+				std::cout << "\nSignal 1 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+			}
+		}
+
+		if (Signal == 2)
+		{
+			ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * _OpenNQ;
+			profit = ticks - commB;
+			CumProfit = CumProfit + profit;
+
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+			}
+			else
+			{
+				SNQ = 2;
+				NQFree = false;
+				std::cout << "\nSignal 2 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+			}
+		}
+
+		if (contract)
+		{
+			if (Signal == 3)
+			{
+				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
+				profitB = ticksB - commB;
+				CumProfit = CumProfit + profitB;
+
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+				}
+				else
+				{
+					BES = 2;
+					ESFree = false;
+					std::cout << "\nSignal 3 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+				}
+			}
+
+			if (Signal == 4)
+			{
+				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
+				profitB = ticksB - commB;
+				CumProfit = CumProfit + profitB;
+
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
+				}
+				else
+				{
+					SES = 2;
+					ESFree = false;
+					std::cout << "\nSignal 4 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
+				}
+			}
+		}
+
+	}
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
+		SpdClOrd = ElapsedMicroseconds.QuadPart;
+}
+
+
+/*   =====================================================================   */
+
+int MyAdmCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AccountList(AccountListInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	AccountInfo * pAccount;
+	int iCode;
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	if (pInfo->iArrayLen > 0)
+	{
+		pAccount = &pInfo->asAccountInfoArray[0];
+
+		/* copy the first account */
+		if ((pAccount->sAccountId.iDataLen > g_iMAX_LEN) ||
+			(pAccount->sFcmId.iDataLen     > g_iMAX_LEN) ||
+			(pAccount->sIbId.iDataLen      > g_iMAX_LEN))
+		{
+			std::cout << "one or more of the char arrays is too small.\n" << endl;
+		}
+		else
+		{
+			memcpy(&g_cAccountId,
+				pAccount->sAccountId.pData,
+				pAccount->sAccountId.iDataLen);
+
+			g_oAccount.sAccountId.pData = g_cAccountId;
+			g_oAccount.sAccountId.iDataLen = pAccount->sAccountId.iDataLen;
+
+			/*   ------------------------------------------------------   */
+
+			memcpy(&g_cFcmId,
+				pAccount->sFcmId.pData,
+				pAccount->sFcmId.iDataLen);
+			g_oAccount.sFcmId.pData = g_cFcmId;
+			g_oAccount.sFcmId.iDataLen = pAccount->sFcmId.iDataLen;
+
+			/*   ------------------------------------------------------   */
+
+			memcpy(&g_cIbId,
+				pAccount->sIbId.pData,
+				pAccount->sIbId.iDataLen);
+			g_oAccount.sIbId.pData = g_cIbId;
+			g_oAccount.sIbId.iDataLen = pAccount->sIbId.iDataLen;
+
+			if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
+			{
+				std::cout << "REngine::subscribeOrder() error : %d\n" << iCode << endl;;
+			}
+
+			g_bRcvdAccount = true;
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PasswordChange(PasswordChangeInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   signal when the login to the trading system is complete */
+
+	if (pInfo->iAlertType == ALERT_LOGIN_COMPLETE &&
+		pInfo->iConnectionId == TRADING_SYSTEM_CONNECTION_ID)
+	{
+		g_bTsLoginComplete = true;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ExchangeList(ExchangeListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ExecutionReplay(ExecutionReplayInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::LineUpdate(LineInfo * pInfo,
+	void *     pContext,
+	int *      aiCode)
+{
+	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
+		(int)strlen("order sent to exch") };
+	int iIgnored;
+
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order was sent to the exchange... */
+
+	if (pInfo->sStatus.iDataLen == sOrderSentToExch.iDataLen &&
+		memcmp(pInfo->sStatus.pData,
+			sOrderSentToExch.pData,
+			sOrderSentToExch.iDataLen) == 0)
+	{
+		g_iToExchSsboe = pInfo->iSsboe;
+		g_iToExchUsecs = pInfo->iUsecs;
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   if there's a completion reason, the order is complete... */
+
+	if (pInfo->sCompletionReason.pData)
+	{
+		g_bDone = true;
+	}
+
+	_filled = pInfo->iFilled;
+	_unfilled = pInfo->iUnfilled;
+	_CompReason = pInfo->sCompletionReason;
+	_OrdDuration = pInfo->sOrderDuration;
+	_OrdType = pInfo->sOrderType;
+	_QtyToFill = pInfo->iQuantityToFill;
+
+	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
+	_sOrdDuration = std::string(pInfo->sOrderDuration.pData, pInfo->sOrderDuration.iDataLen);
+	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
+	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
+	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
+	if (_sTicker == "6EV8")
+	{
+		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+		_PriceToFillNQ = pInfo->dPriceToFill;
+		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
+		_OrderNumNQ = pInfo->sOrderNum;
+	}
+
+	if (contract)
+	{
+		if (_sTicker == "6BV8")
+		{
+			_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+			_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+			_PriceToFillES = pInfo->dPriceToFill;
+			_AvgFillPriceES = pInfo->dAvgFillPrice;
+			_OrderNumES = pInfo->sOrderNum;
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdLineUpd)
+		SpdLineUpd = ElapsedMicroseconds.QuadPart;
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	GetLocalTime(&lt);
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
+	_AccBalConf = pInfo->eAccountBalance;
+	_MarginConf = pInfo->eAccountBalance;
+	_maxqty = pInfo->eBuyQty;
+	_minqty = pInfo->eSellQty;
+	_AccBal = pInfo->dAccountBalance;
+	_Margin = pInfo->dMarginBalance;
+	_BuyQty = pInfo->lBuyQty;
+	_SellQty = pInfo->lSellQty;
+	_ClosedPL = pInfo->dClosedPnl;
+	_OpenPL = pInfo->dOpenPnl;
+	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
+	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
+	sec_T = lt.wMinute;
+	_PosnConf = pInfo->ePosition;
+	_Posn = pInfo->lPosition;
+	if (pInfo->sTicker.pData == _TickerNQ.pData)
+	{
+		_ClosedNQ = pInfo->dClosedPnl;
+		_OpenNQ = pInfo->dOpenPnl;
+	}
+
+	if (contract)
+	{
+		if (pInfo->sTicker.pData == _TickerES.pData)
+		{
+			_ClosedES = pInfo->dClosedPnl;
+			_OpenES = pInfo->dOpenPnl;
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdPnL)
+		SpdPnL = ElapsedMicroseconds.QuadPart;
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6EV8")
+		incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
+	if (contract)
+	{
+		if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6BV8")
+			incrES = pInfo->asPriceIncrArray->dPriceIncr;
+	}
+
+	g_bRcvdPriceIncr = true;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ProductRmsList(ProductRmsListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+	void *                  pContext,
+	int *                   aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BustReport(OrderBustReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::CancelReport(OrderCancelReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FailureReport(OrderFailureReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FillReport(OrderFillReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotModifiedReport(OrderNotModifiedReport * pReport,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RejectReport(OrderRejectReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StatusReport(OrderStatusReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCorrectReport(OrderTradeCorrectReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerPulledReport(OrderTriggerPulledReport * pReport,
+	void *                     pContext,
+	int *                      aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerReport(OrderTriggerReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OtherReport(OrderReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SodUpdate(SodReport * pReport,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Quote(QuoteReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	NAsk = pInfo->dPrice;
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
+			_NQPAsk = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
+
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Buy NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask High price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid High price is : " << _NQBHigh << endl;
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Sell NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask Low price is : " << _NQALow << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBLow << endl;
+				}
+			}
+		}
+
+		NQLHr = lt.wHour;
+		NQLMin = lt.wMinute;
+	}
+
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESAsk = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPAsk = pInfo->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
+					}
+				}
+			}
+		}
+
+		spreadB = (_ESAsk - _ESBid) / incrES;
+	}
+
+	trial = "";
+
+	spreadA = (_NQAsk - _NQBid) / incrNQ;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestAskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	NAsk = pInfo->dPrice;
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pInfo->dPrice;
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		{
+			_NQPAsk = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
+
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Buy NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask High price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid High price is : " << _NQBHigh << endl;
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Sell NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+				}
+			}
+		}
+	}
+
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESAsk = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPAsk = pInfo->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
+				}
+			}
+		}
+		spreadB = (_ESAsk - _ESBid) / incrES;
+	}
+
+	trial = "";
+
+	spreadA = (_NQAsk - _NQBid) / incrNQ;
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdBAsk)
+		SpdBAsk = ElapsedMicroseconds.QuadPart;
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
+	AskInfo * pAsk,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
+
+	NBid = pBid->dPrice;
+	NAsk = pAsk->dPrice;
+
+	trial = std::string(pBid->sTicker.pData, pBid->sTicker.iDataLen);
+	test = std::string(pAsk->sTicker.pData, pAsk->sTicker.iDataLen);
+
+	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQAsk = pAsk->dPrice;
+		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		{
+			_NQPAsk = pAsk->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
+
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Buy NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask High price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid High price is : " << _NQBHigh << endl;
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Sell NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+				}
+			}
+		}
+	}
+
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pBid->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
+			_NQPBid = pBid->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
+
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Buy NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask High price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid High price is : " << _NQBHigh << endl;
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Sell NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+				}
+			}
+		}
+
+	}
+
+	if (contract)
+	{
+		if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESAsk = pAsk->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPAsk = pAsk->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
+				}
+			}
+
+		}
+
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESBid = pBid->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPBid = pBid->dPrice;
+				ESLHr = lt.wHour;
+				ESLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
+				}
+			}
+		}
+		spreadB = (_ESAsk - _ESBid) / incrES;
+	}
+
+	trial = "";
+	test = "";
+
+	spreadA = (_NQAsk - _NQBid) / incrNQ;
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdBAskBid)
+		SpdBAskBid = ElapsedMicroseconds.QuadPart;
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
+
+	NBid = pInfo->dPrice;
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pInfo->dPrice;
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		{
+			_NQPBid = pInfo->dPrice;
+			NQLHr = lt.wHour;
+			NQLMin = lt.wMinute;
+		}
+
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Buy NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask High price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid High price is : " << _NQBHigh << endl;
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+					std::cout << "\nClose Open Sell NQ : " << endl;
+					std::cout << "NQ Ask price is : " << _NQAsk << endl;
+					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Bid price is : " << _NQBid << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+				}
+			}
+		}
+	}
+
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESBid = pInfo->dPrice;
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			{
+				_ESPBid = pInfo->dPrice;
+				NQLHr = lt.wHour;
+				NQLMin = lt.wMinute;
+			}
+
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Buy ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask High price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid High price is : " << _ESBHigh << endl;
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+						std::cout << "\nClose Open Sell ES : " << endl;
+						std::cout << "ES Ask price is : " << _ESAsk << endl;
+						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Bid price is : " << _ESBid << endl;
+						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+					}
+				}
+			}
+		}
+		spreadB = (_ESAsk - _ESBid) / incrES;
+	}
+
+	trial = "";
+
+	spreadA = (_NQAsk - _NQBid) / incrNQ;
+
+	/*   ----------------------------------------------------------------   */
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdBBid)
+		SpdBBid = ElapsedMicroseconds.QuadPart;
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	NBid = pInfo->dPrice;
+
+	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+
+	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	{
+		_NQBid = pInfo->dPrice;
+
+		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			_NQPBid = pInfo->dPrice;
+		if (CLS == 1)
+		{
+			if (BNQ == 1)
+			{
+				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				{
+					Sign = 1;
+					CloseOrder(Sign);
+				}
+			}
+			if (SNQ == 1)
+			{
+				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				{
+					Sign = 2;
+					CloseOrder(Sign);
+				}
+			}
+		}
+	}
+
+	if (contract)
+	{
+		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			_ESBid = pInfo->dPrice;
+
+			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+				_ESPBid = pInfo->dPrice;
+			if (CLS == 1)
+			{
+				if (BES == 1)
+				{
+					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					{
+						Sign = 3;
+						CloseOrder(Sign);
+					}
+				}
+				if (SES == 1)
+				{
+					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					{
+						Sign = 4;
+						CloseOrder(Sign);
+					}
+				}
+			}
+		}
+		spreadB = (_ESAsk - _ESBid) / incrES;
+	}
+
+	spreadA = (_NQAsk - _NQBid) / incrNQ;
+
+	trial = "";
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BinaryContractList(BinaryContractListInfo * pInfo,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosePrice(ClosePriceInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosingIndicator(ClosingIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EndQuote(EndQuoteInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+	void *                         pContext,
+	int *                          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+	void *                       pContext,
+	int *                        aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentSearch(InstrumentSearchInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::MarketMode(MarketModeInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenInterest(OpenInterestInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpeningIndicator(OpeningIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OptionList(OptionListInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RefData(RefDataInfo * pInfo,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SettlementPrice(SettlementPriceInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Strategy(StrategyInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StrategyList(StrategyListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCondition(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradePrint(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeReplay(TradeReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRoute(TradeRouteInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRouteList(TradeRouteListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	printf("We are looking for a trade route for : %*.*s::%*.*s::%*.*s\n",
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.pData,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.pData,
+		g_sExchange.iDataLen,
+		g_sExchange.iDataLen,
+		g_sExchange.pData);
+
+	tsNCharcb sFcmId;
+	tsNCharcb sIbId;
+	tsNCharcb sExchange;
+	tsNCharcb sTradeRoute;
+	tsNCharcb sStatus;
+
+	for (int i = 0; i < pInfo->iArrayLen; i++)
+	{
+		sFcmId = pInfo->asTradeRouteInfoArray[i].sFcmId;
+		sIbId = pInfo->asTradeRouteInfoArray[i].sIbId;
+		sExchange = pInfo->asTradeRouteInfoArray[i].sExchange;
+		sTradeRoute = pInfo->asTradeRouteInfoArray[i].sTradeRoute;
+		sStatus = pInfo->asTradeRouteInfoArray[i].sStatus;
+
+		printf("%*.*s::%*.*s::%*.*s::%*.*s::%*.*s\n",
+			sFcmId.iDataLen,
+			sFcmId.iDataLen,
+			sFcmId.pData,
+			sIbId.iDataLen,
+			sIbId.iDataLen,
+			sIbId.pData,
+			sExchange.iDataLen,
+			sExchange.iDataLen,
+			sExchange.pData,
+			sTradeRoute.iDataLen,
+			sTradeRoute.iDataLen,
+			sTradeRoute.pData,
+			sStatus.iDataLen,
+			sStatus.iDataLen,
+			sStatus.pData);
+
+		/* use first trade route where fcm/ib/exch matches, and status is "UP" */
+		if (g_oAccount.sFcmId.iDataLen == sFcmId.iDataLen &&
+			(memcmp(g_oAccount.sFcmId.pData,
+				sFcmId.pData,
+				g_oAccount.sFcmId.iDataLen) == 0) &&
+
+			g_oAccount.sIbId.iDataLen == sIbId.iDataLen &&
+			(memcmp(g_oAccount.sIbId.pData,
+				sIbId.pData,
+				g_oAccount.sIbId.iDataLen) == 0) &&
+
+			g_sExchange.iDataLen == sExchange.iDataLen &&
+			(memcmp(g_sExchange.pData,
+				sExchange.pData,
+				g_sExchange.iDataLen) == 0) &&
+
+			sTRADE_ROUTE_STATUS_UP.iDataLen == sStatus.iDataLen &&
+			(memcmp(sTRADE_ROUTE_STATUS_UP.pData,
+				sStatus.pData,
+				sTRADE_ROUTE_STATUS_UP.iDataLen) == 0))
+		{
+			/*   copy memory into global trade route string */
+			memcpy(&g_cTradeRoute,
+				sTradeRoute.pData,
+				sTradeRoute.iDataLen);
+
+			g_sTradeRoute.pData = g_cTradeRoute;
+			g_sTradeRoute.iDataLen = sTradeRoute.iDataLen;
+
+			break;
+		}
+
+		g_sTradeRoute.pData = NULL;
+		g_sTradeRoute.iDataLen = 0;
+	}
+
+	g_bRcvdTradeRoutes = true;
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeVolume(TradeVolumeInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Bar(BarInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BarReplay(BarReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+/*   =====================================================================   */
+
+int main(int      argc,
+	char * * argv,
+	char * * envp)
+{
+	char * USAGE = (char *)"Hendon_App user password hour minute exchange ticker exchange2(Optional) ticker2(Optional)\n";
+
+	MyAdmCallbacks *  pAdmCallbacks;
+	RCallbacks *      pCallbacks;
+	REngineParams     oParams;
+	LimitOrderParams  oLmtOrdParams;
+	ModifyLimitOrderParams	oModLmtOrdParams;
+	LoginParams       oLoginParams;
+	tsNCharcb         sExchange;
+	tsNCharcb         sTicker;
+	char *            fake_envp[11];
+	int               iFlags;
+	ofstream		  myfile("RApi_Hendon.txt");
+	ofstream		  livefile("RApi_Live.txt");
+	ofstream		  endfile("RApi_End.txt");
+	char *			  user1;
+	char *			  user2;
+	int 			  iUsecs;
+	int				  count = 0;
+	std::string		  OpenFile;
+	stringstream	  strValue;
+	int				  trade, curr;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (argc < 7 || argc == 8)
+	{
+		std::cout << USAGE << endl;
+		return (BAD);
+	}
+
+	if (argc == 9)
+		contract = true;
+
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		pAdmCallbacks = new MyAdmCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		iCode = oEx.getErrorCode();
+		std::cout << "MyAdmCallbacks::MyAdmCallbacks() error : %d\n" << iCode << endl;
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following fake envp contains the settings for connecting to    */
+	/*   Rithmic 01 Test.  To connect to a different instance of the        */
+	/*   Rithmic trading platform, consult appropriate connection params    */
+	/*   document in your download directory.                               */
+
+	strValue << argv[3];
+	strValue >> hr_T;
+	strValue.clear();
+	strValue << argv[4];
+	strValue >> min_T;
+	strValue.clear();
+	user1 = "42554PPR";
+	user2 = "andrew.kowuoche@gmail.com";
+
+	if (_stricmp(argv[1], user1) == 0)
+	{
+		fake_envp[0] = "MML_DMN_SRVR_ADDR=ritpz01004.01.rithmic.com:65000~ritpz04063.04.rithmic.com:65000~ritpz01004.01.rithmic.net:65000~ritpz04063.04.rithmic.net:65000~ritpz01004.01.theomne.net:65000~ritpz04063.04.theomne.net:65000~ritpz01004.01.theomne.com:65000~ritpz04063.04.theomne.com:65000";
+		fake_envp[1] = "MML_DOMAIN_NAME=rithmic_paper_prod_domain";
+		fake_envp[2] = "MML_LIC_SRVR_ADDR=ritpz04063.04.rithmic.com:56000~ritpz01004.01.rithmic.com:56000~ritpz04063.04.rithmic.net:56000~ritpz01004.01.rithmic.net:56000~ritpz04063.04.theomne.net:56000~ritpz01004.01.theomne.net:56000~ritpz04063.04.theomne.com:56000~ritpz01004.01.theomne.com:56000";
+		fake_envp[3] = "MML_LOC_BROK_ADDR=ritpz04063.04.rithmic.com:64100";
+		fake_envp[4] = "MML_LOGGER_ADDR=ritpz04063.04.rithmic.com:45454~ritpz01004.01.rithmic.com:45454~ritpz04063.04.rithmic.net:45454~ritpz01004.01.rithmic.net:45454~ritpz04063.04.theomne.net:45454~ritpz01004.01.theomne.net:45454~ritpz04063.04.theomne.com:45454~ritpz01004.01.theomne.com:45454";
+		fake_envp[5] = "MML_LOG_TYPE=log_net";
+
+		/*   The SSL files are located in the ./<version>/etc directory         */
+		/*   of the R | API package.  The settings below assume that those      */
+		/*   files are in the current working directory.  Normally you should   */
+		/*   specify the full path to these files.                              */
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+
+		fake_envp[9] = "USER=42554PPR";
+		fake_envp[10] = NULL;
+	}
+
+	if (_stricmp(argv[1], user2) == 0)
+	{
+		fake_envp[0] = "MML_DMN_SRVR_ADDR=rituz00100.00.rithmic.com:65000~rituz00100.00.rithmic.net:65000~rituz00100.00.theomne.net:65000~rituz00100.00.theomne.com:65000";
+		fake_envp[1] = "MML_DOMAIN_NAME=rithmic_uat_dmz_domain";
+		fake_envp[2] = "MML_LIC_SRVR_ADDR=rituz00100.00.rithmic.com:56000~rituz00100.00.rithmic.net:56000~rituz00100.00.theomne.net:56000~rituz00100.00.theomne.com:56000";
+		fake_envp[3] = "MML_LOC_BROK_ADDR=rituz00100.00.rithmic.com:64100";
+		fake_envp[4] = "MML_LOGGER_ADDR=rituz00100.00.rithmic.com:45454~rituz00100.00.rithmic.net:45454~rituz00100.00.theomne.com:45454~rituz00100.00.theomne.net:45454";
+		fake_envp[5] = "MML_LOG_TYPE=log_net";
+
+		/*   The SSL files are located in the ./<version>/etc directory         */
+		/*   of the R | API package.  The settings below assume that those      */
+		/*   files are in the current working directory.  Normally you should   */
+		/*   specify the full path to these files.                              */
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+
+		fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
+		fake_envp[10] = NULL;
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following value for REngineParams::sAdmCnnctPt assumes the     */
+	/*   app is connecting to the Rithmic 01 Test environment.              */
+	/*   REngineParams::sAppName must be changed in order to log into the   */
+	/*   Rithmic Paper Trading environment, or any production environment.  */
+
+	oParams.sAppName.pData = "anko:Hendon";
+	oParams.sAppName.iDataLen = (int)strlen(oParams.sAppName.pData);
+	oParams.sAppVersion.pData = "1.0.0.0";
+	oParams.sAppVersion.iDataLen = (int)strlen(oParams.sAppVersion.pData);
+	oParams.sAdmCnnctPt.pData = "dd_admin_sslc";
+	oParams.sAdmCnnctPt.iDataLen = (int)strlen(oParams.sAdmCnnctPt.pData);
+	oParams.envp = fake_envp;
+	oParams.pAdmCallbacks = pAdmCallbacks;
+	oParams.sLogFilePath.pData = "so.log";
+	oParams.sLogFilePath.iDataLen = (int)strlen(oParams.sLogFilePath.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		g_pEngine = new REngine(&oParams);
+	}
+	catch (OmneException& oEx)
+	{
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		std::cout << "REngine::REngine() error : %d\n" << iCode << endl;
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   instantiate a callback object - prerequisite for logging in */
+	try
+	{
+		pCallbacks = new MyCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		delete g_pEngine;
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		std::cout << "MyCallbacks::MyCallbacks() error : %d\n" << iCode << endl;
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Set up parameters for logging in.  Again, the MdCnnctPt and        */
+	/*   TsCnnctPt have values for Rithmic 01 Test.  Add values for other   */
+	/*   members of LoginParams to log into other subsystems of the         */
+	/*   infrastructure like like pnl and history.                          */
+
+	oLoginParams.pCallbacks = pCallbacks;
+
+	oLoginParams.sMdUser.pData = argv[1];
+	oLoginParams.sMdUser.iDataLen = (int)strlen(oLoginParams.sMdUser.pData);
+
+	oLoginParams.sMdPassword.pData = argv[2];
+	oLoginParams.sMdPassword.iDataLen = (int)strlen(oLoginParams.sMdPassword.pData);
+
+	oLoginParams.sUser.pData = argv[1];
+	oLoginParams.sUser.iDataLen = (int)strlen(oLoginParams.sUser.pData);
+
+	oLoginParams.sPassword.pData = argv[2];
+	oLoginParams.sPassword.iDataLen = (int)strlen(oLoginParams.sPassword.pData);
+
+	if (_stricmp(argv[1], user1) == 0)
+	{
+		oLoginParams.sTsCnnctPt.pData = "login_agent_op_paperc";
+		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnl_paperc";
+		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
+
+		oLoginParams.sMdCnnctPt.pData = "login_agent_tp_paperc";
+		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+	}
+
+	if (_stricmp(argv[1], user2) == 0)
+	{
+		oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
+		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnlc";
+		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
+
+		oLoginParams.sMdCnnctPt.pData = "login_agent_tpc";
+		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->login(&oLoginParams, &iCode))
+	{
+		std::cout << "REngine::login() error : %d\n" << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   After calling REngine::login, RCallbacks::Alert will be called a   */
+	/*   number of times.  Wait for when the login to the TsCnnctPt is      */
+	/*   complete.  (See MyCallbacks::Alert() for details).                 */
+
+	while (!g_bTsLoginComplete)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	SymbNQ.pData = argv[6];
+	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
+	if (contract)
+	{
+		SymbES.pData = argv[8];
+		SymbES.iDataLen = (int)strlen(SymbES.pData);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Once logged in, we request price increment info for the instrument */
+	/*   that we want to trade.  This call will return price increment      */
+	/*   information as well as set up internal instrument-specific data.   */
+
+	sExchange.pData = argv[5];
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+	sTicker.pData = argv[6];
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	/*   ----------------------------------------------------------------   */
+	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+	iFlags = (MD_BEST);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	{
+		std::cout << "\nREngine::subscribe() error : " << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
+	{
+		std::cout << "REngine::getPriceIncrInfo() error : %d\n" << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	if (contract)
+	{
+		sExchange.pData = argv[7];
+		sExchange.iDataLen = (int)strlen(sExchange.pData);
+
+		/*   ----------------------------------------------------------------   */
+
+		sTicker.pData = argv[8];
+		sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+		/*   ----------------------------------------------------------------   */
+
+		/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+		iFlags = (MD_BEST);
+
+		/*   ----------------------------------------------------------------   */
+
+		if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+		{
+			std::cout << "\nREngine::subscribe() error : " << iCode << endl;
+
+			delete g_pEngine;
+			delete pCallbacks;
+			delete pAdmCallbacks;
+
+			return (BAD);
+		}
+
+		if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
+		{
+			std::cout << "REngine::getPriceIncrInfo() error : %d\n" << iCode << endl;
+
+			delete g_pEngine;
+			delete pCallbacks;
+			delete pAdmCallbacks;
+
+			return (BAD);
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Use the global boolean as the signaller of when the callback has   */
+	/*   been fired (and our internal instrument-specific data is ready.)   */
+
+	while (!g_bRcvdPriceIncr)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Placing an order requires a trade route to be specified.  Based    */
+	/*   on your FCM and/or IB, you may have zero to many trade routes      */
+	/*   for a given exchange.  Store the exchange where the callback can   */
+	/*   see it, and then request the list.                                 */
+
+	memcpy(&g_cExchange,
+		sExchange.pData,
+		sExchange.iDataLen);
+
+	g_sExchange.pData = g_cExchange;
+	g_sExchange.iDataLen = sExchange.iDataLen;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->listTradeRoutes(NULL, &iCode))
+	{
+		std::cout << "REngine::listTradeRoutes() error : %d\n" << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	while (!g_bRcvdTradeRoutes)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	if (g_sTradeRoute.iDataLen == 0)
+	{
+		printf("No available trade routes for : %*.*s::%*.*s::%*.*s\n",
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.pData,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.pData,
+			g_sExchange.iDataLen,
+			g_sExchange.iDataLen,
+			g_sExchange.pData);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
+	{
+		std::cout << "REngine::subscribePnL() error : %d\n" << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   send market order */
+
+	oMktOrdParams.sExchange = sExchange;
+	oMktOrdParams.sTicker = sTicker;
+	oMktOrdParams.pAccount = &g_oAccount;
+	oMktOrdParams.iQty = 1;
+	oMktOrdParams.sDuration = sORDER_DURATION_FOK;
+	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oMktOrdParams.sTradeRoute = g_sTradeRoute;
+
+	/*   ----------------------------------------------------------------   */
+	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
+	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
+	/*   for details.                                                       */
+
+	iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
+	std::cout << "\nHour Value is : " << hr_T << endl;
+	std::cout << "\nMinute Value is : " << min_T << endl;
+	std::cout << "\nReading algorithm..." << endl;
+
+	_OpenNQ = incrNQ * 125000;
+	trade = (hr_T * 60) + min_T;
+	curr = (lt.wHour * 60) + lt.wMinute;
+
+	while ((trade-curr) > 5)
+	{
+		long Slp_T;
+
+		curr = (lt.wHour * 60) + lt.wMinute;
+		Slp_T = ((trade - curr) - 4) * 60000;
+		std::cout << "\nSleep time is : " << Slp_T << endl;
+		if (fgetc(stdin))
+			break;
+		Sleep(Slp_T);
+	}
+
+	curr = (lt.wHour * 60) + lt.wMinute;
+
+	while ((curr - trade) <= 2)
+	{
+		if (CLS != Hold && CLS == 0)
+		{
+			if (livefile.is_open())
+			{
+				livefile << "\n\nHendon Black box initiated" << endl;
+				livefile << "Bid is  : " << NBid << endl;
+				livefile << "Ask is  : " << NAsk << endl;
+				livefile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+				livefile << "Price to fill is  : " << _PriceToFill << endl;
+				livefile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+				livefile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+				livefile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+				livefile << "ES Price to fill is  : " << _PriceToFillES << endl;
+				livefile << "Account Balance is  : " << _AccBal << endl;
+				livefile << "Starting Account Balance is  : " << _RiskBal << endl;
+				livefile << "Buffer on Account Balance is  : " << Buff << endl;
+				livefile << "Margin Balance is  : " << _Margin << endl;
+				livefile << "Buy Qty is  : " << _BuyQty << endl;
+				livefile << "Sell Qty is  : " << _SellQty << endl;
+				livefile << "Position is  : " << _Posn << endl;
+				livefile << "Quantity to fill is  : " << _QtyToFill << endl;
+				livefile << "Filled quantity is  : " << _filled << endl;
+				livefile << "NQ Type is  : " << _stypeNQ << endl;
+				livefile << "ES Type is  : " << _stypeES << endl;
+				livefile << "ES Bid price is  : " << _ESBid << endl;
+				livefile << "NQ Bid price is  : " << _NQBid << endl;
+				livefile << "ES Ask price is  : " << _ESAsk << endl;
+				livefile << "NQ Ask price is  : " << _NQAsk << endl;
+				livefile << "ESP Ask price is  : " << _ESPAsk << endl;
+				livefile << "NQP Ask price is  : " << _NQPAsk << endl;
+				livefile << "ESP Bid price is  : " << _ESPBid << endl;
+				livefile << "NQP Bid price is  : " << _NQPBid << endl;
+				livefile << "Completion reason is : " << _sCompReason << endl;
+				livefile << "Order Duration is : " << _sOrdDuration << endl;
+				livefile << "Order Type is : " << _sOrdType << endl;
+				livefile << "Ticker (sTicker) is : " << _sTicker << endl;
+				livefile << "Exchange (sExchange) is : " << _sExchange << endl;
+				livefile << "g_bDone value is : " << g_bDone << endl;
+				livefile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+				livefile << "TickerES (sTicker) is : " << _sTickerES << endl;
+				livefile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+				livefile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+				livefile << "CLS value is : " << CLS << endl;
+				livefile << "Minute is : " << min_T << endl;
+				livefile << "Value of BNQ is : " << BNQ << endl;
+				livefile << "Value of BES is : " << BES << endl;
+				livefile << "Value of SNQ is : " << SNQ << endl;
+				livefile << "Value of SES is : " << SES << endl;
+				livefile << "Acc Balance is : " << _AccBal << endl;
+				livefile << "Margin Balance is : " << _Margin << endl;
+				livefile << "Position Confirmation is : " << _PosnConf << endl;
+				livefile << "Closed PnL is : " << _ClosedPL << endl;
+				livefile << "Open PnL is : " << _OpenPL << endl;
+				livefile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+				livefile << "NQ Open PnL is : " << _OpenNQ << endl;
+				livefile << "ES Closed PnL is : " << _ClosedES << endl;
+				livefile << "ES Open PnL is : " << _OpenES << endl;
+				livefile << "Status is : " << _Status << endl;
+				livefile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+				livefile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+				livefile << "NQ Minimum price increment is : " << incrNQ << endl;
+				livefile << "ES Minimum price increment is : " << incrES << endl;
+				livefile << "NQ Tick is : " << ticks << endl;
+				livefile << "NQ Profit is : " << profit << endl;
+				livefile << "ES Tick is : " << ticksB << endl;
+				livefile << "ES Profit is : " << profitB << endl;
+				livefile << "PnL Minute is : " << sec_T << endl;
+				livefile << "NQ spread is : " << spreadA << endl;
+				livefile << "ES spread is : " << spreadB << endl;
+				livefile << "NQ High value is : " << _NQBHigh << endl;
+				livefile << "ES High value is : " << _ESBHigh << endl;
+				livefile << "NQ Low value is : " << _NQALow << endl;
+				livefile << "ES Low value is : " << _ESALow << endl;
+				livefile << "NQ High value is : " << _NQAHigh << endl;
+				livefile << "ES High value is : " << _ESAHigh << endl;
+				livefile << "NQ Low value is : " << _NQBLow << endl;
+				livefile << "ES Low value is : " << _ESBLow << endl;
+				livefile << "usecs at exchange is : " << iUsecs << endl;
+				livefile << "Cumulative profit is : " << CumProfit << endl;
+				livefile << "Largest NQ spread is : " << _NQ << endl;
+				livefile << "Largest ES spread is : " << _ES << endl;
+				livefile << "Disparity value is : " << _Disparity << endl;
+				livefile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+				livefile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+				livefile << "Algo Processing speed is : " << SpdProc << endl;
+				livefile << "Line update Processing speed is : " << SpdLineUpd << endl;
+				livefile << "PnL Processing speed is : " << SpdPnL << endl;
+				livefile << "Best Ask Processing speed is : " << SpdBAsk << endl;
+				livefile << "Best Bid Processing speed is : " << SpdBBid << endl;
+				livefile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+				livefile << "Close order Processing speed is : " << SpdClOrd << endl;
+				livefile.close();
+
+				std::cout << "\n\nWritten text file CLS = 0..." << endl;
+			}
+			Hold = CLS;
+		}
+
+		if (_RiskBal == 0)
+			_RiskBal = _AccBal;
+		if (_RiskBal > 0 && _AccBal > 0)
+			Buff = _AccBal - _RiskBal;
+		
+		curr = (lt.wHour * 60) + lt.wMinute;
+
+		if (_RiskBal > 3000 && lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
+		{
+			if ((_Posn < 2 || CLS != 1) && (Buff >(_RiskBal*-0.05)) && (CumProfit >(_RiskBal*-0.05)))
+			{
+				while (NQFree == false || (ESFree == false && contract == true))
+				{
+					QueryPerformanceFrequency(&Frequency);
+					QueryPerformanceCounter(&StartingTime);
+
+					if (spreadA > _NQ)
+						_NQ = spreadA;
+					if (contract)
+					{
+						if (spreadB > _ES)
+							_ES = spreadB;
+					}
+
+					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0) || (BNQ == 2 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
+					{
+						oMktOrdParams.sBuySellType.pData = "B";
+						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+						oMktOrdParams.sTicker.pData = argv[6];
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+						{
+							std::cout << "REngine::sendOrder() error : " << iCode << endl;
+
+							delete g_pEngine;
+							delete pCallbacks;
+							delete pAdmCallbacks;
+
+							g_bDone = true;
+
+							return (BAD);
+							break;
+						}
+						else
+						{
+							NQFree = true;
+							BNQ = 1;
+							CLS = 1;
+							NQ_hr = lt.wHour;
+							NQ_min = lt.wMinute;
+							std::cout << "\nNQ Buy market order placed : BNQ value is :->" << BNQ << endl;
+							std::cout << "NQ Bid price is : " << _NQBid << endl;
+							std::cout << "NQ High Bid price is : " << _NQBHigh << endl;
+							std::cout << "NQ Ask price is : " << _NQAsk << endl;
+							std::cout << "NQ High Ask price is : " << _NQAHigh << endl;
+							std::cout << "NQ Pivot Bid price is : " << _NQPBid << endl;
+							std::cout << "NQ Pivot Ask price is : " << _NQPAsk << endl;
+						}
+					}
+
+					if (NQFree == false && spreadA <= 5 && ((_NQBid < _NQPBid && _NQAsk < _NQPAsk && SNQ == 0) || (SNQ == 2 && _NQBid < _NQBLow && _NQAsk < _NQALow)))
+					{
+						oMktOrdParams.sBuySellType.pData = "S";
+						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+						oMktOrdParams.sTicker.pData = argv[6];
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+						{
+							std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+
+							delete g_pEngine;
+							delete pCallbacks;
+							delete pAdmCallbacks;
+
+							g_bDone = true;
+
+							return (BAD);
+							break;
+						}
+						else
+						{
+							NQFree = true;
+							SNQ = 1;
+							CLS = 1;
+							NQ_hr = lt.wHour;
+							NQ_min = lt.wMinute;
+							std::cout << "\nNQ Sell market order placed : SNQ value is :->" << SNQ << endl;
+							std::cout << "NQ Bid price is : " << _NQBid << endl;
+							std::cout << "NQ Low Bid price is : " << _NQBLow << endl;
+							std::cout << "NQ Ask price is : " << _NQAsk << endl;
+							std::cout << "NQ Low Ask price is : " << _NQALow << endl;
+							std::cout << "NQ Pivot Bid price is : " << _NQPBid << endl;
+							std::cout << "NQ Pivot Ask price is : " << _NQPAsk << endl;
+						}
+					}
+
+					if (contract)
+					{
+						if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
+						{
+							oMktOrdParams.sBuySellType.pData = "S";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							{
+								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+
+								delete g_pEngine;
+								delete pCallbacks;
+								delete pAdmCallbacks;
+
+								g_bDone = true;
+
+								return (BAD);
+								break;
+							}
+							else
+							{
+								ESFree = true;
+								SES = 1;
+								CLS = 1;
+								ES_hr = lt.wHour;
+								ES_min = lt.wMinute;
+								std::cout << "\nES Sell market order placed : SES value is :->" << SES << endl;
+								std::cout << "ES Bid price is : " << _ESBid << endl;
+								std::cout << "ES Low Bid price is : " << _ESBLow << endl;
+								std::cout << "ES Ask price is : " << _ESAsk << endl;
+								std::cout << "ES Low Ask price is : " << _ESALow << endl;
+								std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
+								std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
+							}
+						}
+
+						if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0) || (BES == 2 && _ESBid > _ESBHigh && _ESAsk > _ESAHigh)))
+						{
+							oMktOrdParams.sBuySellType.pData = "B";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							{
+								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
+
+								delete g_pEngine;
+								delete pCallbacks;
+								delete pAdmCallbacks;
+
+								g_bDone = true;
+
+								return (BAD);
+								break;
+							}
+							else
+							{
+								ESFree = true;
+								BES = 1;
+								CLS = 1;
+								ES_hr = lt.wHour;
+								ES_min = lt.wMinute;
+								std::cout << "\nES Buy market order placed : BES value is :->" << BES << endl;
+								std::cout << "ES Bid price is : " << _ESBid << endl;
+								std::cout << "ES High Bid price is : " << _ESBHigh << endl;
+								std::cout << "ES Ask price is : " << _ESAsk << endl;
+								std::cout << "ES High Ask price is : " << _ESAHigh << endl;
+								std::cout << "ES Pivot Bid price is : " << _ESPBid << endl;
+								std::cout << "ES Pivot Ask price is : " << _ESPAsk << endl;
+							}
+						}
+					}
+
+					iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+						(g_iFromExchUsecs - g_iToExchUsecs);
+
+					if (_NQBid > _NQBHigh)
+					{
+						_NQBHigh = _NQBid;
+					}
+					if ((_NQBid < _NQBLow) || (_NQBLow == 0))
+					{
+						_NQBLow = _NQBid;
+					}
+					if (_NQAsk > _NQAHigh)
+					{
+						_NQAHigh = _NQAsk;
+					}
+					if ((_NQAsk < _NQALow) || (_NQALow == 0))
+					{
+						_NQALow = _NQAsk;
+					}
+
+					if (contract)
+					{
+						if (_ESBid > _ESBHigh)
+						{
+							_ESBHigh = _ESBid;
+						}
+						if ((_ESBid < _ESBLow) || (_ESBLow == 0))
+						{
+							_ESBLow = _ESBid;
+						}
+						if (_ESAsk > _ESAHigh)
+						{
+							_ESAHigh = _ESAsk;
+						}
+						if ((_ESAsk < _ESALow) || (_ESALow == 0))
+						{
+							_ESALow = _ESAsk;
+						}
+					}
+
+					if (_NQALow == 0 || _NQAHigh == 0 || _NQBLow == 0 || _NQBHigh == 0 || (contract == true && (_ESALow == 0 || _ESAHigh == 0 || _ESBLow == 0 || _ESBHigh == 0)))
+						std::cout << "\nFailure to assign either high or low value!!" << endl;
+
+
+					if ((lt.wMinute >(min_T + 2)) || (lt.wHour > hr_T))
+					{
+						std::cout << "\n\nExiting open order algo..." << endl;
+						break;
+					}
+
+					if (CLS == 1 && CLS != Hold)
+					{
+						if (myfile.is_open())
+						{
+							myfile << "\n\nHendon Black box initiated" << endl;
+							myfile << "Bid is  : " << NBid << endl;
+							myfile << "Ask is  : " << NAsk << endl;
+							myfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+							myfile << "Price to fill is  : " << _PriceToFill << endl;
+							myfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+							myfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+							myfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+							myfile << "ES Price to fill is  : " << _PriceToFillES << endl;
+							myfile << "Account Balance is  : " << _AccBal << endl;
+							myfile << "Starting Account Balance is  : " << _RiskBal << endl;
+							myfile << "Buffer on Account Balance is  : " << Buff << endl;
+							myfile << "Margin Balance is  : " << _Margin << endl;
+							myfile << "Buy Qty is  : " << _BuyQty << endl;
+							myfile << "Sell Qty is  : " << _SellQty << endl;
+							myfile << "Position is  : " << _Posn << endl;
+							myfile << "Quantity to fill is  : " << _QtyToFill << endl;
+							myfile << "Filled quantity is  : " << _filled << endl;
+							myfile << "NQ Type is  : " << _stypeNQ << endl;
+							myfile << "ES Type is  : " << _stypeES << endl;
+							myfile << "ES Bid price is  : " << _ESBid << endl;
+							myfile << "NQ Bid price is  : " << _NQBid << endl;
+							myfile << "ES Ask price is  : " << _ESAsk << endl;
+							myfile << "NQ Ask price is  : " << _NQAsk << endl;
+							myfile << "ESP Ask price is  : " << _ESPAsk << endl;
+							myfile << "NQP Ask price is  : " << _NQPAsk << endl;
+							myfile << "ESP Bid price is  : " << _ESPBid << endl;
+							myfile << "NQP Bid price is  : " << _NQPBid << endl;
+							myfile << "Completion reason is : " << _sCompReason << endl;
+							myfile << "Order Duration is : " << _sOrdDuration << endl;
+							myfile << "Order Type is : " << _sOrdType << endl;
+							myfile << "Ticker (sTicker) is : " << _sTicker << endl;
+							myfile << "Exchange (sExchange) is : " << _sExchange << endl;
+							myfile << "g_bDone value is : " << g_bDone << endl;
+							myfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+							myfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+							myfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+							myfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+							myfile << "CLS value is : " << CLS << endl;
+							myfile << "Minute is : " << min_T << endl;
+							myfile << "Value of BNQ is : " << BNQ << endl;
+							myfile << "Value of BES is : " << BES << endl;
+							myfile << "Value of SNQ is : " << SNQ << endl;
+							myfile << "Value of SES is : " << SES << endl;
+							myfile << "Acc Balance is : " << _AccBal << endl;
+							myfile << "Margin Balance is : " << _Margin << endl;
+							myfile << "Position Confirmation is : " << _PosnConf << endl;
+							myfile << "Closed PnL is : " << _ClosedPL << endl;
+							myfile << "Open PnL is : " << _OpenPL << endl;
+							myfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+							myfile << "NQ Open PnL is : " << _OpenNQ << endl;
+							myfile << "ES Closed PnL is : " << _ClosedES << endl;
+							myfile << "ES Open PnL is : " << _OpenES << endl;
+							myfile << "Status is : " << _Status << endl;
+							myfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+							myfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+							myfile << "NQ Minimum price increment is : " << incrNQ << endl;
+							myfile << "ES Minimum price increment is : " << incrES << endl;
+							myfile << "NQ Tick is : " << ticks << endl;
+							myfile << "NQ Profit is : " << profit << endl;
+							myfile << "ES Tick is : " << ticksB << endl;
+							myfile << "ES Profit is : " << profitB << endl;
+							myfile << "PnL Minute is : " << sec_T << endl;
+							myfile << "NQ spread is : " << spreadA << endl;
+							myfile << "ES spread is : " << spreadB << endl;
+							myfile << "NQ High value is : " << _NQBHigh << endl;
+							myfile << "ES High value is : " << _ESBHigh << endl;
+							myfile << "NQ Low value is : " << _NQALow << endl;
+							myfile << "ES Low value is : " << _ESALow << endl;
+							myfile << "NQ High value is : " << _NQAHigh << endl;
+							myfile << "ES High value is : " << _ESAHigh << endl;
+							myfile << "NQ Low value is : " << _NQBLow << endl;
+							myfile << "ES Low value is : " << _ESBLow << endl;
+							myfile << "usecs at exchange is : " << iUsecs << endl;
+							myfile << "Cumulative profit is : " << CumProfit << endl;
+							myfile << "Largest NQ spread is : " << _NQ << endl;
+							myfile << "Largest ES spread is : " << _ES << endl;
+							myfile << "Disparity value is : " << _Disparity << endl;
+							myfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+							myfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+							myfile << "Algo Processing speed is : " << SpdProc << endl;
+							myfile << "Line update Processing speed is : " << SpdLineUpd << endl;
+							myfile << "PnL Processing speed is : " << SpdPnL << endl;
+							myfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
+							myfile << "Best Bid Processing speed is : " << SpdBBid << endl;
+							myfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+							myfile << "Close order Processing speed is : " << SpdClOrd << endl;
+							myfile.close();
+							std::cout << "\n\nWritten text file CLS = 1..." << endl;
+						}
+						Hold = CLS;
+					}
+
+					QueryPerformanceCounter(&EndingTime);
+					ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+					ElapsedMicroseconds.QuadPart *= 1000000;
+					ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+					if (ElapsedMicroseconds.QuadPart > SpdProc)
+						SpdProc = ElapsedMicroseconds.QuadPart;
+				}
+
+			}
+
+			if (CLS == 1 && _Posn == 0)
+				_Disparity = 2;
+		}
+
+		/*   ----------------------------------------------------------------   */
+		/*   Printout of variables		                                */
+		/*   ----------------------------------------------------------------   */
+
+		if ((Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+		{
+
+			if (BNQ == 1)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = argv[6];
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::sendOrder() error : " << iCode << endl;
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+					return (BAD);
+				}
+				else
+				{
+					BNQ = 2;
+					NQFree = false;
+					std::cout << "BNQ Risk Management Closure : " << endl;
+				}
+			}
+
+			if (SNQ == 1)
+			{
+				ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * 5;
+				profit = ticks - commB;
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = argv[6];
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "REngine::sendOrder() error :" << iCode << endl;
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					g_bDone = true;
+
+					return (BAD);
+				}
+				else
+				{
+					SNQ = 2;
+					NQFree = false;
+					std::cout << "SNQ Risk Management Closure : " << endl;
+				}
+			}
+
+			if (contract)
+			{
+				if (BES == 1)
+				{
+					ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*12.5;
+					profitB = ticksB - commB;
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						std::cout << "REngine::sendOrder() error :" << iCode << endl;
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+					}
+					else
+					{
+						BES = 2;
+						ESFree = false;
+						std::cout << "BES Risk Management Closure : " << endl;
+					}
+				}
+
+				if (SES == 1)
+				{
+					ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*12.5;
+					profitB = ticksB - commB;
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
+					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						std::cout << "REngine::sendOrder() error : " << iCode << endl;
+
+						delete g_pEngine;
+						delete pCallbacks;
+						delete pAdmCallbacks;
+
+						g_bDone = true;
+
+						return (BAD);
+					}
+					else
+					{
+						SES = 2;
+						ESFree = false;
+						std::cout << "SES Risk Management Closure : " << endl;
+					}
+				}
+			}
+		}
+
+		if (CLS == 1 && BNQ != 1 && SNQ != 1 && (!contract || (contract && BES != 1 && SES != 1)))
+		{
+			CLS = 2;
+			if (CLS == 2 && CLS != Hold)
+			{
+				if (endfile.is_open())
+				{
+					endfile << "\n\nHendon Black box initiated" << endl;
+					endfile << "Bid is  : " << NBid << endl;
+					endfile << "Ask is  : " << NAsk << endl;
+					endfile << "Average Fill Price is  : " << _AvgFillPrice << endl;
+					endfile << "Price to fill is  : " << _PriceToFill << endl;
+					endfile << "NQ Average Fill Price is  : " << _AvgFillPriceNQ << endl;
+					endfile << "NQ Price to fill is  : " << _PriceToFillNQ << endl;
+					endfile << "ES Average Fill Price is  : " << _AvgFillPriceES << endl;
+					endfile << "ES Price to fill is  : " << _PriceToFillES << endl;
+					endfile << "Account Balance is  : " << _AccBal << endl;
+					endfile << "Starting Account Balance is  : " << _RiskBal << endl;
+					endfile << "Buffer on Account Balance is  : " << Buff << endl;
+					endfile << "Margin Balance is  : " << _Margin << endl;
+					endfile << "Buy Qty is  : " << _BuyQty << endl;
+					endfile << "Sell Qty is  : " << _SellQty << endl;
+					endfile << "Position is  : " << _Posn << endl;
+					endfile << "Quantity to fill is  : " << _QtyToFill << endl;
+					endfile << "Filled quantity is  : " << _filled << endl;
+					endfile << "NQ Type is  : " << _stypeNQ << endl;
+					endfile << "ES Type is  : " << _stypeES << endl;
+					endfile << "ES Bid price is  : " << _ESBid << endl;
+					endfile << "NQ Bid price is  : " << _NQBid << endl;
+					endfile << "ES Ask price is  : " << _ESAsk << endl;
+					endfile << "NQ Ask price is  : " << _NQAsk << endl;
+					endfile << "ESP Ask price is  : " << _ESPAsk << endl;
+					endfile << "NQP Ask price is  : " << _NQPAsk << endl;
+					endfile << "ESP Bid price is  : " << _ESPBid << endl;
+					endfile << "NQP Bid price is  : " << _NQPBid << endl;
+					endfile << "Completion reason is : " << _sCompReason << endl;
+					endfile << "Order Duration is : " << _sOrdDuration << endl;
+					endfile << "Order Type is : " << _sOrdType << endl;
+					endfile << "Ticker (sTicker) is : " << _sTicker << endl;
+					endfile << "Exchange (sExchange) is : " << _sExchange << endl;
+					endfile << "g_bDone value is : " << g_bDone << endl;
+					endfile << "TickerNQ (sTicker) is : " << _sTickerNQ << endl;
+					endfile << "TickerES (sTicker) is : " << _sTickerES << endl;
+					endfile << "The Local Time is : " << lt.wHour << ":" << lt.wMinute << endl;
+					endfile << "The System Time is : " << st.wHour << ":" << st.wMinute << endl;
+					endfile << "CLS value is : " << CLS << endl;
+					endfile << "Minute is : " << min_T << endl;
+					endfile << "Value of BNQ is : " << BNQ << endl;
+					endfile << "Value of BES is : " << BES << endl;
+					endfile << "Value of SNQ is : " << SNQ << endl;
+					endfile << "Value of SES is : " << SES << endl;
+					endfile << "Acc Balance is : " << _AccBal << endl;
+					endfile << "Margin Balance is : " << _Margin << endl;
+					endfile << "Position Confirmation is : " << _PosnConf << endl;
+					endfile << "Closed PnL is : " << _ClosedPL << endl;
+					endfile << "Open PnL is : " << _OpenPL << endl;
+					endfile << "NQ Closed PnL is : " << _ClosedNQ << endl;
+					endfile << "NQ Open PnL is : " << _OpenNQ << endl;
+					endfile << "ES Closed PnL is : " << _ClosedES << endl;
+					endfile << "ES Open PnL is : " << _OpenES << endl;
+					endfile << "Status is : " << _Status << endl;
+					endfile << "Avg Open Fill Price (int) is : " << _PnlAvgOpen << endl;
+					endfile << "Avg Open Fill Price (double) is : " << _PnlAvgOpenPrice << endl;
+					endfile << "NQ Minimum price increment is : " << incrNQ << endl;
+					endfile << "ES Minimum price increment is : " << incrES << endl;
+					endfile << "NQ Tick is : " << ticks << endl;
+					endfile << "NQ Profit is : " << profit << endl;
+					endfile << "ES Tick is : " << ticksB << endl;
+					endfile << "ES Profit is : " << profitB << endl;
+					endfile << "PnL Minute is : " << sec_T << endl;
+					endfile << "NQ spread is : " << spreadA << endl;
+					endfile << "ES spread is : " << spreadB << endl;
+					endfile << "NQ High value is : " << _NQBHigh << endl;
+					endfile << "ES High value is : " << _ESBHigh << endl;
+					endfile << "NQ Low value is : " << _NQALow << endl;
+					endfile << "ES Low value is : " << _ESALow << endl;
+					endfile << "NQ High value is : " << _NQAHigh << endl;
+					endfile << "ES High value is : " << _ESAHigh << endl;
+					endfile << "NQ Low value is : " << _NQBLow << endl;
+					endfile << "ES Low value is : " << _ESBLow << endl;
+					endfile << "usecs at exchange is : " << iUsecs << endl;
+					endfile << "Cumulative profit is : " << CumProfit << endl;
+					endfile << "Largest NQ spread is : " << _NQ << endl;
+					endfile << "Largest ES spread is : " << _ES << endl;
+					endfile << "Disparity value is : " << _Disparity << endl;
+					endfile << "NQ Order Number is : " << std::string(_OrderNumNQ.pData, _OrderNumNQ.iDataLen) << endl;
+					endfile << "ES Order Number is : " << std::string(_OrderNumES.pData, _OrderNumES.iDataLen) << endl;
+					endfile << "Algo Processing speed is : " << SpdProc << endl;
+					endfile << "Line update Processing speed is : " << SpdLineUpd << endl;
+					endfile << "PnL Processing speed is : " << SpdPnL << endl;
+					endfile << "Best Ask Processing speed is : " << SpdBAsk << endl;
+					endfile << "Best Bid Processing speed is : " << SpdBBid << endl;
+					endfile << "Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+					endfile << "Close order Processing speed is : " << SpdClOrd << endl;
+					endfile.close();
+					std::cout << "\n\nWritten text file CLS = 2..." << endl;
+				}
+				Hold = CLS;
+			}
+		}
+
+		curr = (lt.wHour * 60) + lt.wMinute;
+
+		if (((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T)) && CLS == 2)
+		{
+			std::cout << "\n\nExiting algobox..." << endl;
+			break;
+		}
+
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The order is complete.  Clean up and exit.                         */
+	/*   ----------------------------------------------------------------   */
+
+
+	delete g_pEngine;
+	delete pCallbacks;
+	delete pAdmCallbacks;
+
+	return (GOOD);
+
+
+	/*   ----------------------------------------------------------------   */
+
+
+}
+
+/*   =====================================================================   */

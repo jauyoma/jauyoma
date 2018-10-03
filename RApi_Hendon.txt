@@ -1,33 +1,33 @@
 
 
 Hendon Black box initiated
-Bid is  : 1.15875
-Ask is  : 1.15885
+Bid is  : 1.15975
+Ask is  : 1.15985
 Average Fill Price is  : 0
 Price to fill is  : 0
 NQ Average Fill Price is  : 0
 NQ Price to fill is  : 0
 ES Average Fill Price is  : 0
 ES Price to fill is  : 0
-Account Balance is  : 499531
+Account Balance is  : 0
 Starting Account Balance is  : 499906
-Buffer on Account Balance is  : -375
+Buffer on Account Balance is  : 0
 Margin Balance is  : 0
-Buy Qty is  : 29
-Sell Qty is  : 29
+Buy Qty is  : 0
+Sell Qty is  : 0
 Position is  : 0
 Quantity to fill is  : 0
 Filled quantity is  : 0
 NQ Type is  : 
 ES Type is  : 
-ES Bid price is  : 1.3047
-NQ Bid price is  : 1.15875
-ES Ask price is  : 1.3049
-NQ Ask price is  : 1.15885
-ESP Ask price is  : 1.3048
-NQP Ask price is  : 1.1588
-ESP Bid price is  : 1.3046
-NQP Bid price is  : 1.1587
+ES Bid price is  : 0
+NQ Bid price is  : 1.15975
+ES Ask price is  : 0
+NQ Ask price is  : 1.15985
+ESP Ask price is  : 0
+NQP Ask price is  : 1.1598
+ESP Bid price is  : 0
+NQP Bid price is  : 1.1597
 Completion reason is : 
 Order Duration is : 
 Order Type is : 
@@ -36,18 +36,18 @@ Exchange (sExchange) is :
 g_bDone value is : 0
 TickerNQ (sTicker) is : 
 TickerES (sTicker) is : 
-The Local Time is : 19:36
-The System Time is : 18:36
+The Local Time is : 7:56
+The System Time is : 6:56
 CLS value is : 1
-Minute is : 36
-Value of BNQ is : 0
-Value of BES is : 1
+Minute is : 56
+Value of BNQ is : 1
+Value of BES is : 0
 Value of SNQ is : 0
 Value of SES is : 0
-Acc Balance is : 499531
+Acc Balance is : 0
 Margin Balance is : 0
-Position Confirmation is : 2
-Closed PnL is : -468.75
+Position Confirmation is : 0
+Closed PnL is : 0
 Open PnL is : 0
 NQ Closed PnL is : 0
 NQ Open PnL is : 6.25
@@ -57,33 +57,33 @@ Status is :
 Avg Open Fill Price (int) is : 0
 Avg Open Fill Price (double) is : 0
 NQ Minimum price increment is : 5e-05
-ES Minimum price increment is : 0.0001
+ES Minimum price increment is : 0
 NQ Tick is : 0
 NQ Profit is : 0
 ES Tick is : 0
 ES Profit is : 0
-PnL Minute is : 36
+PnL Minute is : 0
 NQ spread is : 2
-ES spread is : 2
-NQ High value is : 1.15875
-ES High value is : 1.3047
-NQ Low value is : 1.1588
-ES Low value is : 1.3048
-NQ High value is : 1.15885
-ES High value is : 1.3049
-NQ Low value is : 1.1587
-ES Low value is : 1.3046
+ES spread is : 0
+NQ High value is : 1.15975
+ES High value is : 0
+NQ Low value is : 1.1598
+ES Low value is : 0
+NQ High value is : 1.15985
+ES High value is : 0
+NQ Low value is : 1.1597
+ES Low value is : 0
 usecs at exchange is : 0
 Cumulative profit is : 0
-Largest NQ spread is : 2
-Largest ES spread is : 2
+Largest NQ spread is : 3
+Largest ES spread is : 0
 Disparity value is : 0
 NQ Order Number is : 
 ES Order Number is : 
-Algo Processing speed is : 0
+Algo Processing speed is : 1109
 Line update Processing speed is : 0
 PnL Processing speed is : 0
-Best Ask Processing speed is : 0
-Best Bid Processing speed is : 0
-Best Ask & Bid Processing speed is : 1
+Best Ask Processing speed is : 5
+Best Bid Processing speed is : 3
+Best Ask & Bid Processing speed is : 4
 Close order Processing speed is : 0

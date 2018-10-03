@@ -1,0 +1,71 @@
+Microsoft Windows [Version 6.1.7601]
+Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
+
+C:\Users\User>cd Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release
+
+C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
+PR and222 7 56 CME 6EV8
+We are looking for a trade route for : Dorman::Stage5-Paper::CME
+Dorman::Stage5-Paper::EUREX::simulator::UP
+Dorman::Stage5-Paper::CBOE::simulator::UP
+Dorman::Stage5-Paper::COMEX::simulator::UP
+Dorman::Stage5-Paper::NYBOT::simulator::UP
+Dorman::Stage5-Paper::ICE::simulator::UP
+Dorman::Stage5-Paper::CBOT::simulator::UP
+Dorman::Stage5-Paper::NYMEX::simulator::UP
+Dorman::Stage5-Paper::CME::simulator::UP
+
+Hour Value is : 7
+
+Minute Value is : 56
+
+Reading algorithm...
+
+
+Written text file CLS = 0...
+
+NQ Buy market order placed : BNQ value is :->1
+NQ Bid price is : 1.15975
+NQ High Bid price is : 1.1597
+NQ Ask price is : 1.15985
+NQ High Ask price is : 1.15985
+NQ Pivot Bid price is : 1.1597
+NQ Pivot Ask price is : 1.1598
+
+
+Written text file CLS = 1...
+
+Signal 1 REngine::CloseOrder() -> CumProfit is : -29.22
+
+Close Open Buy NQ :
+NQ Ask price is : 1.1598
+NQ Ask High price is : 1.15985
+NQ Bid price is : 1.1597
+NQ Bid High price is : 1.15975
+
+
+Written text file CLS = 2...
+
+NQ Sell market order placed : SNQ value is :->1
+NQ Bid price is : 1.15965
+NQ Low Bid price is : 1.15965
+NQ Ask price is : 1.15975
+NQ Low Ask price is : 1.1598
+NQ Pivot Bid price is : 1.1597
+NQ Pivot Ask price is : 1.1598
+
+Signal 2 REngine::CloseOrder() -> CumProfit is : -58.44
+
+Close Open Sell NQ :
+NQ Ask price is : 1.1598
+NQ Ask Low price is : 1.15985
+NQ Bid price is : 1.1597
+NQ Bid Low price is : 1.15975
+
+
+Exiting open order algo...
+
+
+Exiting algobox...
+
+C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
