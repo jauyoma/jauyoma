@@ -126,8 +126,23 @@ int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
 bool	NQFree = false, NQLFree = false, print = false;
 bool	ESFree = false, ESLFree = false, contract = false;
 int	NQLHr, ESLHr, NQLMin, ESLMin;
+bool done = false;
 
 SYSTEMTIME st, lt;
+
+/*   ----------------------------------------------------------------   */
+/*   Function Definitions			                        */
+/*   ----------------------------------------------------------------   */
+
+BOOL ctrl_handler(DWORD event)
+{
+    if (event == CTRL_CLOSE_EVENT) {
+        done = true;
+        Sleep(20000); // force exit after 20 seconds
+        return TRUE;
+    }
+    return FALSE;
+}
 
 int main(int      argc,
 	char * * argv,
@@ -1342,9 +1357,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					CloseOrder(Sign);
 					std::cout << "\nClose Open Sell NQ : " << endl;
 					std::cout << "NQ Ask price is : " << _NQAsk << endl;
-					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Ask Low price is : " << _NQALow << endl;
 					std::cout << "NQ Bid price is : " << _NQBid << endl;
-					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBLow << endl;
 				}
 			}
 		}
@@ -1385,9 +1400,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						CloseOrder(Sign);
 						std::cout << "\nClose Open Sell ES : " << endl;
 						std::cout << "ES Ask price is : " << _ESAsk << endl;
-						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
 						std::cout << "ES Bid price is : " << _ESBid << endl;
-						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
 					}
 				}
 			}
@@ -1469,9 +1484,9 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					CloseOrder(Sign);
 					std::cout << "\nClose Open Sell NQ : " << endl;
 					std::cout << "NQ Ask price is : " << _NQAsk << endl;
-					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Ask Low price is : " << _NQALow << endl;
 					std::cout << "NQ Bid price is : " << _NQBid << endl;
-					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBLow << endl;
 				}
 			}
 		}
@@ -1510,9 +1525,9 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					CloseOrder(Sign);
 					std::cout << "\nClose Open Sell NQ : " << endl;
 					std::cout << "NQ Ask price is : " << _NQAsk << endl;
-					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Ask Low price is : " << _NQALow << endl;
 					std::cout << "NQ Bid price is : " << _NQBid << endl;
-					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBLow << endl;
 				}
 			}
 		}
@@ -1554,9 +1569,9 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						CloseOrder(Sign);
 						std::cout << "\nClose Open Sell ES : " << endl;
 						std::cout << "ES Ask price is : " << _ESAsk << endl;
-						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
 						std::cout << "ES Bid price is : " << _ESBid << endl;
-						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
 					}
 				}
 			}
@@ -1596,9 +1611,9 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						CloseOrder(Sign);
 						std::cout << "\nClose Open Sell ES : " << endl;
 						std::cout << "ES Ask price is : " << _ESAsk << endl;
-						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
 						std::cout << "ES Bid price is : " << _ESBid << endl;
-						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
 					}
 				}
 			}
@@ -1678,9 +1693,9 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					CloseOrder(Sign);
 					std::cout << "\nClose Open Sell NQ : " << endl;
 					std::cout << "NQ Ask price is : " << _NQAsk << endl;
-					std::cout << "NQ Ask Low price is : " << _NQAHigh << endl;
+					std::cout << "NQ Ask Low price is : " << _NQALow << endl;
 					std::cout << "NQ Bid price is : " << _NQBid << endl;
-					std::cout << "NQ Bid Low price is : " << _NQBHigh << endl;
+					std::cout << "NQ Bid Low price is : " << _NQBLow << endl;
 				}
 			}
 		}
@@ -1721,9 +1736,9 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						CloseOrder(Sign);
 						std::cout << "\nClose Open Sell ES : " << endl;
 						std::cout << "ES Ask price is : " << _ESAsk << endl;
-						std::cout << "ES Ask Low price is : " << _ESAHigh << endl;
+						std::cout << "ES Ask Low price is : " << _ESALow << endl;
 						std::cout << "ES Bid price is : " << _ESBid << endl;
-						std::cout << "ES Bid Low price is : " << _ESBHigh << endl;
+						std::cout << "ES Bid Low price is : " << _ESBLow << endl;
 					}
 				}
 			}
@@ -2337,6 +2352,8 @@ int main(int      argc,
 
 	GetSystemTime(&st);
 	GetLocalTime(&lt);
+	
+	SetConsoleCtrlHandler((PHANDLER_ROUTINE)(ctrl_handler), TRUE);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2724,7 +2741,7 @@ int main(int      argc,
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
 
-	while ((trade-curr) > 5)
+	while (((trade-curr) > 5) || !Done)
 	{
 		long Slp_T;
 
@@ -2738,7 +2755,7 @@ int main(int      argc,
 
 	curr = (lt.wHour * 60) + lt.wMinute;
 
-	while ((curr - trade) <= 2)
+	while (((curr - trade) <= 2)  || !Done)
 	{
 		if (CLS != Hold && CLS == 0)
 		{
@@ -2849,7 +2866,7 @@ int main(int      argc,
 		{
 			if ((_Posn < 2 || CLS != 1) && (Buff >(_RiskBal*-0.05)) && (CumProfit >(_RiskBal*-0.05)))
 			{
-				while (NQFree == false || (ESFree == false && contract == true))
+				while ((NQFree == false || (ESFree == false && contract == true)) || !Done)
 				{
 					QueryPerformanceFrequency(&Frequency);
 					QueryPerformanceCounter(&StartingTime);
@@ -3409,7 +3426,8 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
-
+	
+	cleanup();
 
 	delete g_pEngine;
 	delete pCallbacks;
