@@ -112,7 +112,7 @@ std::string trial, test, _sExchange;
 int  hr_T = 19, min_T = 36, day_T, _Activ = 0;
 int  NQ_hr, ES_hr, NQ_min, ES_min;
 double ticks, profit, commA = 3.38, commB = 4.22, CumProfit = 0;
-double _RiskBal = 499906.25, Buff, ticksB, profitB;
+double _RiskBal, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
 double _NQBHigh = 0, _NQBLow = 0, _ESBHigh = 0, _ESBLow = 0;
 double _NQAHigh = 0, _NQALow = 0, _ESAHigh = 0, _ESALow = 0;
@@ -451,9 +451,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 	{
 		if (Signal == 1)
 		{
-			ticks = (((_NQBid - _AvgFillPriceNQ) / incrNQ) - 1) * _OpenNQ;
-			profit = ticks - commB;
-			CumProfit = CumProfit + profit;
+			CumProfit = CumProfit + _OpenPL;
 
 			oMktOrdParams.sBuySellType.pData = "S";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -475,9 +473,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 		if (Signal == 2)
 		{
-			ticks = (((_AvgFillPriceNQ - _NQAsk) / incrNQ) - 1) * _OpenNQ;
-			profit = ticks - commB;
-			CumProfit = CumProfit + profit;
+			CumProfit = CumProfit + _OpenPL;
 
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -501,9 +497,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 		{
 			if (Signal == 3)
 			{
-				ticksB = (((_ESBid - _AvgFillPriceES) / incrES) - 1)*6.25;
-				profitB = ticksB - commB;
-				CumProfit = CumProfit + profitB;
+				CumProfit = CumProfit + _OpenPL;
 
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -525,9 +519,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 			if (Signal == 4)
 			{
-				ticksB = (((_AvgFillPriceES - _ESAsk) / incrES) - 1)*6.25;
-				profitB = ticksB - commB;
-				CumProfit = CumProfit + profitB;
+				CumProfit = CumProfit + _OpenPL;
 
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -748,7 +740,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
 	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
-	if (_sTicker == "6EV8")
+	if (_sTicker == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
@@ -759,7 +751,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 
 	if (contract)
 	{
-		if (_sTicker == "6BV8")
+		if (_sTicker == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
 			_sTickerES = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 			_stypeES = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
@@ -844,7 +836,6 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_OpenPL = pInfo->dOpenPnl;
 	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
 	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
-	sec_T = lt.wMinute;
 	_PosnConf = pInfo->ePosition;
 	_Posn = pInfo->lPosition;
 	if (pInfo->sTicker.pData == _TickerNQ.pData)
@@ -887,11 +878,11 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 
-	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6EV8")
+	if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
 	if (contract)
 	{
-		if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == "6BV8")
+		if (std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen) == std::string(_TickerES.pData, _TickerES.iDataLen))
 			incrES = pInfo->asPriceIncrArray->dPriceIncr;
 	}
 
@@ -2315,7 +2306,7 @@ int main(int      argc,
 	char * * argv,
 	char * * envp)
 {
-	char * USAGE = (char *)"Hendon_App user password hour minute exchange ticker exchange2(Optional) ticker2(Optional)\n";
+	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2(Optional) | Ticker2(Optional)\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
@@ -2340,13 +2331,13 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	if (argc < 7 || argc == 8)
+	if (argc < 9 || argc == 10)
 	{
 		std::cout << USAGE << endl;
 		return (BAD);
 	}
 
-	if (argc == 9)
+	if (argc == 11)
 		contract = true;
 
 	GetSystemTime(&st);
@@ -2373,11 +2364,17 @@ int main(int      argc,
 	/*   Rithmic trading platform, consult appropriate connection params    */
 	/*   document in your download directory.                               */
 
-	strValue << argv[3];
+	strValue << argv[4];
+	strValue >> day_T;
+	strValue.clear();
+	strValue << argv[5];
 	strValue >> hr_T;
 	strValue.clear();
-	strValue << argv[4];
+	strValue << argv[6];
 	strValue >> min_T;
+	strValue.clear();
+	strValue << argv[3];
+	strValue >> _RiskBal;
 	strValue.clear();
 	user1 = "42554PPR";
 	user2 = "andrew.kowuoche@gmail.com";
@@ -2543,15 +2540,15 @@ int main(int      argc,
 #endif
 	}
 
-	SymbNQ.pData = argv[6];
+	SymbNQ.pData = argv[8];
 	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
-	_TickerNQ.pData = argv[6];
+	_TickerNQ.pData = argv[8];
 	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
 	if (contract)
 	{
-		SymbES.pData = argv[8];
+		SymbES.pData = argv[10];
 		SymbES.iDataLen = (int)strlen(SymbES.pData);
-		_TickerES.pData = argv[8];
+		_TickerES.pData = argv[10];
 		_TickerES.iDataLen = (int)strlen(_TickerES.pData);
 	}
 
@@ -2560,9 +2557,9 @@ int main(int      argc,
 	/*   that we want to trade.  This call will return price increment      */
 	/*   information as well as set up internal instrument-specific data.   */
 
-	sExchange.pData = argv[5];
+	sExchange.pData = argv[7];
 	sExchange.iDataLen = (int)strlen(sExchange.pData);
-	sTicker.pData = argv[6];
+	sTicker.pData = argv[8];
 	sTicker.iDataLen = (int)strlen(sTicker.pData);
 
 	/*   ----------------------------------------------------------------   */
@@ -2600,12 +2597,12 @@ int main(int      argc,
 
 	if (contract)
 	{
-		sExchange.pData = argv[7];
+		sExchange.pData = argv[9];
 		sExchange.iDataLen = (int)strlen(sExchange.pData);
 
 		/*   ----------------------------------------------------------------   */
 
-		sTicker.pData = argv[8];
+		sTicker.pData = argv[10];
 		sTicker.iDataLen = (int)strlen(sTicker.pData);
 
 		/*   ----------------------------------------------------------------   */
@@ -2736,25 +2733,33 @@ int main(int      argc,
 
 	iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
 		(g_iFromExchUsecs - g_iToExchUsecs);
+	std::cout << "\nDay Value is : " << day_T << endl;
 	std::cout << "\nHour Value is : " << hr_T << endl;
 	std::cout << "\nMinute Value is : " << min_T << endl;
+	std::cout << "\nStarting Account Balance is : " << _RiskBal << endl;
 	std::cout << "\nReading algorithm..." << endl;
 
 	_OpenNQ = incrNQ * 125000;
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
-	
-	while (((trade - curr) > 5) && !done)
+
+	while ((((trade - curr) > 5) || day_T != lt.wDay) && !done)
 	{
 		long Slp_T;
 
 		curr = (lt.wHour * 60) + lt.wMinute;
 		Slp_T = ((trade - curr) - 4) * 60000;
-		std::cout << "\nSleep time is : " << Slp_T << endl;
-		if(day_T != lt.wDay)
-			Slp_T = (((24 - lt.wHour) * 60 + (60 - lt.wMinute))*60000) + 60000;
-		if(Slp_T > 5)
+		if (day_T != lt.wDay)
+		{
+			Slp_T = (((24 - lt.wHour) * 60 + (60 - lt.wMinute)) * 60000) + 60000;
+			std::cout << "\nTrading will take place tomorrow..." << endl;
+		}
+		
+		if (Slp_T > 5)
+		{
+			std::cout << "\nSleep time is : " << Slp_T << endl;
 			Sleep(Slp_T);
+		}
 	}
 
 	curr = (lt.wHour * 60) + lt.wMinute;
@@ -2827,7 +2832,6 @@ int main(int      argc,
 				livefile << "NQ Profit is : " << profit << endl;
 				livefile << "ES Tick is : " << ticksB << endl;
 				livefile << "ES Profit is : " << profitB << endl;
-				livefile << "PnL Minute is : " << sec_T << endl;
 				livefile << "NQ spread is : " << spreadA << endl;
 				livefile << "ES spread is : " << spreadB << endl;
 				livefile << "NQ High value is : " << _NQBHigh << endl;
@@ -2859,16 +2863,12 @@ int main(int      argc,
 			Hold = CLS;
 		}
 
-		if (_RiskBal == 0)
-			_RiskBal = _AccBal;
-		if (_RiskBal > 0 && _AccBal > 0)
-			Buff = _AccBal - _RiskBal;
 
 		curr = (lt.wHour * 60) + lt.wMinute;
 
 		if (_RiskBal > 3000 && lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
 		{
-			if ((_Posn < 2 || CLS != 1) && (Buff >(_RiskBal*-0.05)) && (CumProfit >(_RiskBal*-0.05)))
+			if ((_Posn < 2 || CLS != 1) && CumProfit >(_RiskBal*-0.05))
 			{
 				while ((NQFree == false || (ESFree == false && contract == true)) && !done)
 				{
@@ -2887,7 +2887,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = argv[6];
+						oMktOrdParams.sTicker.pData = argv[8];
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2923,7 +2923,7 @@ int main(int      argc,
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-						oMktOrdParams.sTicker.pData = argv[6];
+						oMktOrdParams.sTicker.pData = argv[8];
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
@@ -2961,7 +2961,7 @@ int main(int      argc,
 						{
 							oMktOrdParams.sBuySellType.pData = "S";
 							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.pData = argv[10];
 							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
@@ -2997,7 +2997,7 @@ int main(int      argc,
 						{
 							oMktOrdParams.sBuySellType.pData = "B";
 							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-							oMktOrdParams.sTicker.pData = argv[8];
+							oMktOrdParams.sTicker.pData = argv[10];
 							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
@@ -3146,7 +3146,6 @@ int main(int      argc,
 							myfile << "NQ Profit is : " << profit << endl;
 							myfile << "ES Tick is : " << ticksB << endl;
 							myfile << "ES Profit is : " << profitB << endl;
-							myfile << "PnL Minute is : " << sec_T << endl;
 							myfile << "NQ spread is : " << spreadA << endl;
 							myfile << "ES spread is : " << spreadB << endl;
 							myfile << "NQ High value is : " << _NQBHigh << endl;
@@ -3197,14 +3196,14 @@ int main(int      argc,
 		/*   Printout of variables		                                */
 		/*   ----------------------------------------------------------------   */
 
-		if ((Buff < (_RiskBal*-0.05)) || (CumProfit < (_RiskBal*-0.05)))
+		if (CumProfit < (_RiskBal*-0.05))
 		{
 
 			if (BNQ == 1)
 			{
 				oMktOrdParams.sBuySellType.pData = "S";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = argv[6];
+				oMktOrdParams.sTicker.pData = argv[8];
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -3232,7 +3231,7 @@ int main(int      argc,
 				profit = ticks - commB;
 				oMktOrdParams.sBuySellType.pData = "B";
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = argv[6];
+				oMktOrdParams.sTicker.pData = argv[8];
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -3263,7 +3262,7 @@ int main(int      argc,
 					profitB = ticksB - commB;
 					oMktOrdParams.sBuySellType.pData = "S";
 					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.pData = argv[10];
 					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -3292,7 +3291,7 @@ int main(int      argc,
 					profitB = ticksB - commB;
 					oMktOrdParams.sBuySellType.pData = "B";
 					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-					oMktOrdParams.sTicker.pData = argv[8];
+					oMktOrdParams.sTicker.pData = argv[10];
 					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 					oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 					if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
@@ -3386,7 +3385,6 @@ int main(int      argc,
 					endfile << "NQ Profit is : " << profit << endl;
 					endfile << "ES Tick is : " << ticksB << endl;
 					endfile << "ES Profit is : " << profitB << endl;
-					endfile << "PnL Minute is : " << sec_T << endl;
 					endfile << "NQ spread is : " << spreadA << endl;
 					endfile << "ES spread is : " << spreadB << endl;
 					endfile << "NQ High value is : " << _NQBHigh << endl;
