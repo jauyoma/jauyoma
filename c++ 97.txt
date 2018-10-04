@@ -2751,8 +2751,7 @@ int main(int      argc,
 		curr = (lt.wHour * 60) + lt.wMinute;
 		Slp_T = ((trade - curr) - 4) * 60000;
 		std::cout << "\nSleep time is : " << Slp_T << endl;
-		std::cout << "\nSleep time is : " << (trade - curr) << endl;
-		if((trade - curr) > 5)
+		if(Slp_T > 5)
 			Sleep(Slp_T);
 	}
 
