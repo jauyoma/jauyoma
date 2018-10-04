@@ -102,10 +102,8 @@ int _filled = 0, _minqty = 0, _maxqty = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _OrderNumNQ, _OrderNumES;
-tsNCharcb _TickerNQ = { (char *)"6EV8",
-(int)strlen("6EV8") };
-tsNCharcb _TickerES = { (char *)"6BV8",
-(int)strlen("6BV8") };
+tsNCharcb _TickerNQ;
+tsNCharcb _TickerES;
 std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
 std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
@@ -2547,10 +2545,14 @@ int main(int      argc,
 
 	SymbNQ.pData = argv[6];
 	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
+	_TickerNQ.pData = argv[6];
+	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
 	if (contract)
 	{
 		SymbES.pData = argv[8];
 		SymbES.iDataLen = (int)strlen(SymbES.pData);
+		_TickerES.pData = argv[8];
+		_TickerES.iDataLen = (int)strlen(_TickerES.pData);
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2742,7 +2744,7 @@ int main(int      argc,
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
 
-	while (((trade - curr) > 5) || !done)
+	while (((trade - curr) > 5) && !done)
 	{
 		long Slp_T;
 
@@ -2756,7 +2758,7 @@ int main(int      argc,
 
 	curr = (lt.wHour * 60) + lt.wMinute;
 
-	while (((curr - trade) <= 2) || !done)
+	while (((curr - trade) <= 2) && !done)
 	{
 		if (CLS != Hold && CLS == 0)
 		{
@@ -2867,7 +2869,7 @@ int main(int      argc,
 		{
 			if ((_Posn < 2 || CLS != 1) && (Buff >(_RiskBal*-0.05)) && (CumProfit >(_RiskBal*-0.05)))
 			{
-				while ((NQFree == false || (ESFree == false && contract == true)) || !done)
+				while ((NQFree == false || (ESFree == false && contract == true)) && !done)
 				{
 					QueryPerformanceFrequency(&Frequency);
 					QueryPerformanceCounter(&StartingTime);
