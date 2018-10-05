@@ -2396,9 +2396,9 @@ int main(int      argc,
 		/*   of the R | API package.  The settings below assume that those      */
 		/*   files are in the current working directory.  Normally you should   */
 		/*   specify the full path to these files.                              */
-		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
-		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
-		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_client_private_key";
 
 		fake_envp[9] = "USER=42554PPR";
 		fake_envp[10] = NULL;
@@ -2417,9 +2417,9 @@ int main(int      argc,
 		/*   of the R | API package.  The settings below assume that those      */
 		/*   files are in the current working directory.  Normally you should   */
 		/*   specify the full path to these files.                              */
-		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
-		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
-		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+		fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_cert_auth_params";
+		fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_client_params";
+		fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\Andrew Kowuoche\\Documents\\Trading Apps\\SSL_Certs\\rithmic_ssl_client_private_key";
 
 		fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
 		fake_envp[10] = NULL;
@@ -2758,7 +2758,7 @@ int main(int      argc,
 			Slp_T = (((24 - lt.wHour) * 60 + (60 - lt.wMinute)) * 60000) + 60000;
 			std::cout << "\nTrading will take place tomorrow..." << endl;
 		}
-		
+
 		if (Slp_T > 5)
 		{
 			std::cout << "\nSleep time is : " << Slp_T << endl;
@@ -2768,7 +2768,7 @@ int main(int      argc,
 
 	curr = (lt.wHour * 60) + lt.wMinute;
 
-	while (((curr - trade) <= 2) && !done)
+	while ((((curr - trade) <= 2) || CLS == 1) && !done)
 	{
 		if (CLS != Hold && CLS == 0)
 		{
@@ -2872,7 +2872,7 @@ int main(int      argc,
 
 		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
 		{
-			if (_Posn < 3 && _RiskBal > 3000 && CumProfit > (_RiskBal*-0.05))
+			if (_Posn < 3 && _RiskBal > 3000 && CumProfit >(_RiskBal*-0.05))
 			{
 				while ((!tradeNQ || (contract == true && !tradeES)) && !done)
 				{
@@ -2889,7 +2889,7 @@ int main(int      argc,
 
 					if (spreadA <= 5 && NQBFree == false && _NQBid > _NQPBid && _NQAsk > _NQPAsk && (BNQ != 1 || SNQ == 1))
 					{
-						if(SNQ == 1)
+						if (SNQ == 1)
 							_qty = 2;
 						else
 							_qty = 1;
@@ -2916,7 +2916,7 @@ int main(int      argc,
 							NQBFree = true;
 							BNQ = 1;
 							CLS = 1;
-							if(SNQ == 1)
+							if (SNQ == 1)
 							{
 								SNQ = 2;
 								NQSFree = false;
@@ -2936,7 +2936,7 @@ int main(int      argc,
 
 					if (NQSFree == false && spreadA <= 5 && _NQBid < _NQPBid && _NQAsk < _NQPAsk && (SNQ != 1 || BNQ == 1))
 					{
-						if(BNQ == 1)
+						if (BNQ == 1)
 							_qty = 2;
 						else
 							_qty = 1;
@@ -2966,7 +2966,7 @@ int main(int      argc,
 							NQ_hr = lt.wHour;
 							NQ_min = lt.wMinute;
 							tradeNQ = true;
-							if(BNQ == 1)
+							if (BNQ == 1)
 							{
 								BNQ = 2;
 								NQBFree = false;
@@ -2985,7 +2985,7 @@ int main(int      argc,
 					{
 						if (ESSFree == false && spreadB <= 5 && _ESBid < _ESPBid && _ESAsk < _ESPAsk && (SES != 1 || BES == 1))
 						{
-							if(BES == 1)
+							if (BES == 1)
 								_qty = 2;
 							else
 								_qty = 1;
@@ -3015,7 +3015,7 @@ int main(int      argc,
 								ES_hr = lt.wHour;
 								ES_min = lt.wMinute;
 								tradeES = true;
-								if(BES == 1)
+								if (BES == 1)
 								{
 									BES = 2;
 									ESBFree = false;
@@ -3030,9 +3030,9 @@ int main(int      argc,
 							}
 						}
 
-						if (ESBFree == false && spreadB <= 5 && _ESBid > _ESPBid && _ESAsk > _ESPAsk  && (BES != 1 || SES == 1))
+						if (ESBFree == false && spreadB <= 5 && _ESBid > _ESPBid && _ESAsk > _ESPAsk && (BES != 1 || SES == 1))
 						{
-							if(SES == 1)
+							if (SES == 1)
 								_qty = 2;
 							else
 								_qty = 1;
@@ -3062,7 +3062,7 @@ int main(int      argc,
 								ES_hr = lt.wHour;
 								ES_min = lt.wMinute;
 								tradeES = true;
-								if(SES == 1)
+								if (SES == 1)
 								{
 									SES = 2;
 									ESSFree = false;
@@ -3195,11 +3195,11 @@ int main(int      argc,
 				}
 
 			}
-			
-			if(((!NQBFree && _NQBid > _NQPBid) || (!NQSFree && _NQBid < _NQPBid)) && tradeNQ == true)
-					tradeNQ = false;
-			if(((!ESBFree && _ESBid > _ESPBid) || (!ESSFree && _ESBid < _ESPBid)) && tradeES == true && contract == true))
-					tradeES = false;
+
+			if (((!NQBFree && _NQBid > _NQPBid) || (!NQSFree && _NQBid < _NQPBid)) && tradeNQ == true)
+				tradeNQ = false;
+			if (((!ESBFree && _ESBid > _ESPBid) || (!ESSFree && _ESBid < _ESPBid)) && tradeES == true && contract == true)
+			tradeES = false;
 
 			if (CLS == 1 && _Posn == 0)
 				_Disparity = 2;
@@ -3209,7 +3209,7 @@ int main(int      argc,
 		/*   Printout of variables		                                */
 		/*   ----------------------------------------------------------------   */
 
-		if (CumProfit < (_RiskBal*-0.05))
+		if ((CumProfit < (_RiskBal*-0.05)) || ((curr - trade) > 2 && CLS == 1))
 		{
 
 			if (BNQ == 1)
@@ -3234,7 +3234,7 @@ int main(int      argc,
 				{
 					BNQ = 2;
 					NQBFree = false;
-					std::cout << "BNQ Risk Management Closure : " << endl;
+					std::cout << "\nBNQ Risk Management Closure : " << endl;
 				}
 			}
 
@@ -3263,7 +3263,7 @@ int main(int      argc,
 				{
 					SNQ = 2;
 					NQSFree = false;
-					std::cout << "SNQ Risk Management Closure : " << endl;
+					std::cout << "\nSNQ Risk Management Closure : " << endl;
 				}
 			}
 
@@ -3294,7 +3294,7 @@ int main(int      argc,
 					{
 						BES = 2;
 						ESBFree = false;
-						std::cout << "BES Risk Management Closure : " << endl;
+						std::cout << "\nBES Risk Management Closure : " << endl;
 					}
 				}
 
@@ -3323,7 +3323,7 @@ int main(int      argc,
 					{
 						SES = 2;
 						ESBFree = false;
-						std::cout << "SES Risk Management Closure : " << endl;
+						std::cout << "\nSES Risk Management Closure : " << endl;
 					}
 				}
 			}
