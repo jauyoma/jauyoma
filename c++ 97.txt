@@ -116,15 +116,15 @@ double _RiskBal, Buff, ticksB, profitB;
 double spreadA, spreadB, _NQ = 0, _ES = 0;
 double _NQBHigh = 0, _NQBLow = 0, _ESBHigh = 0, _ESBLow = 0;
 double _NQAHigh = 0, _NQALow = 0, _ESAHigh = 0, _ESALow = 0;
-int _Disparity = 0;
+int _Disparity = 0, _qty = 1;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
 tsNCharcb SymbNQ, SymbES;
-int				  CLS = 0, iCode, Sign, Hold = 1;
+int				  CLS = 0, iCode, Sign = 0, Hold = 1;
 int				  BNQ = 0, SNQ = 0, BES = 0, SES = 0;
-bool	NQFree = false, NQLFree = false, print = false;
-bool	ESFree = false, ESLFree = false, contract = false;
+bool	NQBFree = false, NQSFree = false, print = false;
+bool	ESBFree = false, ESSFree = false, contract = false;
 int	NQLHr, ESLHr, NQLMin, ESLMin;
-bool done = false;
+bool done = false, tradeNQ = false, tradeES = false;
 
 
 SYSTEMTIME st, lt;
@@ -449,7 +449,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 	if (CLS == 1)
 	{
-		if (Signal == 1)
+		if (Signal == 1 && tradeNQ)
 		{
 			CumProfit = CumProfit + _OpenPL;
 
@@ -459,19 +459,20 @@ void MyCallbacks::CloseOrder(int &Signal)
 			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (tradeNQ && !g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 			{
 				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 			}
 			else
 			{
 				BNQ = 2;
-				NQFree = false;
+				NQBFree = false;
+				Sign = 0;
 				std::cout << "\nSignal 1 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 			}
 		}
 
-		if (Signal == 2)
+		if (Signal == 2 && tradeNQ)
 		{
 			CumProfit = CumProfit + _OpenPL;
 
@@ -481,21 +482,22 @@ void MyCallbacks::CloseOrder(int &Signal)
 			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 			oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (tradeNQ && !g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 			{
 				std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 			}
 			else
 			{
 				SNQ = 2;
-				NQFree = false;
+				NQSFree = false;
+				Sign = 0;
 				std::cout << "\nSignal 2 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 			}
 		}
 
 		if (contract)
 		{
-			if (Signal == 3)
+			if (Signal == 3 && tradeES)
 			{
 				CumProfit = CumProfit + _OpenPL;
 
@@ -505,19 +507,20 @@ void MyCallbacks::CloseOrder(int &Signal)
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				if (tradeES && !g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
 					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 				}
 				else
 				{
 					BES = 2;
-					ESFree = false;
+					ESBFree = false;
+					Sign = 0;
 					std::cout << "\nSignal 3 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 				}
 			}
 
-			if (Signal == 4)
+			if (Signal == 4 && tradeES)
 			{
 				CumProfit = CumProfit + _OpenPL;
 
@@ -527,14 +530,15 @@ void MyCallbacks::CloseOrder(int &Signal)
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 				oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
-				if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				if (tradeES && !g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
 					std::cout << "REngine::CloseOrder() error : %d\n" << iCode << endl;
 				}
 				else
 				{
 					SES = 2;
-					ESFree = false;
+					ESSFree = false;
+					Sign = 0;
 					std::cout << "\nSignal 4 REngine::CloseOrder() -> CumProfit is : " << CumProfit << endl;
 				}
 			}
@@ -1208,7 +1212,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1221,7 +1225,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1254,7 +1258,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1267,7 +1271,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -1328,7 +1332,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1341,7 +1345,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1371,7 +1375,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1384,7 +1388,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -1455,7 +1459,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQAsk < _NQAHigh && _NQBid < _NQBHigh)
+				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1468,7 +1472,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQAsk > _NQALow && _NQBid > _NQBLow)
+				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1496,7 +1500,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1509,7 +1513,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1540,7 +1544,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1553,7 +1557,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -1582,7 +1586,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1595,7 +1599,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -1664,7 +1668,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1677,7 +1681,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1707,7 +1711,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1720,7 +1724,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -1782,7 +1786,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		{
 			if (BNQ == 1)
 			{
-				if (_NQBid < _NQBHigh && _NQAsk < _NQAHigh)
+				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
 				{
 					Sign = 1;
 					CloseOrder(Sign);
@@ -1790,7 +1794,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 			}
 			if (SNQ == 1)
 			{
-				if (_NQBid > _NQBLow && _NQAsk > _NQALow)
+				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
 				{
 					Sign = 2;
 					CloseOrder(Sign);
@@ -1811,7 +1815,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 			{
 				if (BES == 1)
 				{
-					if (_ESBid < _ESBHigh && _ESAsk < _ESAHigh)
+					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
 					{
 						Sign = 3;
 						CloseOrder(Sign);
@@ -1819,7 +1823,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 				}
 				if (SES == 1)
 				{
-					if (_ESBid > _ESBLow && _ESAsk > _ESALow)
+					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
 					{
 						Sign = 4;
 						CloseOrder(Sign);
@@ -2721,7 +2725,7 @@ int main(int      argc,
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
 	oMktOrdParams.pAccount = &g_oAccount;
-	oMktOrdParams.iQty = 1;
+	oMktOrdParams.iQty = _qty;
 	oMktOrdParams.sDuration = sORDER_DURATION_FOK;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
@@ -2866,11 +2870,11 @@ int main(int      argc,
 
 		curr = (lt.wHour * 60) + lt.wMinute;
 
-		if (_RiskBal > 3000 && lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
+		if (lt.wHour == hr_T && lt.wMinute >= min_T && lt.wMinute < (min_T + 3))
 		{
-			if ((_Posn < 2 || CLS != 1) && CumProfit >(_RiskBal*-0.05))
+			if (_Posn < 3 && _RiskBal > 3000 && CumProfit > (_RiskBal*-0.05))
 			{
-				while ((NQFree == false || (ESFree == false && contract == true)) && !done)
+				while ((!tradeNQ || (contract == true && !tradeES)) && !done)
 				{
 					QueryPerformanceFrequency(&Frequency);
 					QueryPerformanceCounter(&StartingTime);
@@ -2883,12 +2887,17 @@ int main(int      argc,
 							_ES = spreadB;
 					}
 
-					if (spreadA <= 5 && NQFree == false && ((_NQBid > _NQPBid && _NQAsk > _NQPAsk && BNQ == 0) || (BNQ == 2 && _NQBid > _NQBHigh && _NQAsk > _NQAHigh)))
+					if (spreadA <= 5 && NQBFree == false && _NQBid > _NQPBid && _NQAsk > _NQPAsk && (BNQ != 1 || SNQ == 1))
 					{
+						if(SNQ == 1)
+							_qty = 2;
+						else
+							_qty = 1;
 						oMktOrdParams.sBuySellType.pData = "B";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = argv[8];
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.iQty = _qty;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							std::cout << "REngine::sendOrder() error : " << iCode << endl;
@@ -2904,11 +2913,17 @@ int main(int      argc,
 						}
 						else
 						{
-							NQFree = true;
+							NQBFree = true;
 							BNQ = 1;
 							CLS = 1;
+							if(SNQ == 1)
+							{
+								SNQ = 2;
+								NQSFree = false;
+							}
 							NQ_hr = lt.wHour;
 							NQ_min = lt.wMinute;
+							tradeNQ = true;
 							std::cout << "\nNQ Buy market order placed : BNQ value is :->" << BNQ << endl;
 							std::cout << "NQ Bid price is : " << _NQBid << endl;
 							std::cout << "NQ High Bid price is : " << _NQBHigh << endl;
@@ -2919,12 +2934,17 @@ int main(int      argc,
 						}
 					}
 
-					if (NQFree == false && spreadA <= 5 && ((_NQBid < _NQPBid && _NQAsk < _NQPAsk && SNQ == 0) || (SNQ == 2 && _NQBid < _NQBLow && _NQAsk < _NQALow)))
+					if (NQSFree == false && spreadA <= 5 && _NQBid < _NQPBid && _NQAsk < _NQPAsk && (SNQ != 1 || BNQ == 1))
 					{
+						if(BNQ == 1)
+							_qty = 2;
+						else
+							_qty = 1;
 						oMktOrdParams.sBuySellType.pData = "S";
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						oMktOrdParams.sTicker.pData = argv[8];
 						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.iQty = _qty;
 						if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
@@ -2940,11 +2960,17 @@ int main(int      argc,
 						}
 						else
 						{
-							NQFree = true;
+							NQSFree = true;
 							SNQ = 1;
 							CLS = 1;
 							NQ_hr = lt.wHour;
 							NQ_min = lt.wMinute;
+							tradeNQ = true;
+							if(BNQ == 1)
+							{
+								BNQ = 2;
+								NQBFree = false;
+							}
 							std::cout << "\nNQ Sell market order placed : SNQ value is :->" << SNQ << endl;
 							std::cout << "NQ Bid price is : " << _NQBid << endl;
 							std::cout << "NQ Low Bid price is : " << _NQBLow << endl;
@@ -2957,12 +2983,17 @@ int main(int      argc,
 
 					if (contract)
 					{
-						if (ESFree == false && spreadB <= 3 && ((_ESBid < _ESPBid && _ESAsk < _ESPAsk && SES == 0) || (SES == 2 && _ESBid < _ESBLow && _ESAsk < _ESALow)))
+						if (ESSFree == false && spreadB <= 5 && _ESBid < _ESPBid && _ESAsk < _ESPAsk && (SES != 1 || BES == 1))
 						{
+							if(BES == 1)
+								_qty = 2;
+							else
+								_qty = 1;
 							oMktOrdParams.sBuySellType.pData = "S";
 							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 							oMktOrdParams.sTicker.pData = argv[10];
 							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oMktOrdParams.iQty = _qty;
 							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
 								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
@@ -2978,11 +3009,17 @@ int main(int      argc,
 							}
 							else
 							{
-								ESFree = true;
+								ESSFree = true;
 								SES = 1;
 								CLS = 1;
 								ES_hr = lt.wHour;
 								ES_min = lt.wMinute;
+								tradeES = true;
+								if(BES == 1)
+								{
+									BES = 2;
+									ESBFree = false;
+								}
 								std::cout << "\nES Sell market order placed : SES value is :->" << SES << endl;
 								std::cout << "ES Bid price is : " << _ESBid << endl;
 								std::cout << "ES Low Bid price is : " << _ESBLow << endl;
@@ -2993,12 +3030,17 @@ int main(int      argc,
 							}
 						}
 
-						if (ESFree == false && spreadB <= 3 && ((_ESBid > _ESPBid && _ESAsk > _ESPAsk && BES == 0) || (BES == 2 && _ESBid > _ESBHigh && _ESAsk > _ESAHigh)))
+						if (ESBFree == false && spreadB <= 5 && _ESBid > _ESPBid && _ESAsk > _ESPAsk  && (BES != 1 || SES == 1))
 						{
+							if(SES == 1)
+								_qty = 2;
+							else
+								_qty = 1;
 							oMktOrdParams.sBuySellType.pData = "B";
 							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 							oMktOrdParams.sTicker.pData = argv[10];
 							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oMktOrdParams.iQty = _qty;
 							if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
 								std::cout << "REngine::sendOrder() error : %d\n" << iCode << endl;
@@ -3014,11 +3056,17 @@ int main(int      argc,
 							}
 							else
 							{
-								ESFree = true;
+								ESBFree = true;
 								BES = 1;
 								CLS = 1;
 								ES_hr = lt.wHour;
 								ES_min = lt.wMinute;
+								tradeES = true;
+								if(SES == 1)
+								{
+									SES = 2;
+									ESSFree = false;
+								}
 								std::cout << "\nES Buy market order placed : BES value is :->" << BES << endl;
 								std::cout << "ES Bid price is : " << _ESBid << endl;
 								std::cout << "ES High Bid price is : " << _ESBHigh << endl;
@@ -3032,46 +3080,6 @@ int main(int      argc,
 
 					iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
 						(g_iFromExchUsecs - g_iToExchUsecs);
-
-					if (_NQBid > _NQBHigh)
-					{
-						_NQBHigh = _NQBid;
-					}
-					if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-					{
-						_NQBLow = _NQBid;
-					}
-					if (_NQAsk > _NQAHigh)
-					{
-						_NQAHigh = _NQAsk;
-					}
-					if ((_NQAsk < _NQALow) || (_NQALow == 0))
-					{
-						_NQALow = _NQAsk;
-					}
-
-					if (contract)
-					{
-						if (_ESBid > _ESBHigh)
-						{
-							_ESBHigh = _ESBid;
-						}
-						if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-						{
-							_ESBLow = _ESBid;
-						}
-						if (_ESAsk > _ESAHigh)
-						{
-							_ESAHigh = _ESAsk;
-						}
-						if ((_ESAsk < _ESALow) || (_ESALow == 0))
-						{
-							_ESALow = _ESAsk;
-						}
-					}
-
-					if (_NQALow == 0 || _NQAHigh == 0 || _NQBLow == 0 || _NQBHigh == 0 || (contract == true && (_ESALow == 0 || _ESAHigh == 0 || _ESBLow == 0 || _ESBHigh == 0)))
-						std::cout << "\nFailure to assign either high or low value!!" << endl;
 
 
 					if ((lt.wMinute >(min_T + 2)) || (lt.wHour > hr_T))
@@ -3187,6 +3195,11 @@ int main(int      argc,
 				}
 
 			}
+			
+			if(((!NQBFree && _NQBid > _NQPBid) || (!NQSFree && _NQBid < _NQPBid)) && tradeNQ == true)
+					tradeNQ = false;
+			if(((!ESBFree && _ESBid > _ESPBid) || (!ESSFree && _ESBid < _ESPBid)) && tradeES == true && contract == true))
+					tradeES = false;
 
 			if (CLS == 1 && _Posn == 0)
 				_Disparity = 2;
@@ -3220,7 +3233,7 @@ int main(int      argc,
 				else
 				{
 					BNQ = 2;
-					NQFree = false;
+					NQBFree = false;
 					std::cout << "BNQ Risk Management Closure : " << endl;
 				}
 			}
@@ -3249,7 +3262,7 @@ int main(int      argc,
 				else
 				{
 					SNQ = 2;
-					NQFree = false;
+					NQSFree = false;
 					std::cout << "SNQ Risk Management Closure : " << endl;
 				}
 			}
@@ -3280,7 +3293,7 @@ int main(int      argc,
 					else
 					{
 						BES = 2;
-						ESFree = false;
+						ESBFree = false;
 						std::cout << "BES Risk Management Closure : " << endl;
 					}
 				}
@@ -3309,7 +3322,7 @@ int main(int      argc,
 					else
 					{
 						SES = 2;
-						ESFree = false;
+						ESBFree = false;
 						std::cout << "SES Risk Management Closure : " << endl;
 					}
 				}
