@@ -127,23 +127,25 @@ int	NQLHr, ESLHr, NQLMin, ESLMin;
 bool done = false, tradeNQ = false, tradeES = false;
 int	trade, curr, AskSize, BidSize;
 int UpdTyp, ImpSize, NumOrd;
-int QAskQty, QBidQty, QAskSize, QBidSize;
-int QEAskQty, QEBidQty, QEAskSize, QEBidSize;
+int NQAskQty, NQBidQty, NQAskSize, NQBidSize;
+int ESAskQty, ESBidQty, ESAskSize, ESBidSize;
 bool QAsk, QBid;
-double QFillPrice, QFillSize, QAskPrice, QBidPrice;
-double QEFillPrice, QEFillSize, QEAskPrice, QEBidPrice;
-double LAsk1, LAsk2, LAsk3, LAsk4;
-double LBid1, LBid2, LBid3, LBid4;
-int NAsk1, NAsk2, NAsk3, NAsk4;
-int NBid1, NBid2, NBid3, NBid4;
-int SAsk1, SAsk2, SAsk3, SAsk4;
-int SBid1, SBid2, SBid3, SBid4;
-double LEAsk1, LEAsk2, LEAsk3, LEAsk4;
-double LEBid1, LEBid2, LEBid3, LEBid4;
-int NEAsk1, NEAsk2, NEAsk3, NEAsk4;
-int NEBid1, NEBid2, NEBid3, NEBid4;
-int SEAsk1, SEAsk2, SEAsk3, SEAsk4;
-int SEBid1, SEBid2, SEBid3, SEBid4;
+double NQFillPrice, NQFillSize, NQAskPrice, NQBidPrice;
+double ESFillPrice, ESFillSize, ESAskPrice, ESBidPrice;
+double NQLAsk1, NQLAsk2, NQLAsk3, NQLAsk4;
+double NQLBid1, NQLBid2, NQLBid3, NQLBid4;
+int NQNAsk1, NQNAsk2, NQNAsk3, NQNAsk4;
+int NQNBid1, NQNBid2, NQNBid3, NQNBid4;
+int NQSAsk1, NQSAsk2, NQSAsk3, NQSAsk4;
+int NQSBid1, NQSBid2, NQSBid3, NQSBid4;
+double ESLAsk1, ESLAsk2, ESLAsk3, ESLAsk4;
+double ESLBid1, ESLBid2, ESLBid3, ESLBid4;
+int ESNAsk1, ESNAsk2, ESNAsk3, ESNAsk4;
+int ESNBid1, ESNBid2, ESNBid3, ESNBid4;
+int ESSAsk1, ESSAsk2, ESSAsk3, ESSAsk4;
+int ESSBid1, ESSBid2, ESSBid3, ESSBid4;
+int BBid_T, Bid_T, BAsk_T, Ask_T;
+int BBid_uS, Bid_uS, BAsk_uS, Ask_uS;
 
 
 
@@ -1206,21 +1208,21 @@ int MyCallbacks::Quote(QuoteReport * pReport,
 		{
 			if (pReport->bFill)
 			{
-				QFillPrice = pReport->dFillPrice;
-				QFillSize = pReport->iFillSize;
-				QFillSide = pReport->sFillSide;
+				NQFillPrice = pReport->dFillPrice;
+				NQFillSize = pReport->iFillSize;
+				NQFillSide = pReport->sFillSide;
 			}
 			else
 			{
 				if (pReport->bAsk)
 				{
-					QAskQty = pReport->iAskQuantityToFill;
-					QAskPrice = pReport->dAskPriceToFill;
+					NQAskQty = pReport->iAskQuantityToFill;
+					NQAskPrice = pReport->dAskPriceToFill;
 				}
 				if (pReport->bBid)
 				{
-					QBidQty = pReport->iBidQuantityToFill;
-					QBidPrice = pReport->dBidPriceToFill;
+					NQBidQty = pReport->iBidQuantityToFill;
+					NQBidPrice = pReport->dBidPriceToFill;
 				}
 			}
 		}
@@ -1234,21 +1236,21 @@ int MyCallbacks::Quote(QuoteReport * pReport,
 			{
 				if (pReport->bFill)
 				{
-					QEFillPrice = pReport->dFillPrice;
-					QEFillSize = pReport->iFillSize;
-					QEFillSide = pReport->sFillSide;
+					ESFillPrice = pReport->dFillPrice;
+					ESFillSize = pReport->iFillSize;
+					ESFillSide = pReport->sFillSide;
 				}
 				else
 				{
 					if (pReport->bAsk)
 					{
-						QEAskQty = pReport->iAskQuantityToFill;
-						QEAskPrice = pReport->dAskPriceToFill;
+						ESAskQty = pReport->iAskQuantityToFill;
+						ESAskPrice = pReport->dAskPriceToFill;
 					}
 					if (pReport->bBid)
 					{
-						QEBidQty = pReport->iBidQuantityToFill;
-						QEBidPrice = pReport->dBidPriceToFill;
+						ESBidQty = pReport->iBidQuantityToFill;
+						ESBidPrice = pReport->dBidPriceToFill;
 					}
 				}
 			}
@@ -1273,52 +1275,46 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 
 	/*   ----------------------------------------------------------------   */
 
-
-
-	NAsk = pInfo->dPrice;
-
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			_NQPAsk = pInfo->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
+			if(pInfo->dPrice < NQLAsk1)
 			{
-				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-
-				}
+				NQLAsk1 = pInfo->dPrice;
+				NQSAsk1 = pInfo->iSize;
+				NQNAsk1 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			if (SNQ == 1)
+			else if(NQLBid1 >= NQLAsk1 && (Ask_T < Bid_T || Ask_T < BBid_T))
 			{
-				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-
-				}
+				NQLAsk1 = pInfo->dPrice;
+				NQSAsk1 = pInfo->iSize;
+				NQNAsk1 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQAsk > _NQAHigh)
+			else if(pInfo->dPrice < NQLAsk2)
 			{
-				_NQAHigh = _NQAsk;
+				NQLAsk2 = pInfo->dPrice;
+				NQSAsk2 = pInfo->iSize;
+				NQNAsk2 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			if ((_NQAsk < _NQALow) || (_NQALow == 0))
+			else if(pInfo->dPrice < NQLAsk3)
 			{
-				_NQALow = _NQAsk;
+				NQLAsk3 = pInfo->dPrice;
+				NQSAsk3 = pInfo->iSize;
+				NQNAsk3 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+			}
+			else
+			{
+				NQLAsk4 = pInfo->dPrice;
+				NQSAsk4 = pInfo->iSize;
+				NQNAsk4 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
 	}
@@ -1327,54 +1323,48 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESAsk = pInfo->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				_ESPAsk = pInfo->dPrice;
-				ESLHr = lt.wHour;
-				ESLMin = lt.wMinute;
-			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
+				if(pInfo->dPrice < ESLAsk1)
 				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-
-					}
+					ESLAsk1 = pInfo->dPrice;
+					ESSAsk1 = pInfo->iSize;
+					ESNAsk1 = pInfo->NumOrders;
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				if (SES == 1)
+				else if(ESLBid1 >= ESLAsk1 && (Ask_T < Bid_T || Ask_T < BBid_T))
 				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-
-					}
+				ESLBid1 = pInfo->dPrice;
+				ESSBid1 = pInfo->iSize;
+				ESNBid1 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-			}
-		}
-		spreadB = (_ESAsk - _ESBid) / incrES;
-
-		if (curr >= trade)
-		{
-			if (_ESAsk > _ESAHigh)
-			{
-				_ESAHigh = _ESAsk;
-			}
-			if ((_ESAsk < _ESALow) || (_ESALow == 0))
-			{
-				_ESALow = _ESAsk;
+				else if(pInfo->dPrice < ESLBid2)
+				{
+				ESLBid2 = pInfo->dPrice;
+				ESSBid2 = pInfo->iSize;
+				ESNBid2 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if(pInfo->dPrice < ESLBid3)
+				{
+				ESLBid3 = pInfo->dPrice;
+				ESSBid3 = pInfo->iSize;
+				ESNBid3 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else
+				{
+				ESLBid4 = pInfo->dPrice;
+				ESSBid4 = pInfo->iSize;
+				ESNBid4 = pInfo->NumOrders;
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
 			}
 		}
 	}
-
+	
 	trial = "";
-
-	spreadA = (_NQAsk - _NQBid) / incrNQ;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1407,53 +1397,16 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 
 	/*   ----------------------------------------------------------------   */
 
-
-
-	NAsk = pInfo->dPrice;
-
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQAsk = pInfo->dPrice;
-		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			_NQPAsk = pInfo->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
-			{
-				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-					
-				}
-			}
-			if (SNQ == 1)
-			{
-				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-					
-				}
-			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQAsk > _NQAHigh)
-			{
-				_NQAHigh = _NQAsk;
-			}
-			if ((_NQAsk < _NQALow) || (_NQALow == 0))
-			{
-				_NQALow = _NQAsk;
-			}
+			NQLAsk1 = pInfo->dPrice;
+			NQSAsk1 = pInfo->iSize;
+			NQNAsk1 = pInfo->NumOrders;
+			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1461,54 +1414,14 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESAsk = pInfo->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-			{
-				_ESPAsk = pInfo->dPrice;
-				ESLHr = lt.wHour;
-				ESLMin = lt.wMinute;
-			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
-				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-						
-					}
-				}
-				if (SES == 1)
-				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-						
-					}
-				}
-			}
-		}
-		spreadB = (_ESAsk - _ESBid) / incrES;
-
-		if (curr >= trade)
-		{
-			if (_ESAsk > _ESAHigh)
-			{
-				_ESAHigh = _ESAsk;
-			}
-			if ((_ESAsk < _ESALow) || (_ESALow == 0))
-			{
-				_ESALow = _ESAsk;
-			}
+			ESLAsk1 = pInfo->dPrice;
+			ESSAsk1 = pInfo->iSize;
+			ESNAsk1 = pInfo->NumOrders;
+			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
-
+	
 	trial = "";
-
-	spreadA = (_NQAsk - _NQBid) / incrNQ;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1541,99 +1454,28 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	/*   ----------------------------------------------------------------   */
 
 
-	NBid = pBid->dPrice;
-	NAsk = pAsk->dPrice;
-
 	trial = std::string(pBid->sTicker.pData, pBid->sTicker.iDataLen);
 	test = std::string(pAsk->sTicker.pData, pAsk->sTicker.iDataLen);
 
 	if (test == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQAsk = pAsk->dPrice;
-		if ((lt.wHour < hr_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute < min_T))
+		if(pAsk->bPriceFlag && pAsk->bSizeFlag)
 		{
-			_NQPAsk = pAsk->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
-			{
-				if (_NQAsk < _NQPAsk && _NQBid < _NQPBid)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-					
-				}
-			}
-			if (SNQ == 1)
-			{
-				if (_NQAsk > _NQPAsk && _NQBid > _NQPBid)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-					
-				}
-			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQAsk > _NQAHigh)
-			{
-				_NQAHigh = _NQAsk;
-			}
-			if ((_NQAsk < _NQALow) || (_NQALow == 0))
-			{
-				_NQALow = _NQAsk;
-			}
+			NQLAsk1 = pAsk->dPrice;
+			NQSAsk1 = pAsk->iSize;
+			NQNAsk1 = pAsk->NumOrders;
+			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQBid = pBid->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if(pBid->bPriceFlag && pBid->bSizeFlag)
 		{
-			_NQPBid = pBid->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
-			{
-				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-					
-				}
-			}
-			if (SNQ == 1)
-			{
-				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-					
-				}
-			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQBid > _NQBHigh)
-			{
-				_NQBHigh = _NQBid;
-			}
-			if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-			{
-				_NQBLow = _NQBid;
-			}
+			NQLBid1 = pBid->dPrice;
+			NQSBid1 = pBid->iSize;
+			NQNBid1 = pBid->NumOrders;
+			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1641,102 +1483,30 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	{
 		if (test == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESAsk = pAsk->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			if(pAsk->bPriceFlag && pAsk->bSizeFlag)
 			{
-				_ESPAsk = pAsk->dPrice;
-				ESLHr = lt.wHour;
-				ESLMin = lt.wMinute;
+				NQLAsk1 = pAsk->dPrice;
+				NQSAsk1 = pAsk->iSize;
+				NQNAsk1 = pAsk->NumOrders;
+				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
-				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-						
-					}
-				}
-				if (SES == 1)
-				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-						
-					}
-				}
-			}
-
-			if (curr >= trade)
-			{
-				if (_ESAsk > _ESAHigh)
-				{
-					_ESAHigh = _ESAsk;
-				}
-				if ((_ESAsk < _ESALow) || (_ESALow == 0))
-				{
-					_ESALow = _ESAsk;
-				}
-			}
-
 		}
 
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESBid = pBid->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			if(pBid->bPriceFlag && pBid->bSizeFlag)
 			{
-				_ESPBid = pBid->dPrice;
-				ESLHr = lt.wHour;
-				ESLMin = lt.wMinute;
-			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
-				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-						
-					}
-				}
-				if (SES == 1)
-				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-						
-					}
-				}
+				NQLBid1 = pBid->dPrice;
+				NQSBid1 = pBid->iSize;
+				NQNBid1 = pBid->NumOrders;
+				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
-
-		if (curr >= trade)
-		{
-			if (_ESBid > _ESBHigh)
-			{
-				_ESBHigh = _ESBid;
-			}
-			if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			{
-				_ESBLow = _ESBid;
-			}
-		}
-
-		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
 
 	trial = "";
 	test = "";
 
-	spreadA = (_NQAsk - _NQBid) / incrNQ;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1767,53 +1537,16 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 
 	/*   ----------------------------------------------------------------   */
 
-
-	NBid = pInfo->dPrice;
-
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
-
+	
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQBid = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			_NQPBid = pInfo->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
-			{
-				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-					
-				}
-			}
-			if (SNQ == 1)
-			{
-				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-					
-				}
-			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQBid > _NQBHigh)
-			{
-				_NQBHigh = _NQBid;
-			}
-			if ((_NQBid < _NQBLow) || (_NQBLow == 0))
-			{
-				_NQBLow = _NQBid;
-			}
+			NQLBid1 = pInfo->dPrice;
+			NQSBid1 = pInfo->iSize;
+			NQNBid1 = pInfo->NumOrders;
+			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1821,55 +1554,14 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESBid = pInfo->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
-			{
-				_ESPBid = pInfo->dPrice;
-				NQLHr = lt.wHour;
-				NQLMin = lt.wMinute;
-			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
-				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-						
-					}
-				}
-				if (SES == 1)
-				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-						
-					}
-				}
-			}
+			ESLBid1 = pInfo->dPrice;
+			ESSBid1 = pInfo->iSize;
+			ESNBid1 = pInfo->NumOrders;
+			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
-
-		if (curr >= trade)
-		{
-			if (_ESBid > _ESBHigh)
-			{
-				_ESBHigh = _ESBid;
-			}
-			if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			{
-				_ESBLow = _ESBid;
-			}
-		}
-
-		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
-
+	
 	trial = "";
-
-	spreadA = (_NQAsk - _NQBid) / incrNQ;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1898,53 +1590,47 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	QueryPerformanceCounter(&StartingTime);
 
 	/*   ----------------------------------------------------------------   */
-
-
-	NBid = pInfo->dPrice;
-
+	
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
-
+	
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		_NQBid = pInfo->dPrice;
-		if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+		if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			_NQPBid = pInfo->dPrice;
-			NQLHr = lt.wHour;
-			NQLMin = lt.wMinute;
-		}
-
-		if (CLS == 1)
-		{
-			if (BNQ == 1)
+			if(pInfo->dPrice > NQLBid1)
 			{
-				if (_NQBid < _NQPBid && _NQAsk < _NQPAsk)
-				{
-					Sign = 1;
-					CloseOrder(Sign);
-
-				}
+				NQLBid1 = pInfo->dPrice;
+				NQSBid1 = pInfo->iSize;
+				NQNBid1 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			if (SNQ == 1)
+			else if(NQLAsk1 <= NQLBid1 && (Ask_T > Bid_T || BAsk_T > Bid_T))
 			{
-				if (_NQBid > _NQPBid && _NQAsk > _NQPAsk)
-				{
-					Sign = 2;
-					CloseOrder(Sign);
-
-				}
+				NQLBid1 = pInfo->dPrice;
+				NQSBid1 = pInfo->iSize;
+				NQNBid1 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-		}
-
-		if (curr >= trade)
-		{
-			if (_NQBid > _NQBHigh)
+			else if(pInfo->dPrice > NQLBid2)
 			{
-				_NQBHigh = _NQBid;
+				NQLBid2 = pInfo->dPrice;
+				NQSBid2 = pInfo->iSize;
+				NQNBid2 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			if ((_NQBid < _NQBLow) || (_NQBLow == 0))
+			else if(pInfo->dPrice > NQLBid3)
 			{
-				_NQBLow = _NQBid;
+				NQLBid3 = pInfo->dPrice;
+				NQSBid3 = pInfo->iSize;
+				NQNBid3 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+			}
+			else
+			{
+				NQLBid4 = pInfo->dPrice;
+				NQSBid4 = pInfo->iSize;
+				NQNBid4 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
 	}
@@ -1953,55 +1639,48 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			_ESBid = pInfo->dPrice;
-			if ((lt.wHour < hr_T && lt.wMinute > min_T && min_T == 0) || (lt.wHour == hr_T && lt.wMinute<min_T))
+			if(pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				_ESPBid = pInfo->dPrice;
-				NQLHr = lt.wHour;
-				NQLMin = lt.wMinute;
-			}
-
-			if (CLS == 1)
-			{
-				if (BES == 1)
+				if(pInfo->dPrice > ESLBid1)
 				{
-					if (_ESBid < _ESPBid && _ESAsk < _ESPAsk)
-					{
-						Sign = 3;
-						CloseOrder(Sign);
-
-					}
+					ESLBid1 = pInfo->dPrice;
+					ESSBid1 = pInfo->iSize;
+					ESNBid1 = pInfo->NumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				if (SES == 1)
+				else if(ESLAsk1 <= ESLBid1 && (Ask_T > Bid_T || BAsk_T > Bid_T))
 				{
-					if (_ESBid > _ESPBid && _ESAsk > _ESPAsk)
-					{
-						Sign = 4;
-						CloseOrder(Sign);
-
-					}
+				ESLBid1 = pInfo->dPrice;
+				ESSBid1 = pInfo->iSize;
+				ESNBid1 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if(pInfo->dPrice > ESLBid2)
+				{
+				ESLBid2 = pInfo->dPrice;
+				ESSBid2 = pInfo->iSize;
+				ESNBid2 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if(pInfo->dPrice > ESLBid3)
+				{
+				ESLBid3 = pInfo->dPrice;
+				ESSBid3 = pInfo->iSize;
+				ESNBid3 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else
+				{
+				ESLBid4 = pInfo->dPrice;
+				ESSBid4 = pInfo->iSize;
+				ESNBid4 = pInfo->NumOrders;
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
 			}
 		}
-
-		if (curr >= trade)
-		{
-			if (_ESBid > _ESBHigh)
-			{
-				_ESBHigh = _ESBid;
-			}
-			if ((_ESBid < _ESBLow) || (_ESBLow == 0))
-			{
-				_ESBLow = _ESBid;
-			}
-		}
-
-		spreadB = (_ESAsk - _ESBid) / incrES;
 	}
-
+	
 	trial = "";
-
-	spreadA = (_NQAsk - _NQBid) / incrNQ;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2571,6 +2250,7 @@ int main(int      argc,
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
+	QuoteParams	  qParams;
 	LimitOrderParams  oLmtOrdParams;
 	ModifyLimitOrderParams	oModLmtOrdParams;
 	LoginParams       oLoginParams;
@@ -2824,7 +2504,7 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-	iFlags = (MD_QUOTES);
+	iFlags = (MD_QUOTES | MD_BEST);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2868,7 +2548,7 @@ int main(int      argc,
 
 		/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-		iFlags = (MD_QUOTES);
+		iFlags = (MD_QUOTES | MD_BEST);
 
 		/*   ----------------------------------------------------------------   */
 
