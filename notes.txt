@@ -1,2 +1,300 @@
-Ensure MD_PRINTS is flagged
-Try MD_TRADE_VOLUME
+source timestamp : 1540991429.678370
+       timestamp : 1540991429.678615
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643144
+ aggressor exch ord id : 645166643766
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156731 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991430.760243
+       timestamp : 1540991430.760482
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :           20
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166634597
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156751 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991431.785792
+       timestamp : 1540991431.786098
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            5
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643786
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156756 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991431.909093
+       timestamp : 1540991431.909312
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            4
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643795
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156760 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991432.735543
+       timestamp : 1540991432.735888
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643799
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156761 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991433.274006
+       timestamp : 1540991433.274251
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643804
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156762 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991433.886607
+       timestamp : 1540991433.886882
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643807
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156763 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991434.008055
+       timestamp : 1540991434.008288
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :           10
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643817
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156773 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991435.432669
+       timestamp : 1540991435.432889
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643838
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156774 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991436.534683
+       timestamp : 1540991436.534896
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643841
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156775 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991436.571827
+       timestamp : 1540991436.572057
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643843
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156776 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991436.609306
+       timestamp : 1540991436.609503
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.250000 (valid)
+                  size :            1
+           exch ord id : 645166643622
+ aggressor exch ord id : 645166643852
+            net change :    26.000000 (valid)
+        percent change :     0.970000 (valid)
+        aggressor side : B
+         volume bought : 158890 (valid)
+           volume sold : 0 (invalid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991436.840890
+       timestamp : 1540991436.841108
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :           16
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643883
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156792 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991440.537886
+       timestamp : 1540991440.538192
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643890
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156793 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991441.281400
+       timestamp : 1540991441.281663
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643909
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156794 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991442.884331
+       timestamp : 1540991442.884630
+
+
+             TradeInfo :
+                ticker : ESZ8
+              exchange : CME
+                 price :  2711.000000 (valid)
+                  size :            1
+           exch ord id : 645166643326
+ aggressor exch ord id : 645166643738
+            net change :    25.750000 (valid)
+        percent change :     0.960000 (valid)
+        aggressor side : S
+         volume bought : 0 (invalid)
+           volume sold : 156795 (valid)
+             condition : <empty>
+         callback type : update
+source timestamp : 1540991445.005609
+       timestamp : 1540991445.006614
+
+
+Exiting algobox...
+
+
+Written text file CLS = 1...
+
+Closing Black Box...
+
+C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
