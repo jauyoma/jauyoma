@@ -2251,6 +2251,7 @@ int main(int      argc,
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	QuoteParams	  qParams;
+	BarParams	  oBarParams;
 	LimitOrderParams  oLmtOrdParams;
 	ModifyLimitOrderParams	oModLmtOrdParams;
 	LoginParams       oLoginParams;
@@ -2580,6 +2581,7 @@ int main(int      argc,
 			return (BAD);
 		}
 	}
+	
 
 	/*   ----------------------------------------------------------------   */
 	/*   Use the global boolean as the signaller of when the callback has   */
