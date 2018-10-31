@@ -129,7 +129,7 @@ int	trade, curr, AskSize, BidSize;
 int UpdTyp, ImpSize, NumOrd;
 int NQAskQty, NQBidQty, NQAskSize, NQBidSize;
 int ESAskQty, ESBidQty, ESAskSize, ESBidSize;
-bool QAsk, QBid;
+bool NQAsk = false, NQBid = false, ESAsk = false, ESBid = false;
 double NQFillPrice, NQFillSize, NQAskPrice, NQBidPrice;
 double ESFillPrice, ESFillSize, ESAskPrice, ESBidPrice;
 double NQLAsk1, NQLAsk2, NQLAsk3, NQLAsk4;
@@ -473,7 +473,51 @@ void MyCallbacks::CloseOrder(int &Signal)
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
+	
+	int NetBid, NetAsk;
+	double Pressure;
+	
+	Pressure = (NQBuyVol - NQSellVol)/(NQBuyVol + NQSellVol);
+	For(int i=1, i<5, i++)
+	{
+		if(NQBid)
+		{
+			std::cout << "Value of NQLBid is : " << NQLBid[i] << endl;
+			if(NQLBid[i] = NQTradePrice)
+			{
+				NetBid = NQLBid[i] - NQSellVol;
+				NQBid = false;
+				break;
+			}
+		}
+		
+		if(NQAsk)
+		{
+			std::cout << "Value of NQLAsk is : " << NQLAsk[i] << endl;
+			if(NQLAsk[i] = NQTradePrice)
+			{
+				NetAsk = NQLAsk[i] - NQBuyVol;
+				NQAsk = false;
+				break;
+			}
+		}
+		
+		if((Pressure >= 0.25) && (NetAsk > NetBid))
+		{
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_FOK;
+			
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				std::cout << "REngine::SendOrder() error : \n" << iCode << endl;
+			}
+		}
+			
+	}
+	
 	if (CLS == 1)
 	{
 		if (Signal == 1 && BNQ == 1)
@@ -2051,9 +2095,19 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bPriceFlag)
 			NQTradePrice = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
-			NQBuyVol = pInfo->iVolumeBought;
+		{
+			NQBuyVol = (pInfo->iVolumeBought - NQBuyVol);
+			NQAsk = true;
+		}
+		else
+			NQAsk = false;
 		if (pInfo->bVolumeSoldFlag)
-			NQSellVol = pInfo->iVolumeSold;
+		{
+			NQSellVol = (pInfo->iVolumeSold - NQSellVol);
+			NQBid = true;
+		}
+		else
+			NQBid = false;
 	}
 
 	if (contract)
@@ -2063,9 +2117,19 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			if (pInfo->bPriceFlag)
 				ESTradePrice = pInfo->dPrice;
 			if (pInfo->bVolumeBoughtFlag)
-				ESBuyVol = pInfo->iVolumeBought;
+			{
+				ESBuyVol = (pInfo->iVolumeBought - ESBuyVol);
+				ESAsk = true;
+			}
+			else
+				ESAsk = false;
 			if (pInfo->bVolumeSoldFlag)
-				ESSellVol = pInfo->iVolumeSold;
+			{
+				ESSellVol = (pInfo->iVolumeSold - ESSellVol);
+				ESBid = true;
+			}
+			else
+				ESBid = false;
 		}
 	}
 
