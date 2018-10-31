@@ -1,4 +1,2 @@
-figure out how to accurately track profit
-CHeck closing logic after trade allowed period. CLose if current price is lower or higher than Lowest or highest price
-
-
+Ensure MD_PRINTS is flagged
+Try MD_TRADE_VOLUME
