@@ -2432,6 +2432,9 @@ int main(int      argc,
 	{
 		oLoginParams.sTsCnnctPt.pData = "login_agent_op_paperc";
 		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+		
+		oLoginParams.sIhCnnctPt.pData = "login_agent_history_paperc";
+		oLoginParams.sIhCnnctPt.iDataLen = (int)strlen(oLoginParams.sIhCnnctPt.pData);
 
 		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnl_paperc";
 		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
@@ -2444,6 +2447,9 @@ int main(int      argc,
 	{
 		oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
 		oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+		
+		oLoginParams.sIhCnnctPt.pData = "login_agent_history";
+		oLoginParams.sIhCnnctPt.iDataLen = (int)strlen(oLoginParams.sIhCnnctPt.pData);
 
 		oLoginParams.sPnlCnnctPt.pData = "login_agent_pnlc";
 		oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
