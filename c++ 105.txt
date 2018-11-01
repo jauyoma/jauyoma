@@ -163,6 +163,7 @@ tsNCharcb ESFillSide, NQFillSide;
 int NQBuyVol, NQSellVol, NQTradeSize;
 int ESBuyVol, ESSellVol, ESTradeSize;
 double NQTradePrice, ESTradePrice;
+bool ESOrdBook = false, NQOrdBook = false;
 
 
 
@@ -1317,7 +1318,15 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 				NQNAsk10 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
+		else
+			NQOrdBook = false;
 	}
 
 	if (contract)
@@ -1396,7 +1405,15 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 					ESNAsk10 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
 			}
+			else
+				ESOrdBook = false;
 		}
 	}
 
@@ -1443,19 +1460,38 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQSAsk1 = pInfo->iSize;
 			NQNAsk1 = pInfo->iNumOrders;
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{	
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
-		
-		bInfo->adAskPriceArray[] = pInfo->dPrice;
+		else
+			NQOrdBook = false;
 	}
 
 	if (contract)
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			ESLAsk1 = pInfo->dPrice;
-			ESSAsk1 = pInfo->iSize;
-			ESNAsk1 = pInfo->iNumOrders;
-			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
+			{
+				ESLAsk1 = pInfo->dPrice;
+				ESSAsk1 = pInfo->iSize;
+				ESNAsk1 = pInfo->iNumOrders;
+				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{	
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
+			}
+			else
+				ESOrdBook = false;
 		}
 	}
 
@@ -1503,7 +1539,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSAsk1 = pAsk->iSize;
 			NQNAsk1 = pAsk->iNumOrders;
 			BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
+			
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{	
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
+		else
+			NQOrdBook = false;
 	}
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
@@ -1514,7 +1559,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
+			
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
+		else
+			NQOrdBook = false;
 	}
 
 	if (contract)
@@ -1527,7 +1581,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESSAsk1 = pAsk->iSize;
 				ESNAsk1 = pAsk->iNumOrders;
 				BAsk_T = pBid->iSsboe + pBid->iUsecs;
+				
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
 			}
+			else
+				ESOrdBook = false;
 		}
 
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -1538,7 +1601,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESSBid1 = pBid->iSize;
 				ESNBid1 = pBid->iNumOrders;
 				BBid_T = pBid->iSsboe + pBid->iUsecs;
+				
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
 			}
+			else
+				ESOrdBook = false;
 		}
 	}
 
@@ -1585,17 +1657,38 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+		
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
+		else
+			NQOrdBook = false;
 	}
 
 	if (contract)
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
-			ESLBid1 = pInfo->dPrice;
-			ESSBid1 = pInfo->iSize;
-			ESNBid1 = pInfo->iNumOrders;
-			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
+			{
+				ESLBid1 = pInfo->dPrice;
+				ESSBid1 = pInfo->iSize;
+				ESNBid1 = pInfo->iNumOrders;
+				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+			
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
+			}
+			else
+				ESOrdBook = false;
 		}
 	}
 
@@ -1705,7 +1798,15 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 				NQNBid10 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
+			if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+			{
+				NQOrdBook = true;
+			}
+			else
+				NQOrdBook = false;
 		}
+		else
+			NQOrdBook = false;
 	}
 
 	if (contract)
@@ -1784,7 +1885,15 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 					ESNBid10 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
+				if((pInfo->iUpdateType == 1) || (pInfo->iUpdateType == 4))
+				{
+					ESOrdBook = true;
+				}
+				else
+					ESOrdBook = false;
 			}
+			else
+				ESOrdBook = false;
 		}
 	}
 
@@ -2142,11 +2251,6 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	cout << endl << endl;
-	if (!pInfo->dump(&iIgnored))
-	{
-		cout << "error in pInfo -> dump : " << iIgnored << endl;
-	}
 
 	trial = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 
@@ -2374,6 +2478,10 @@ int main(int      argc,
 	int				  count = 0;
 	std::string		  OpenFile;
 	stringstream	  strValue;
+	double NQAskPrice1, NQAskPrice2, NQAskPrice3;
+	int NQAskSize1, NQAskSize2, NQAskSize3;	
+	double NQBidPrice1, NQBidPrice2, NQBidPrice3;
+	int NQBidSize1, NQBidSize2, NQBidSize3;	
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2611,7 +2719,7 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-	iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS | MD_TRADE_VOLUME);
+	iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2655,7 +2763,7 @@ int main(int      argc,
 
 		/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-		iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS | MD_TRADE_VOLUME);
+		iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS);
 
 		/*   ----------------------------------------------------------------   */
 
@@ -2816,13 +2924,37 @@ int main(int      argc,
 	while (((curr - trade) <= 2) && !done)
 	{
 		curr = (lt.wHour * 60) + lt.wMinute;
+		If(NQOrdBook)
+		{
+			NQLAskPrice1 = bInfo->adAskPriceArray[0];
+			NQLAskPrice2 = bInfo->adAskPriceArray[1];
+			NQLAskPrice3 = bInfo->adAskPriceArray[2];
+			NQLAskSize1 = bInfo->aiAskPriceArray[0];
+			NQLAskSize2 = bInfo->aiAskPriceArray[1];
+			NQLAskSize3 = bInfo->aiAskPriceArray[2];
+			NQLBidPrice1 = bInfo->adBidPriceArray[0];
+			NQLBidPrice2 = bInfo->adBidPriceArray[1];
+			NQLBidPrice3 = bInfo->adBidPriceArray[2];
+			NQLBidSize1 = bInfo->aiBidPriceArray[0];
+			NQLBidSize2 = bInfo->aiBidPriceArray[1];
+			NQLBidSize3 = bInfo->aiBidPriceArray[2];
+		}
 
 		if (cnt != lt.wMinute)
 		{
 			cnt = lt.wMinute;
-			std::cout << "\nCurrent value is : " << curr << endl;
-			std::cout << "\nCount value is : " << cnt << endl;
-			std::cout << "\nTrade value is : " << trade << endl;
+			std::cout << "\nLevel 1 Ask Price is : " << NQLAskPrice1 << endl;
+			std::cout << "\nLevel 2 Ask Price is : " << NQLAskPrice2 << endl;
+			std::cout << "\nLevel 3 Ask Price is : " << NQLAskPrice3 << endl;
+			std::cout << "\nLevel 1 Ask Size is : " << NQLAskSize1 << endl;
+			std::cout << "\nLevel 2 Ask Size is : " << NQLAskSize2 << endl;
+			std::cout << "\nLevel 3 Ask Size is : " << NQLAskSize3 << endl;
+			std::cout << "\nLevel 1 Bid Price is : " << NQLBidPrice1 << endl;
+			std::cout << "\nLevel 2 Bid Price is : " << NQLBidPrice2 << endl;
+			std::cout << "\nLevel 3 Bid Price is : " << NQLBidPrice3 << endl;
+			std::cout << "\nLevel 1 Bid Size is : " << NQLBidSize1 << endl;
+			std::cout << "\nLevel 2 Bid Size is : " << NQLBidSize2 << endl;
+			std::cout << "\nLevel 3 Bid Size is : " << NQLBidSize3 << endl;
 		}
 
 		if ((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T))
