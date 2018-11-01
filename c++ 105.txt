@@ -88,6 +88,7 @@ tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 
 REngine *   g_pEngine;
 MarketOrderParams oMktOrdParams;
+LimitOrderBookInfo * bInfo;
 
 double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
 double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
@@ -1443,6 +1444,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQNAsk1 = pInfo->iNumOrders;
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
+		
+		bInfo->adAskPriceArray[] = pInfo->dPrice;
 	}
 
 	if (contract)
