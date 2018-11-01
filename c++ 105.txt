@@ -117,9 +117,9 @@ tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 
 REngine *   g_pEngine;
 MarketOrderParams oMktOrdParams;
-LimitOrderBookInfo bInfo;
-void bContext;
-int biCode;
+LimitOrderBookInfo &bInfo;
+void &bContext;
+int &biCode;
 
 double Bid = 0, Ask = 0, NBid = 0, NAsk = 0, _price = 0, _ESBid, _ESAsk, _NQBid, _NQAsk;
 double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
@@ -195,9 +195,10 @@ int NQBuyVol, NQSellVol, NQTradeSize;
 int ESBuyVol, ESSellVol, ESTradeSize;
 double NQTradePrice, ESTradePrice;
 bool ESOrdBook = false, NQOrdBook = false;
-
-
-
+double NQAskPrice1 =0, NQAskPrice2 = 0, NQAskPrice3 = 0;
+int NQAskSize1 = 0, NQAskSize2 = 0, NQAskSize3 = 0;
+double NQBidPrice1 = 0, NQBidPrice2 = 0, NQBidPrice3 = 0;
+int NQBidSize1 = 0, NQBidSize2 = 0, NQBidSize3 = 0;
 
 SYSTEMTIME st, lt;
 
@@ -2085,11 +2086,21 @@ int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
 		{
 			if (pInfo->iAskArrayLen > 0)
 			{
-
+				NQAskPrice1 = bInfo->adAskPriceArray[0];
+			NQAskPrice2 = bInfo->adAskPriceArray[1];
+			NQAskPrice3 = bInfo->adAskPriceArray[2];
+			NQAskSize1 = bInfo->aiAskSizeArray[0];
+			NQAskSize2 = bInfo->aiAskSizeArray[1];
+			NQAskSize3 = bInfo->aiAskSizeArray[2];
 			}
 			if (pInfo->iBidArrayLen > 0)
 			{
-
+				NQBidPrice1 = bInfo->adBidPriceArray[0];
+			NQBidPrice2 = bInfo->adBidPriceArray[1];
+			NQBidPrice3 = bInfo->adBidPriceArray[2];
+			NQBidSize1 = bInfo->aiBidSizeArray[0];
+			NQBidSize2 = bInfo->aiBidSizeArray[1];
+			NQBidSize3 = bInfo->aiBidSizeArray[2];
 			}
 		}
 	}
@@ -2102,11 +2113,21 @@ int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
 			{
 				if (pInfo->iAskArrayLen > 0)
 				{
-
+					ESAskPrice1 = bInfo->adAskPriceArray[0];
+			ESAskPrice2 = bInfo->adAskPriceArray[1];
+			ESAskPrice3 = bInfo->adAskPriceArray[2];
+			ESAskSize1 = bInfo->aiAskSizeArray[0];
+			ESAskSize2 = bInfo->aiAskSizeArray[1];
+			ESAskSize3 = bInfo->aiAskSizeArray[2];
 				}
 				if (pInfo->iBidArrayLen > 0)
 				{
-
+					ESBidPrice1 = bInfo->adBidPriceArray[0];
+			ESBidPrice2 = bInfo->adBidPriceArray[1];
+			ESBidPrice3 = bInfo->adBidPriceArray[2];
+			ESBidSize1 = bInfo->aiBidSizeArray[0];
+			ESBidSize2 = bInfo->aiBidSizeArray[1];
+			ESBidSize3 = bInfo->aiBidSizeArray[2];
 				}
 			}
 		}
@@ -2521,10 +2542,6 @@ int main(int      argc,
 	int				  count = 0;
 	std::string		  OpenFile;
 	stringstream	  strValue;
-	double NQAskPrice1 =0, NQAskPrice2 = 0, NQAskPrice3 = 0;
-	int NQAskSize1 = 0, NQAskSize2 = 0, NQAskSize3 = 0;
-	double NQBidPrice1 = 0, NQBidPrice2 = 0, NQBidPrice3 = 0;
-	int NQBidSize1 = 0, NQBidSize2 = 0, NQBidSize3 = 0;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2969,18 +2986,7 @@ int main(int      argc,
 		curr = (lt.wHour * 60) + lt.wMinute;
 		if(NQOrdBook)
 		{
-			NQAskPrice1 = bInfo->adAskPriceArray[0];
-			NQAskPrice2 = bInfo->adAskPriceArray[1];
-			NQAskPrice3 = bInfo->adAskPriceArray[2];
-			NQAskSize1 = bInfo->aiAskSizeArray[0];
-			NQAskSize2 = bInfo->aiAskSizeArray[1];
-			NQAskSize3 = bInfo->aiAskSizeArray[2];
-			NQBidPrice1 = bInfo->adBidPriceArray[0];
-			NQBidPrice2 = bInfo->adBidPriceArray[1];
-			NQBidPrice3 = bInfo->adBidPriceArray[2];
-			NQBidSize1 = bInfo->aiBidSizeArray[0];
-			NQBidSize2 = bInfo->aiBidSizeArray[1];
-			NQBidSize3 = bInfo->aiBidSizeArray[2];
+			
 		}
 
 		if (cnt != lt.wMinute)
@@ -3005,8 +3011,6 @@ int main(int      argc,
 			std::cout << "\n\nExiting algobox..." << endl;
 			break;
 		}
-
-
 	}
 
 	/*   ----------------------------------------------------------------   */
