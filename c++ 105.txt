@@ -2086,21 +2086,21 @@ int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
 		{
 			if (pInfo->iAskArrayLen > 0)
 			{
-				NQAskPrice1 = bInfo->adAskPriceArray[0];
-			NQAskPrice2 = bInfo->adAskPriceArray[1];
-			NQAskPrice3 = bInfo->adAskPriceArray[2];
-			NQAskSize1 = bInfo->aiAskSizeArray[0];
-			NQAskSize2 = bInfo->aiAskSizeArray[1];
-			NQAskSize3 = bInfo->aiAskSizeArray[2];
+				NQAskPrice1 = pInfo->adAskPriceArray[0];
+			NQAskPrice2 = pInfo->adAskPriceArray[1];
+			NQAskPrice3 = pInfo->adAskPriceArray[2];
+			NQAskSize1 = pInfo->aiAskSizeArray[0];
+			NQAskSize2 = pInfo->aiAskSizeArray[1];
+			NQAskSize3 = pInfo->aiAskSizeArray[2];
 			}
 			if (pInfo->iBidArrayLen > 0)
 			{
-				NQBidPrice1 = bInfo->adBidPriceArray[0];
-			NQBidPrice2 = bInfo->adBidPriceArray[1];
-			NQBidPrice3 = bInfo->adBidPriceArray[2];
-			NQBidSize1 = bInfo->aiBidSizeArray[0];
-			NQBidSize2 = bInfo->aiBidSizeArray[1];
-			NQBidSize3 = bInfo->aiBidSizeArray[2];
+				NQBidPrice1 = pInfo->adBidPriceArray[0];
+			NQBidPrice2 = pInfo->adBidPriceArray[1];
+			NQBidPrice3 = pInfo->adBidPriceArray[2];
+			NQBidSize1 = pInfo->aiBidSizeArray[0];
+			NQBidSize2 = pInfo->aiBidSizeArray[1];
+			NQBidSize3 = pInfo->aiBidSizeArray[2];
 			}
 		}
 	}
@@ -2113,21 +2113,21 @@ int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
 			{
 				if (pInfo->iAskArrayLen > 0)
 				{
-					ESAskPrice1 = bInfo->adAskPriceArray[0];
-			ESAskPrice2 = bInfo->adAskPriceArray[1];
-			ESAskPrice3 = bInfo->adAskPriceArray[2];
-			ESAskSize1 = bInfo->aiAskSizeArray[0];
-			ESAskSize2 = bInfo->aiAskSizeArray[1];
-			ESAskSize3 = bInfo->aiAskSizeArray[2];
+					ESAskPrice1 = pInfo->adAskPriceArray[0];
+			ESAskPrice2 = pInfo->adAskPriceArray[1];
+			ESAskPrice3 = pInfo->adAskPriceArray[2];
+			ESAskSize1 = pInfo->aiAskSizeArray[0];
+			ESAskSize2 = pInfo->aiAskSizeArray[1];
+			ESAskSize3 = pInfo->aiAskSizeArray[2];
 				}
 				if (pInfo->iBidArrayLen > 0)
 				{
-					ESBidPrice1 = bInfo->adBidPriceArray[0];
-			ESBidPrice2 = bInfo->adBidPriceArray[1];
-			ESBidPrice3 = bInfo->adBidPriceArray[2];
-			ESBidSize1 = bInfo->aiBidSizeArray[0];
-			ESBidSize2 = bInfo->aiBidSizeArray[1];
-			ESBidSize3 = bInfo->aiBidSizeArray[2];
+					ESBidPrice1 = pInfo->adBidPriceArray[0];
+			ESBidPrice2 = pInfo->adBidPriceArray[1];
+			ESBidPrice3 = pInfo->adBidPriceArray[2];
+			ESBidSize1 = pInfo->aiBidSizeArray[0];
+			ESBidSize2 = pInfo->aiBidSizeArray[1];
+			ESBidSize3 = pInfo->aiBidSizeArray[2];
 				}
 			}
 		}
