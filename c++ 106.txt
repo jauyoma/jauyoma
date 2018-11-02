@@ -1281,70 +1281,63 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if (pInfo->dPrice > NQLAsk1 && ((pInfo->dPrice < NQLAsk2) || (NQLAsk2 == 0) || ((NQLAsk2 < NQLAsk1))))
+			if (pInfo->dPrice == NQLAsk2)
 			{
 				NQLAsk2 = pInfo->dPrice;
 				NQSAsk2 = pInfo->iSize;
 				NQNAsk2 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk2 && ((pInfo->dPrice < NQLAsk3) || (NQLAsk3 == 0) || ((NQLAsk3 < NQLAsk2))))
+			else if (pInfo->dPrice == NQLAsk3)
 			{
 				NQLAsk3 = pInfo->dPrice;
 				NQSAsk3 = pInfo->iSize;
 				NQNAsk3 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk3 && ((pInfo->dPrice < NQLAsk4) || (NQLAsk4 == 0) || ((NQLAsk4 < NQLAsk3))))
+			else if (pInfo->dPrice == NQLAsk4)
 			{
 				NQLAsk4 = pInfo->dPrice;
 				NQSAsk4 = pInfo->iSize;
 				NQNAsk4 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk4 && ((pInfo->dPrice < NQLAsk5) || (NQLAsk5 == 0) || ((NQLAsk5 < NQLAsk4))))
+			else if (pInfo->dPrice == NQLAsk5)
 			{
 				NQLAsk5 = pInfo->dPrice;
 				NQSAsk5 = pInfo->iSize;
 				NQNAsk5 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk5 && ((pInfo->dPrice < NQLAsk6) || (NQLAsk6 == 0) || ((NQLAsk6 < NQLAsk5))))
+			else if (pInfo->dPrice == NQLAsk6)
 			{
 				NQLAsk6 = pInfo->dPrice;
 				NQSAsk6 = pInfo->iSize;
 				NQNAsk6 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk6 && ((pInfo->dPrice < NQLAsk7) || (NQLAsk7 == 0) || ((NQLAsk7 < NQLAsk6))))
+			else if (pInfo->dPrice == NQLAsk7)
 			{
 				NQLAsk7 = pInfo->dPrice;
 				NQSAsk7 = pInfo->iSize;
 				NQNAsk7 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk6 && ((pInfo->dPrice < NQLAsk7) || (NQLAsk7 == 0) || ((NQLAsk7 < NQLAsk6))))
-			{
-				NQLAsk7 = pInfo->dPrice;
-				NQSAsk7 = pInfo->iSize;
-				NQNAsk7 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice > NQLAsk7 && ((pInfo->dPrice < NQLAsk8) || (NQLAsk8 == 0) || ((NQLAsk8 < NQLAsk7))))
+			else if (pInfo->dPrice == NQLAsk8)
 			{
 				NQLAsk8 = pInfo->dPrice;
 				NQSAsk8 = pInfo->iSize;
 				NQNAsk8 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLAsk8 && ((pInfo->dPrice < NQLAsk9) || (NQLAsk9 == 0) || ((NQLAsk9 <  NQLAsk8))))
+			else if (pInfo->dPrice == NQLAsk9)
 			{
 				NQLAsk9 = pInfo->dPrice;
 				NQSAsk9 = pInfo->iSize;
 				NQNAsk9 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else
+			else if (pInfo->dPrice == NQLAsk10)
 			{
 				NQLAsk10 = pInfo->dPrice;
 				NQSAsk10 = pInfo->iSize;
@@ -1362,70 +1355,63 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		{
 			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				if (pInfo->dPrice > ESLAsk1 && ((pInfo->dPrice < ESLAsk2) || (ESLAsk2 == 0) || ((ESLAsk2 < ESLAsk1))))
+				if (pInfo->dPrice == ESLAsk2)
 				{
 					ESLAsk2 = pInfo->dPrice;
 					ESSAsk2 = pInfo->iSize;
 					ESNAsk2 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk2 && ((pInfo->dPrice < ESLAsk3) || (ESLAsk3 == 0) || ((ESLAsk3 < ESLAsk2))))
+				else if (pInfo->dPrice == ESLAsk3)
 				{
 					ESLAsk3 = pInfo->dPrice;
 					ESSAsk3 = pInfo->iSize;
 					ESNAsk3 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk3 && ((pInfo->dPrice < ESLAsk4) || (ESLAsk4 == 0) || ((ESLAsk4 < ESLAsk3))))
+				else if (pInfo->dPrice == ESLAsk4)
 				{
 					ESLAsk4 = pInfo->dPrice;
 					ESSAsk4 = pInfo->iSize;
 					ESNAsk4 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk4 && ((pInfo->dPrice < ESLAsk5) || (ESLAsk5 == 0) || ((ESLAsk5 < ESLAsk4))))
+				else if (pInfo->dPrice == ESLAsk5)
 				{
 					ESLAsk5 = pInfo->dPrice;
 					ESSAsk5 = pInfo->iSize;
 					ESNAsk5 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk5 && ((pInfo->dPrice < ESLAsk6) || (ESLAsk6 == 0) || ((ESLAsk6 < ESLAsk5))))
+				else if (pInfo->dPrice == ESLAsk6)
 				{
 					ESLAsk6 = pInfo->dPrice;
 					ESSAsk6 = pInfo->iSize;
 					ESNAsk6 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk6 && ((pInfo->dPrice < ESLAsk7) || (ESLAsk7 == 0) || ((ESLAsk7 < ESLAsk6))))
+				else if (pInfo->dPrice == ESLAsk7)
 				{
 					ESLAsk7 = pInfo->dPrice;
 					ESSAsk7 = pInfo->iSize;
 					ESNAsk7 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk6 && ((pInfo->dPrice < ESLAsk7) || (ESLAsk7 == 0) || ((ESLAsk7 < ESLAsk6))))
-				{
-					ESLAsk7 = pInfo->dPrice;
-					ESSAsk7 = pInfo->iSize;
-					ESNAsk7 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice > ESLAsk7 && ((pInfo->dPrice < ESLAsk8) || (ESLAsk8 == 0) || ((ESLAsk8 < ESLAsk7))))
+				else if (pInfo->dPrice == ESLAsk8)
 				{
 					ESLAsk8 = pInfo->dPrice;
 					ESSAsk8 = pInfo->iSize;
 					ESNAsk8 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLAsk8 && ((pInfo->dPrice < ESLAsk9) || (ESLAsk9 == 0) || ((ESLAsk9 <  ESLAsk8))))
+				else if (pInfo->dPrice == ESLAsk9)
 				{
 					ESLAsk9 = pInfo->dPrice;
 					ESSAsk9 = pInfo->iSize;
 					ESNAsk9 = pInfo->iNumOrders;
 					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else
+				else if (pInfo->dPrice == ESLAsk10)
 				{
 					ESLAsk10 = pInfo->dPrice;
 					ESSAsk10 = pInfo->iSize;
@@ -1480,6 +1466,16 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQLAsk1 = pInfo->dPrice;
 			NQSAsk1 = pInfo->iSize;
 			NQNAsk1 = pInfo->iNumOrders;
+			NQLAsk2 = NQLAsk1 + incrNQ;
+			NQLAsk3 = NQLAsk2 + incrNQ;
+			NQLAsk4 = NQLAsk3 + incrNQ;
+			NQLAsk5 = NQLAsk4 + incrNQ;
+			NQLAsk6 = NQLAsk5 + incrNQ;
+			NQLAsk7 = NQLAsk6 + incrNQ;
+			NQLAsk8 = NQLAsk7 + incrNQ;
+			NQLAsk9 = NQLAsk8 + incrNQ;
+			NQLAsk10 = NQLAsk9 + incrNQ;
+			
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
@@ -1493,6 +1489,16 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				ESLAsk1 = pInfo->dPrice;
 				ESSAsk1 = pInfo->iSize;
 				ESNAsk1 = pInfo->iNumOrders;
+				ESLAsk2 = ESLAsk1 + incrES;
+				ESLAsk3 = ESLAsk2 + incrES;
+				ESLAsk4 = ESLAsk3 + incrES;
+				ESLAsk5 = ESLAsk4 + incrES;
+				ESLAsk6 = ESLAsk5 + incrES;
+				ESLAsk7 = ESLAsk6 + incrES;
+				ESLAsk8 = ESLAsk7 + incrES;
+				ESLAsk9 = ESLAsk8 + incrES;
+				ESLAsk10 = ESLAsk9 + incrES;
+				
 				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
@@ -1541,6 +1547,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQLAsk1 = pAsk->dPrice;
 			NQSAsk1 = pAsk->iSize;
 			NQNAsk1 = pAsk->iNumOrders;
+			NQLAsk2 = NQLAsk1 + incrNQ;
+			NQLAsk3 = NQLAsk2 + incrNQ;
+			NQLAsk4 = NQLAsk3 + incrNQ;
+			NQLAsk5 = NQLAsk4 + incrNQ;
+			NQLAsk6 = NQLAsk5 + incrNQ;
+			NQLAsk7 = NQLAsk6 + incrNQ;
+			NQLAsk8 = NQLAsk7 + incrNQ;
+			NQLAsk9 = NQLAsk8 + incrNQ;
+			NQLAsk10 = NQLAsk9 + incrNQ;
 			BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
 		}
 	}
@@ -1552,6 +1567,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQLBid1 = pBid->dPrice;
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
+			NQLBid2 = NQLBid1 - incrNQ;
+			NQLBid3 = NQLBid2 - incrNQ;
+			NQLBid4 = NQLBid3 - incrNQ;
+			NQLBid5 = NQLBid4 - incrNQ;
+			NQLBid6 = NQLBid5 - incrNQ;
+			NQLBid7 = NQLBid6 - incrNQ;
+			NQLBid8 = NQLBid7 - incrNQ;
+			NQLBid9 = NQLBid8 - incrNQ;
+			NQLBid10 = NQLBid9 - incrNQ;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
 		}
 	}
@@ -1565,6 +1589,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESLAsk1 = pAsk->dPrice;
 				ESSAsk1 = pAsk->iSize;
 				ESNAsk1 = pAsk->iNumOrders;
+				ESLAsk2 = ESLAsk1 + incrES;
+				ESLAsk3 = ESLAsk2 + incrES;
+				ESLAsk4 = ESLAsk3 + incrES;
+				ESLAsk5 = ESLAsk4 + incrES;
+				ESLAsk6 = ESLAsk5 + incrES;
+				ESLAsk7 = ESLAsk6 + incrES;
+				ESLAsk8 = ESLAsk7 + incrES;
+				ESLAsk9 = ESLAsk8 + incrES;
+				ESLAsk10 = ESLAsk9 + incrES;
 				BAsk_T = pBid->iSsboe + pBid->iUsecs;
 			}
 		}
@@ -1576,6 +1609,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESLBid1 = pBid->dPrice;
 				ESSBid1 = pBid->iSize;
 				ESNBid1 = pBid->iNumOrders;
+				ESLBid2 = ESLBid1 - incrES;
+				ESLBid3 = ESLBid2 - incrES;
+				ESLBid4 = ESLBid3 - incrES;
+				ESLBid5 = ESLBid4 - incrES;
+				ESLBid6 = ESLBid5 - incrES;
+				ESLBid7 = ESLBid6 - incrES;
+				ESLBid8 = ESLBid7 - incrES;
+				ESLBid9 = ESLBid8 - incrES;
+				ESLBid10 = ESLBid9 - incrES;
 				BBid_T = pBid->iSsboe + pBid->iUsecs;
 			}
 		}
@@ -1623,6 +1665,15 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQLBid1 = pInfo->dPrice;
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
+			NQLBid2 = NQLBid1 - incrNQ;
+			NQLBid3 = NQLBid2 - incrNQ;
+			NQLBid4 = NQLBid3 - incrNQ;
+			NQLBid5 = NQLBid4 - incrNQ;
+			NQLBid6 = NQLBid5 - incrNQ;
+			NQLBid7 = NQLBid6 - incrNQ;
+			NQLBid8 = NQLBid7 - incrNQ;
+			NQLBid9 = NQLBid8 - incrNQ;
+			NQLBid10 = NQLBid9 - incrNQ;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
@@ -1636,6 +1687,15 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				ESLBid1 = pInfo->dPrice;
 				ESSBid1 = pInfo->iSize;
 				ESNBid1 = pInfo->iNumOrders;
+				ESLBid2 = ESLBid1 - incrES;
+				ESLBid3 = ESLBid2 - incrES;
+				ESLBid4 = ESLBid3 - incrES;
+				ESLBid5 = ESLBid4 - incrES;
+				ESLBid6 = ESLBid5 - incrES;
+				ESLBid7 = ESLBid6 - incrES;
+				ESLBid8 = ESLBid7 - incrES;
+				ESLBid9 = ESLBid8 - incrES;
+				ESLBid10 = ESLBid9 - incrES;
 				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
@@ -1677,70 +1737,63 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if (pInfo->dPrice > NQLBid1 && ((pInfo->dPrice < NQLBid2) || (NQLBid2 == 0) || ((NQLBid2 < NQLBid1))))
+			if (pInfo->dPrice == NQLBid2)
 			{
 				NQLBid2 = pInfo->dPrice;
 				NQSBid2 = pInfo->iSize;
 				NQNBid2 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid2 && ((pInfo->dPrice < NQLBid3) || (NQLBid3 == 0) || ((NQLBid3 < NQLBid2))))
+			else if (pInfo->dPrice == NQLBid3)
 			{
 				NQLBid3 = pInfo->dPrice;
 				NQSBid3 = pInfo->iSize;
 				NQNBid3 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid3 && ((pInfo->dPrice < NQLBid4) || (NQLBid4 == 0) || ((NQLBid4 < NQLBid3))))
+			else if (pInfo->dPrice == NQLBid4)
 			{
 				NQLBid4 = pInfo->dPrice;
 				NQSBid4 = pInfo->iSize;
 				NQNBid4 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid4 && ((pInfo->dPrice < NQLBid5) || (NQLBid5 == 0) || ((NQLBid5 < NQLBid4))))
+			else if (pInfo->dPrice == NQLBid5)
 			{
 				NQLBid5 = pInfo->dPrice;
 				NQSBid5 = pInfo->iSize;
 				NQNBid5 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid5 && ((pInfo->dPrice < NQLBid6) || (NQLBid6 == 0) || ((NQLBid6 < NQLBid5))))
+			else if (pInfo->dPrice == NQLBid6)
 			{
 				NQLBid6 = pInfo->dPrice;
 				NQSBid6 = pInfo->iSize;
 				NQNBid6 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid6 && ((pInfo->dPrice < NQLBid7) || (NQLBid7 == 0) || ((NQLBid7 < NQLBid6))))
+			else if (pInfo->dPrice == NQLBid7)
 			{
 				NQLBid7 = pInfo->dPrice;
 				NQSBid7 = pInfo->iSize;
 				NQNBid7 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid6 && ((pInfo->dPrice < NQLBid7) || (NQLBid7 == 0) || ((NQLBid7 < NQLBid6))))
-			{
-				NQLBid7 = pInfo->dPrice;
-				NQSBid7 = pInfo->iSize;
-				NQNBid7 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice > NQLBid7 && ((pInfo->dPrice < NQLBid8) || (NQLBid8 == 0) || ((NQLBid8 < NQLBid7))))
+			else if (pInfo->dPrice == NQLBid8)
 			{
 				NQLBid8 = pInfo->dPrice;
 				NQSBid8 = pInfo->iSize;
 				NQNBid8 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else if (pInfo->dPrice > NQLBid8 && ((pInfo->dPrice < NQLBid9) || (NQLBid9 == 0) || ((NQLBid9 <  NQLBid8))))
+			else if (pInfo->dPrice == NQLBid9)
 			{
 				NQLBid9 = pInfo->dPrice;
 				NQSBid9 = pInfo->iSize;
 				NQNBid9 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-			else
+			else if (pInfo->dPrice == NQLBid10)
 			{
 				NQLBid10 = pInfo->dPrice;
 				NQSBid10 = pInfo->iSize;
@@ -1756,70 +1809,63 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		{
 			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				if (pInfo->dPrice > ESLBid1 && ((pInfo->dPrice < ESLBid2) || (ESLBid2 == 0) || ((ESLBid2 < ESLBid1))))
+				if (pInfo->dPrice == ESLBid2)
 				{
 					ESLBid2 = pInfo->dPrice;
 					ESSBid2 = pInfo->iSize;
 					ESNBid2 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid2 && ((pInfo->dPrice < ESLBid3) || (ESLBid3 == 0) || ((ESLBid3 < ESLBid2))))
+				else if (pInfo->dPrice == ESLBid3)
 				{
 					ESLBid3 = pInfo->dPrice;
 					ESSBid3 = pInfo->iSize;
 					ESNBid3 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid3 && ((pInfo->dPrice < ESLBid4) || (ESLBid4 == 0) || ((ESLBid4 < ESLBid3))))
+				else if (pInfo->dPrice == ESLBid4)
 				{
 					ESLBid4 = pInfo->dPrice;
 					ESSBid4 = pInfo->iSize;
 					ESNBid4 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid4 && ((pInfo->dPrice < ESLBid5) || (ESLBid5 == 0) || ((ESLBid5 < ESLBid4))))
+				else if (pInfo->dPrice == ESLBid5)
 				{
 					ESLBid5 = pInfo->dPrice;
 					ESSBid5 = pInfo->iSize;
 					ESNBid5 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid5 && ((pInfo->dPrice < ESLBid6) || (ESLBid6 == 0) || ((ESLBid6 < ESLBid5))))
+				else if (pInfo->dPrice == ESLBid6)
 				{
 					ESLBid6 = pInfo->dPrice;
 					ESSBid6 = pInfo->iSize;
 					ESNBid6 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid6 && ((pInfo->dPrice < ESLBid7) || (ESLBid7 == 0) || ((ESLBid7 < ESLBid6))))
+				else if (pInfo->dPrice == ESLBid7)
 				{
 					ESLBid7 = pInfo->dPrice;
 					ESSBid7 = pInfo->iSize;
 					ESNBid7 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid6 && ((pInfo->dPrice < ESLBid7) || (ESLBid7 == 0) || ((ESLBid7 < ESLBid6))))
-				{
-					ESLBid7 = pInfo->dPrice;
-					ESSBid7 = pInfo->iSize;
-					ESNBid7 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice > ESLBid7 && ((pInfo->dPrice < ESLBid8) || (ESLBid8 == 0) || ((ESLBid8 < ESLBid7))))
+				else if (pInfo->dPrice == ESLBid8)
 				{
 					ESLBid8 = pInfo->dPrice;
 					ESSBid8 = pInfo->iSize;
 					ESNBid8 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else if (pInfo->dPrice > ESLBid8 && ((pInfo->dPrice < ESLBid9) || (ESLBid9 == 0) || ((ESLBid9 <  ESLBid8))))
+				else if (pInfo->dPrice == ESLBid9)
 				{
 					ESLBid9 = pInfo->dPrice;
 					ESSBid9 = pInfo->iSize;
 					ESNBid9 = pInfo->iNumOrders;
 					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 				}
-				else
+				else if (pInfo->dPrice == ESLBid10)
 				{
 					ESLBid10 = pInfo->dPrice;
 					ESSBid10 = pInfo->iSize;
@@ -2897,26 +2943,51 @@ int main(int      argc,
 	while (((curr - trade) <= 2) && !done)
 	{
 		curr = (lt.wHour * 60) + lt.wMinute;
-		if (NQOrdBook)
-		{
-
-		}
 
 		if (cnt != lt.wMinute)
 		{
 			cnt = lt.wMinute;
+			std::cout << "\n\nOrder Book Information..." << endl;
 			std::cout << "\nLevel 1 Ask Price is : " << NQLAsk1 << endl;
 			std::cout << "\nLevel 2 Ask Price is : " << NQLAsk2 << endl;
 			std::cout << "\nLevel 3 Ask Price is : " << NQLAsk3 << endl;
+			std::cout << "\nLevel 4 Ask Price is : " << NQLAsk4 << endl;
+			std::cout << "\nLevel 5 Ask Price is : " << NQLAsk5 << endl;
+			std::cout << "\nLevel 6 Ask Price is : " << NQLAsk6 << endl;
+			std::cout << "\nLevel 7 Ask Price is : " << NQLAsk7 << endl;
+			std::cout << "\nLevel 8 Ask Price is : " << NQLAsk8 << endl;
+			std::cout << "\nLevel 9 Ask Price is : " << NQLAsk9 << endl;
+			std::cout << "\nLevel 10 Ask Price is : " << NQLAsk10 << endl;
 			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
 			std::cout << "\nLevel 2 Ask Size is : " << NQSAsk2 << endl;
 			std::cout << "\nLevel 3 Ask Size is : " << NQSAsk3 << endl;
+			std::cout << "\nLevel 4 Ask Size is : " << NQSAsk4 << endl;
+			std::cout << "\nLevel 5 Ask Size is : " << NQSAsk5 << endl;
+			std::cout << "\nLevel 6 Ask Size is : " << NQSAsk6 << endl;
+			std::cout << "\nLevel 7 Ask Size is : " << NQSAsk7 << endl;
+			std::cout << "\nLevel 8 Ask Size is : " << NQSAsk8 << endl;
+			std::cout << "\nLevel 9 Ask Size is : " << NQSAsk9 << endl;
+			std::cout << "\nLevel 10 Ask Size is : " << NQSAsk10 << endl;
 			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
 			std::cout << "\nLevel 2 Bid Price is : " << NQLBid2 << endl;
 			std::cout << "\nLevel 3 Bid Price is : " << NQLBid3 << endl;
+			std::cout << "\nLevel 4 Bid Price is : " << NQLBid4 << endl;
+			std::cout << "\nLevel 5 Bid Price is : " << NQLBid5 << endl;
+			std::cout << "\nLevel 6 Bid Price is : " << NQLBid6 << endl;
+			std::cout << "\nLevel 7 Bid Price is : " << NQLBid7 << endl;
+			std::cout << "\nLevel 8 Bid Price is : " << NQLBid8 << endl;
+			std::cout << "\nLevel 9 Bid Price is : " << NQLBid9 << endl;
+			std::cout << "\nLevel 10 Bid Price is : " << NQLBid10 << endl;
 			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
 			std::cout << "\nLevel 2 Bid Size is : " << NQSBid2 << endl;
 			std::cout << "\nLevel 3 Bid Size is : " << NQSBid3 << endl;
+			std::cout << "\nLevel 4 Bid Size is : " << NQSBid4 << endl;
+			std::cout << "\nLevel 5 Bid Size is : " << NQSBid5 << endl;
+			std::cout << "\nLevel 6 Bid Size is : " << NQSBid6 << endl;
+			std::cout << "\nLevel 7 Bid Size is : " << NQSBid7 << endl;
+			std::cout << "\nLevel 8 Bid Size is : " << NQSBid8 << endl;
+			std::cout << "\nLevel 9 Bid Size is : " << NQSBid9 << endl;
+			std::cout << "\nLevel 10 Bid Size is : " << NQSBid10 << endl;
 		}
 
 		if ((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T))
