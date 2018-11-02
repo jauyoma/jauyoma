@@ -117,6 +117,8 @@ tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 
 REngine *   g_pEngine;
 MarketOrderParams oMktOrdParams;
+LimitOrderParams  oLmtOrdParams;
+ModifyLimitOrderParams	oModLmtOrdParams;
 LimitOrderBookInfo bInfo;
 void * bContext;
 int biCode;
@@ -187,9 +189,10 @@ int ESSBid6, ESSBid7, ESSBid8, ESSBid9, ESSBid10;
 int BBid_T, Bid_T, BAsk_T, Ask_T;
 int BBid_uS, Bid_uS, BAsk_uS, Ask_uS;
 tsNCharcb ESFillSide, NQFillSide;
-int NQBuyVol, NQSellVol, NQTradeSize;
-int ESBuyVol, ESSellVol, ESTradeSize;
-double NQTradePrice, ESTradePrice;
+double NQ1TP, ES1TP, NQ2TP, ES2TP, NQ3TP, ES3TP;
+double NQ4TP, ES4TP, NQ5TP, ES5TP, NQ6TP, ES6TP;
+double NQ7TP, ES7TP, NQ8TP, ES8TP, NQ8TP, ES8TP;
+double NQ9TP, ES9TP, NQ10TP, ES10TP;
 bool ESOrdBook = false, NQOrdBook = false;
 double NQAskPrice1 = 0, NQAskPrice2 = 0, NQAskPrice3 = 0;
 int NQAskSize1 = 0, NQAskSize2 = 0, NQAskSize3 = 0;
@@ -199,6 +202,11 @@ double ESAskPrice1 = 0, ESAskPrice2 = 0, ESAskPrice3 = 0;
 int ESAskSize1 = 0, ESAskSize2 = 0, ESAskSize3 = 0;
 double ESBidPrice1 = 0, ESBidPrice2 = 0, ESBidPrice3 = 0;
 int ESBidSize1 = 0, ESBidSize2 = 0, ESBidSize3 = 0;
+int NQTradeSize, ESTradeSize;
+int NQ1BV, NQ1SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
+int NQ4BV, NQ4SV, ES4BV, ES4SV, NQ5BV, NQ5SV, ES5BV, ES5SV;
+int NQ6BV, NQ6SV, ES6BV, ES6SV, NQ7BV, NQ7SV, ES7BV, ES7SV;
+int NQ8BV, NQ8SV, ES48V, ES8SV, NQ9BV, NQ9SV, ES9BV, ES9SV, NQ10BV, NQ10SV, ES10BV, ES10SV;
 
 
 SYSTEMTIME st, lt;
@@ -537,23 +545,96 @@ void MyCallbacks::CloseOrder(int &Signal)
 	QueryPerformanceCounter(&StartingTime);
 
 	int NetBid = 0, NetAsk = 0;
-	double Pressure;
-	int NQASizes[] = { NQSAsk1, NQSAsk2, NQSAsk3, NQSAsk4, NQSAsk5, NQSAsk6, NQSAsk7, NQSAsk8, NQSAsk9, NQSAsk10 };
-	int NQBSizes[] = { NQSBid1, NQSBid2, NQSBid3, NQSBid4, NQSBid5, NQSBid6, NQSBid7, NQSBid8, NQSBid9, NQSBid10 };
-	int ESASizes[] = { ESSAsk1, ESSAsk2, ESSAsk3, ESSAsk4, ESSAsk5, ESSAsk6, ESSAsk7, ESSAsk8, ESSAsk9, ESSAsk10 };
-	int ESBSizes[] = { ESSBid1, ESSBid2, ESSBid3, ESSBid4, ESSBid5, ESSBid6, ESSBid7, ESSBid8, ESSBid9, ESSBid10 };
-	int NQAMax = 0;
+	double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3, Psh4, Bs4, Psh5, Bs5;
+	double Psh6, Bs6, Psh7, Bs7, Psh8, Bs8, Psh9, Bs9, Psh10, Bs10;
+	int  NQAMax[], ESAMax[], NQBMax[], ESBMax[];
+	
+	NQAMax[] = {NQSAsk1, NQSAsk2, NQSAsk3, NQSAsk4, NQSAsk5, NQSAsk6, NQSAsk7, NQSAsk8, NQSAsk9, NQSAsk10};
+	ESAMax[] = {ESSAsk1, ESSAsk2, ESSAsk3, ESSAsk4, ESSAsk5, ESSAsk6, ESSAsk7, ESSAsk8, ESSAsk9, ESSAsk10};
+	NQBMax[] = {NQSBid1, NQSBid2, NQSBid3, NQSBid4, NQSBid5, NQSBid6, NQSBid7, NQSBid8, NQSBid9, NQSBid10};
+	ESBMax[] = {ESSBid1, ESSBid2, ESSBid3, ESSBid4, ESSBid5, ESSBid6, ESSBid7, ESSBid8, ESSBid9, ESSBid10};
+	
+	if((NQ1TP == NQLAsk1) || (NQ1TP == NQLBid1))
+	{
+		Psh1 = (NQ1BV - NQ1SV) / (NQ1BV + NQ1SV);
+		Bs1 = (NQSBid1 - NQSAsk1) / (NQSBid1 + NQSAsk1);
+		if ((Psh1 >= 0.25) && (Bs1 >= 0.25))
+		{
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oMktOrdParams.sDuration = sORDER_DURATION_FOK;
 
-	Pressure = (NQBuyVol - NQSellVol) / (NQBuyVol + NQSellVol);
+			if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				std::cout << "REngine::SendMarketOrder() error : \n" << iCode << endl;
+			}
+		}
+	}
+	else if((NQ2TP == NQLAsk2) || (NQ2TP == NQLBid2))
+	{
+		Psh2 = (NQ2BV - NQ2SV) / (NQ2BV + NQ2SV);
+		Bs2 = (NQSBid2 - NQSAsk2) / (NQSBid2 + NQSAsk2);
+		if ((Psh2 >= 0.25) && (Bs1 >= 0.25))
+		{
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oLmtOrdParams.sTicker.pData = SymbNQ.pData;
+			oLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+			oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
+			oLmtOrdParams.dPrice = NQLAsk1;
+
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				std::cout << "REngine::SendLimitOrder() error : \n" << iCode << endl;
+			}
+		}
+	}
+	else if((NQ3TP == NQLAsk3) || (NQ3TP == NQLBid3))
+	{
+		Psh3 = (NQ3BV - NQ3SV) / (NQ3BV + NQ3SV);
+		Bs3 = (NQSBid3 - NQSAsk3) / (NQSBid3 + NQSAsk3);
+	}
+	else if((NQ4TP == NQLAsk4) || (NQ4TP == NQLBid4))
+	{
+		Psh4 = (NQ4BV - NQ4SV) / (NQ4BV + NQ4SV);
+		Bs4 = (NQSBid4 - NQSAsk4) / (NQSBid4 + NQSAsk4);
+	}
+	else if((NQ5TP == NQLAsk5) || (NQ5TP == NQLBid5))
+	{
+		Psh5 = (NQ5BV - NQ5SV) / (NQ5BV + NQ5SV);
+		Bs5 = (NQSBid5 - NQSAsk5) / (NQSBid5 + NQSAsk5);
+	}
+	else if((NQ6TP == NQLAsk6) || (NQ6TP == NQLBid6))
+	{
+		Psh6 = (NQ6BV - NQ6SV) / (NQ6BV + NQ6SV);
+		Bs6 = (NQSBid6 - NQSAsk6) / (NQSBid6 + NQSAsk6);
+	}
+	else if((NQ7TP == NQLAsk7) || (NQ7TP == NQLBid7))
+	{
+		Psh7 = (NQ7BV - NQ7SV) / (NQ7BV + NQ7SV);
+		Bs7 = (NQSBid7 - NQSAsk7) / (NQSBid7 + NQSAsk7);
+	}
+	else if((NQ8TP == NQLAsk8) || (NQ8TP == NQLBid8))
+	{
+		Psh8 = (NQ8BV - NQ8SV) / (NQ8BV + NQ8SV);
+		Bs8 = (NQSBid8 - NQSAsk8) / (NQSBid8 + NQSAsk8);
+	}
+	else if((NQ9TP == NQLAsk9) || (NQ9TP == NQLBid9))
+	{
+		Psh9 = (NQ9BV - NQ9SV) / (NQ9BV + NQ9SV);
+		Bs9 = (NQSBid9 - NQSAsk9) / (NQSBid9 + NQSAsk9);
+	}
+	else if((NQ10TP == NQLAsk10) || (NQ10TP == NQLBid10))
+	{
+		Psh10 = (NQ10BV - NQ10SV) / (NQ10BV + NQ10SV);
+		Bs10 = (NQSBid10 - NQSAsk10) / (NQSBid10 + NQSAsk10);
+	}
+	
 	for (int i = 0; i<10; i++)
 	{
-		if (NQASizes[i] > NQAMax)
-		{
-			NQAMax = NQASizes[i];
-		}
-
-
-		if ((Pressure >= 0.25) && (NetAsk > NetBid))
+		if ((Pressure >= 0.25) && (Bias >= 0.25))
 		{
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -2279,44 +2360,192 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		if (pInfo->bPriceFlag)
-			NQTradePrice = pInfo->dPrice;
-		if (pInfo->bVolumeBoughtFlag)
+		if((pInfo->dPrice == NQLAsk1) || (pInfo->dPrice == NQLBid1))
 		{
-			NQBuyVol = (pInfo->iVolumeBought - NQBuyVol);
-			NQAsk = true;
+			if (pInfo->bPriceFlag)
+				NQ1TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ1BV = (pInfo->iVolumeBought - NQ1BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ1SV = (pInfo->iVolumeSold - NQ1SV);
 		}
-		else
-			NQAsk = false;
-		if (pInfo->bVolumeSoldFlag)
+		else if((pInfo->dPrice == NQLAsk2) || (pInfo->dPrice == NQLBid2))
 		{
-			NQSellVol = (pInfo->iVolumeSold - NQSellVol);
-			NQBid = true;
+			if (pInfo->bPriceFlag)
+				NQ2TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ2BV = (pInfo->iVolumeBought - NQ2BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ2SV = (pInfo->iVolumeSold - NQ2SV);
 		}
-		else
-			NQBid = false;
+		else if((pInfo->dPrice == NQLAsk3) || (pInfo->dPrice == NQLBid3))
+		{
+			if (pInfo->bPriceFlag)
+				NQ3TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ3BV = (pInfo->iVolumeBought - NQ3BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ3SV = (pInfo->iVolumeSold - NQ3SV);
+		}
+		else if((pInfo->dPrice == NQLAsk4) || (pInfo->dPrice == NQLBid4))
+		{
+			if (pInfo->bPriceFlag)
+				NQ4TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ4BV = (pInfo->iVolumeBought - NQ4BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ4SV = (pInfo->iVolumeSold - NQ4SV);
+		}
+		else if((pInfo->dPrice == NQLAsk5) || (pInfo->dPrice == NQLBid5))
+		{
+			if (pInfo->bPriceFlag)
+				NQ5TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ5BV = (pInfo->iVolumeBought - NQ5BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ5SV = (pInfo->iVolumeSold - NQ5SV);
+		}
+		else if((pInfo->dPrice == NQLAsk6) || (pInfo->dPrice == NQLBid6))
+		{
+			if (pInfo->bPriceFlag)
+				NQ6TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ6BV = (pInfo->iVolumeBought - NQ6BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ6SV = (pInfo->iVolumeSold - NQ6SV);
+		}
+		else if((pInfo->dPrice == NQLAsk7) || (pInfo->dPrice == NQLBid7))
+		{
+			if (pInfo->bPriceFlag)
+				NQ7TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ7BV = (pInfo->iVolumeBought - NQ7BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ7SV = (pInfo->iVolumeSold - NQ7SV);
+		}
+		else if((pInfo->dPrice == NQLAsk8) || (pInfo->dPrice == NQLBid8))
+		{
+			if (pInfo->bPriceFlag)
+				NQ8TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ8BV = (pInfo->iVolumeBought - NQ8BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ8SV = (pInfo->iVolumeSold - NQ8SV);
+		}
+		else if((pInfo->dPrice == NQLAsk9) || (pInfo->dPrice == NQLBid9))
+		{
+			if (pInfo->bPriceFlag)
+				NQ9TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ9BV = (pInfo->iVolumeBought - NQ9BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ9SV = (pInfo->iVolumeSold - NQ9SV);
+		}
+		else if((pInfo->dPrice == NQLAsk10) || (pInfo->dPrice == NQLBid10))
+		{
+			if (pInfo->bPriceFlag)
+				NQ10TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				NQ10BV = (pInfo->iVolumeBought - NQ10BV);
+			if (pInfo->bVolumeSoldFlag)
+				NQ10SV = (pInfo->iVolumeSold - NQ10SV);
+		}
 	}
 
 	if (contract)
 	{
 		if (trial == std::string(_TickerES.pData, _TickerES.iDataLen))
 		{
+			if((pInfo->dPrice == ESLAsk1) || (pInfo->dPrice == ESLBid1))
+			{
 			if (pInfo->bPriceFlag)
-				ESTradePrice = pInfo->dPrice;
+				ES1TP = pInfo->dPrice;
 			if (pInfo->bVolumeBoughtFlag)
-			{
-				ESBuyVol = (pInfo->iVolumeBought - ESBuyVol);
-				ESAsk = true;
-			}
-			else
-				ESAsk = false;
+				ES1BV = (pInfo->iVolumeBought - ES1BV);
 			if (pInfo->bVolumeSoldFlag)
-			{
-				ESSellVol = (pInfo->iVolumeSold - ESSellVol);
-				ESBid = true;
+				ES1SV = (pInfo->iVolumeSold - ES1SV);
 			}
-			else
-				ESBid = false;
+			else if((pInfo->dPrice == ESLAsk2) || (pInfo->dPrice == ESLBid2))
+			{
+			if (pInfo->bPriceFlag)
+				ES2TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES2BV = (pInfo->iVolumeBought - ES2BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES2SV = (pInfo->iVolumeSold - ES2SV);
+			}
+			else if((pInfo->dPrice == ESLAsk3) || (pInfo->dPrice == ESLBid3))
+			{
+			if (pInfo->bPriceFlag)
+				ES3TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES3BV = (pInfo->iVolumeBought - ES3BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES3SV = (pInfo->iVolumeSold - ES3SV);
+			}
+			else if((pInfo->dPrice == ESLAsk4) || (pInfo->dPrice == ESLBid4))
+			{
+			if (pInfo->bPriceFlag)
+				ES4TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES4BV = (pInfo->iVolumeBought - ES4BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES4SV = (pInfo->iVolumeSold - ES4SV);
+			}
+			else if((pInfo->dPrice == ESLAsk5) || (pInfo->dPrice == ESLBid5))
+			{
+			if (pInfo->bPriceFlag)
+				ES5TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES5BV = (pInfo->iVolumeBought - ES5BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES5SV = (pInfo->iVolumeSold - ES5SV);
+			}
+			else if((pInfo->dPrice == ESLAsk6) || (pInfo->dPrice == ESLBid6))
+			{
+			if (pInfo->bPriceFlag)
+				ES6TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES6BV = (pInfo->iVolumeBought - ES6BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES6SV = (pInfo->iVolumeSold - ES6SV);
+			}
+			else if((pInfo->dPrice == ESLAsk7) || (pInfo->dPrice == ESLBid7))
+			{
+			if (pInfo->bPriceFlag)
+				ES7TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES7BV = (pInfo->iVolumeBought - ES7BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES7SV = (pInfo->iVolumeSold - ES7SV);
+			}
+			else if((pInfo->dPrice == ESLAsk8) || (pInfo->dPrice == ESLBid8))
+			{
+			if (pInfo->bPriceFlag)
+				ES8TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES8BV = (pInfo->iVolumeBought - ES8BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES8SV = (pInfo->iVolumeSold - ES8SV);
+			}
+			else if((pInfo->dPrice == ESLAsk9) || (pInfo->dPrice == ESLBid9))
+			{
+			if (pInfo->bPriceFlag)
+				ES9TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES9BV = (pInfo->iVolumeBought - ES9BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES9SV = (pInfo->iVolumeSold - ES9SV);
+			}
+			else if((pInfo->dPrice == ESLAsk10) || (pInfo->dPrice == ESLBid10))
+			{
+			if (pInfo->bPriceFlag)
+				ES10TP = pInfo->dPrice;
+			if (pInfo->bVolumeBoughtFlag)
+				ES10BV = (pInfo->iVolumeBought - ES10BV);
+			if (pInfo->bVolumeSoldFlag)
+				ES10SV = (pInfo->iVolumeSold - ES10SV);
+			}
 		}
 	}
 
@@ -2485,8 +2714,6 @@ int main(int      argc,
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	QuoteParams	  qParams;
-	LimitOrderParams  oLmtOrdParams;
-	ModifyLimitOrderParams	oModLmtOrdParams;
 	LoginParams       oLoginParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
@@ -2898,6 +3125,17 @@ int main(int      argc,
 	oMktOrdParams.sDuration = sORDER_DURATION_FOK;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
+	
+	/*   ----------------------------------------------------------------   */
+	/*   send limit order */
+
+	oLmtOrdParams.sExchange = sExchange;
+	oLmtOrdParams.sTicker = sTicker;
+	oLmtOrdParams.pAccount = &g_oAccount;
+	oLmtOrdParams.iQty = _qty;
+	oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
+	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
