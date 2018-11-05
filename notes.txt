@@ -1,2 +1,300 @@
-Loop through arrays 
-Use for loop
+
+Level 7 Bid Price is : 2715.75
+
+Level 8 Bid Price is : 2715.5
+
+Level 9 Bid Price is : 2715.25
+
+Level 10 Bid Price is : 2715
+
+Level 1 Bid Size is : 14
+
+Level 2 Bid Size is : 56
+
+Level 3 Bid Size is : 80
+
+Level 4 Bid Size is : 179
+
+Level 5 Bid Size is : 180
+
+Level 6 Bid Size is : 0
+
+Level 7 Bid Size is : 0
+
+Level 8 Bid Size is : 0
+
+Level 9 Bid Size is : 0
+
+Level 10 Bid Size is : 0
+
+
+Market traded volume bias is : 1
+
+Limit orders bias is : 0
+
+Largest Ask Limit orders is : 120
+
+Price of Largest Ask Limit orders is : 2719.5
+
+Largest Bid Limit orders is : 180
+
+Price of Largest Bid Limit orders is : 2716.25
+
+
+While loop Processing speed is : 0
+
+Line update Processing speed is : 0
+
+PnL Processing speed is : 0
+
+Best Ask Processing speed is : 0
+
+Best Bid Processing speed is : 0
+
+Best Ask & Bid Processing speed is : 0
+
+Trade print Processing speed is : 1
+
+Ask Processing speed is : 1
+
+Bid Processing speed is : 1
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2717.5
+
+Level 2 Ask Price is : 2717.75
+
+Level 3 Ask Price is : 2718
+
+Level 4 Ask Price is : 2718.25
+
+Level 5 Ask Price is : 2718.5
+
+Level 6 Ask Price is : 2718.75
+
+Level 7 Ask Price is : 2719
+
+Level 8 Ask Price is : 2719.25
+
+Level 9 Ask Price is : 2719.5
+
+Level 10 Ask Price is : 2719.75
+
+Level 1 Ask Size is : 55
+
+Level 2 Ask Size is : 60
+
+Level 3 Ask Size is : 116
+
+Level 4 Ask Size is : 116
+
+Level 5 Ask Size is : 70
+
+Level 6 Ask Size is : 130
+
+Level 7 Ask Size is : 0
+
+Level 8 Ask Size is : 0
+
+Level 9 Ask Size is : 120
+
+Level 10 Ask Size is : 138
+
+Level 1 Bid Price is : 2717.25
+
+Level 2 Bid Price is : 2717
+
+Level 3 Bid Price is : 2716.75
+
+Level 4 Bid Price is : 2716.5
+
+Level 5 Bid Price is : 2716.25
+
+Level 6 Bid Price is : 2716
+
+Level 7 Bid Price is : 2715.75
+
+Level 8 Bid Price is : 2715.5
+
+Level 9 Bid Price is : 2715.25
+
+Level 10 Bid Price is : 2715
+
+Level 1 Bid Size is : 6
+
+Level 2 Bid Size is : 82
+
+Level 3 Bid Size is : 84
+
+Level 4 Bid Size is : 179
+
+Level 5 Bid Size is : 180
+
+Level 6 Bid Size is : 235
+
+Level 7 Bid Size is : 0
+
+Level 8 Bid Size is : 0
+
+Level 9 Bid Size is : 183
+
+Level 10 Bid Size is : 168
+
+
+Market traded volume bias is : 0
+
+Limit orders bias is : 0
+
+Largest Ask Limit orders is : 138
+
+Price of Largest Ask Limit orders is : 2719.75
+
+Largest Bid Limit orders is : 235
+
+Price of Largest Bid Limit orders is : 2716
+
+
+While loop Processing speed is : 63705
+
+Line update Processing speed is : 0
+
+PnL Processing speed is : 0
+
+Best Ask Processing speed is : 0
+
+Best Bid Processing speed is : 0
+
+Best Ask & Bid Processing speed is : 0
+
+Trade print Processing speed is : 1
+
+Ask Processing speed is : 1
+
+Bid Processing speed is : 1
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2717.25
+
+Level 2 Ask Price is : 2717.5
+
+Level 3 Ask Price is : 2717.75
+
+Level 4 Ask Price is : 2718
+
+Level 5 Ask Price is : 2718.25
+
+Level 6 Ask Price is : 2718.5
+
+Level 7 Ask Price is : 2718.75
+
+Level 8 Ask Price is : 2719
+
+Level 9 Ask Price is : 2719.25
+
+Level 10 Ask Price is : 2719.5
+
+Level 1 Ask Size is : 61
+
+Level 2 Ask Size is : 66
+
+Level 3 Ask Size is : 56
+
+Level 4 Ask Size is : 114
+
+Level 5 Ask Size is : 114
+
+Level 6 Ask Size is : 99
+
+Level 7 Ask Size is : 122
+
+Level 8 Ask Size is : 124
+
+Level 9 Ask Size is : 123
+
+Level 10 Ask Size is : 136
+
+Level 1 Bid Price is : 2716.75
+
+Level 2 Bid Price is : 2716.5
+
+Level 3 Bid Price is : 2716.25
+
+Level 4 Bid Price is : 2716
+
+Level 5 Bid Price is : 2715.75
+
+Level 6 Bid Price is : 2715.5
+
+Level 7 Bid Price is : 2715.25
+
+Level 8 Bid Price is : 2715
+
+Level 9 Bid Price is : 2714.75
+
+Level 10 Bid Price is : 2714.5
+
+Level 1 Bid Size is : 72
+
+Level 2 Bid Size is : 76
+
+Level 3 Bid Size is : 186
+
+Level 4 Bid Size is : 184
+
+Level 5 Bid Size is : 223
+
+Level 6 Bid Size is : 169
+
+Level 7 Bid Size is : 184
+
+Level 8 Bid Size is : 186
+
+Level 9 Bid Size is : 148
+
+Level 10 Bid Size is : 168
+
+
+Market traded volume bias is : 0
+
+Limit orders bias is : 0
+
+Largest Ask Limit orders is : 140
+
+Price of Largest Ask Limit orders is : 2719.75
+
+Largest Bid Limit orders is : 256
+
+Price of Largest Bid Limit orders is : 2715
+
+
+While loop Processing speed is : 63705
+
+Line update Processing speed is : 0
+
+PnL Processing speed is : 0
+
+Best Ask Processing speed is : 0
+
+Best Bid Processing speed is : 0
+
+Best Ask & Bid Processing speed is : 0
+
+Trade print Processing speed is : 1
+
+Ask Processing speed is : 2
+
+Bid Processing speed is : 1
+
+
+Exiting algobox...
+
+
+Written text file CLS = 1...
+
+Closing Black Box...
+
+C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
