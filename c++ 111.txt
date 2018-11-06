@@ -141,7 +141,7 @@ double spreadA, spreadB, _RiskBal;
 int _qty = 1, iCode, trade, curr;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
 long SpdAsk, SpdBid, SpdTrade;
-bool	NQBFree = false, NQSFree = false, print = false, done = false;
+bool	NQBFree = false, NQAFree = false, NQBAFree = false, NQBBFree = false print = false, done = false;
 bool	ESBFree = false, ESSFree = false, contract = false;
 bool NQAsk = false, NQBid = false, ESAsk = false, ESBid = false;
 double NQLAsk1 = 0, NQLAsk2 = 0, NQLAsk3 = 0, NQLAsk4 = 0, NQLAsk5 = 0;
@@ -1204,6 +1204,8 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
+			if(!NQAFree)
+			{
 			if (pInfo->dPrice == NQLAsk2)
 			{
 				NQLAsk2 = pInfo->dPrice;
@@ -1267,7 +1269,8 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 				NQNAsk10 = pInfo->iNumOrders;
 				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
-
+			NQAFree = true;
+			}
 		}
 
 	}
@@ -1386,6 +1389,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
+			if(!NQBAFree)
+			{
 			NQLAsk1 = pInfo->dPrice;
 			NQSAsk1 = pInfo->iSize;
 			NQNAsk1 = pInfo->iNumOrders;
@@ -1400,6 +1405,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQLAsk10 = NQLAsk9 + incrNQ;
 
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			NQBAFree = true;
+			}
 		}
 	}
 
@@ -1467,6 +1474,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	{
 		if (pAsk->bPriceFlag && pAsk->bSizeFlag)
 		{
+			if(!NQBAFree)
+			{
 			NQLAsk1 = pAsk->dPrice;
 			NQSAsk1 = pAsk->iSize;
 			NQNAsk1 = pAsk->iNumOrders;
@@ -1480,6 +1489,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQLAsk9 = NQLAsk8 + incrNQ;
 			NQLAsk10 = NQLAsk9 + incrNQ;
 			BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
+			NQBAFree = true;
+			}
 		}
 	}
 
@@ -1487,6 +1498,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	{
 		if (pBid->bPriceFlag && pBid->bSizeFlag)
 		{
+			if(!NQBBFree)
+			{
 			NQLBid1 = pBid->dPrice;
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
@@ -1500,6 +1513,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQLBid9 = NQLBid8 - incrNQ;
 			NQLBid10 = NQLBid9 - incrNQ;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
+			NQBBFree = true;
+			}
 		}
 	}
 
@@ -1585,6 +1600,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
+			if(!NQBBFree)
+			{
 			NQLBid1 = pInfo->dPrice;
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
@@ -1598,6 +1615,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQLBid9 = NQLBid8 - incrNQ;
 			NQLBid10 = NQLBid9 - incrNQ;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+			NQBBFree = true;
+			}
 		}
 	}
 
@@ -1660,6 +1679,8 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
+			if(!NQBFree)
+			{
 			if (pInfo->dPrice == NQLBid2)
 			{
 				NQLBid2 = pInfo->dPrice;
@@ -1722,6 +1743,8 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 				NQSBid10 = pInfo->iSize;
 				NQNBid10 = pInfo->iNumOrders;
 				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+			}
+			NQBFree = true;
 			}
 		}
 	}
@@ -2126,7 +2149,6 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
@@ -2135,8 +2157,6 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			NQ1SV = (pInfo->iVolumeSold - NQ2SV);
 		NQ2BV = NQ1BV;
 		NQ2SV = NQ1SV;
-
-
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2818,6 +2838,10 @@ int main(int      argc,
 		ESAPrice = 0;
 		ESMaxBid = 0;
 		ESBPrice = 0;
+		NQAFree = false;
+		NQBFree = false;
+		NQBAFree = false;
+		NQBBFree = false;
 
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
