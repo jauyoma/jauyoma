@@ -141,7 +141,7 @@ double spreadA, spreadB, _RiskBal;
 int _qty = 1, iCode, trade, curr;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
 long SpdAsk, SpdBid, SpdTrade;
-bool	NQBFree = false, NQAFree = false, NQBAFree = false, NQBBFree = false print = false, done = false;
+bool	NQBFree = false, NQAFree = false, NQBAFree = false, NQBBFree = false, done = false;
 bool	ESBFree = false, ESSFree = false, contract = false;
 bool NQAsk = false, NQBid = false, ESAsk = false, ESBid = false;
 double NQLAsk1 = 0, NQLAsk2 = 0, NQLAsk3 = 0, NQLAsk4 = 0, NQLAsk5 = 0;
@@ -181,10 +181,11 @@ int NQ8BV, NQ8SV, ES8BV, ES8SV, NQ9BV, NQ9SV, ES9BV, ES9SV, NQ10BV, NQ10SV, ES10
 int NQMaxAsk = 0, NQMaxBid = 0, ESMaxAsk = 0, ESMaxBid = 0;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3, Psh4, Bs4, Psh5, Bs5;
 double Psh6, Bs6, Psh7, Bs7, Psh8, Bs8, Psh9, Bs9, Psh10, Bs10;
-double NQAPrice  = 0, ESAPrice = 0, NQBPrice = 0, ESBPrice = 0;
-
-
-
+double NQAPrice = 0, ESAPrice = 0, NQBPrice = 0, ESBPrice = 0;
+int NQAskArr[10];
+int NQBidArr[10];
+double NQAskArrPrice[10];
+double NQBidArrPrice[10];
 
 SYSTEMTIME st, lt;
 
@@ -1204,73 +1205,113 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if(!NQAFree)
-			{
-			if (pInfo->dPrice == NQLAsk2)
-			{
-				NQLAsk2 = pInfo->dPrice;
-				NQSAsk2 = pInfo->iSize;
-				NQNAsk2 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk3)
-			{
-				NQLAsk3 = pInfo->dPrice;
-				NQSAsk3 = pInfo->iSize;
-				NQNAsk3 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk4)
-			{
-				NQLAsk4 = pInfo->dPrice;
-				NQSAsk4 = pInfo->iSize;
-				NQNAsk4 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk5)
-			{
-				NQLAsk5 = pInfo->dPrice;
-				NQSAsk5 = pInfo->iSize;
-				NQNAsk5 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk6)
-			{
-				NQLAsk6 = pInfo->dPrice;
-				NQSAsk6 = pInfo->iSize;
-				NQNAsk6 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk7)
-			{
-				NQLAsk7 = pInfo->dPrice;
-				NQSAsk7 = pInfo->iSize;
-				NQNAsk7 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk8)
-			{
-				NQLAsk8 = pInfo->dPrice;
-				NQSAsk8 = pInfo->iSize;
-				NQNAsk8 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk9)
-			{
-				NQLAsk9 = pInfo->dPrice;
-				NQSAsk9 = pInfo->iSize;
-				NQNAsk9 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLAsk10)
-			{
-				NQLAsk10 = pInfo->dPrice;
-				NQSAsk10 = pInfo->iSize;
-				NQNAsk10 = pInfo->iNumOrders;
-				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			NQAFree = true;
-			}
+				if (pInfo->dPrice == NQLAsk2)
+				{
+					NQLAsk2 = pInfo->dPrice;
+					NQSAsk2 = pInfo->iSize;
+					NQNAsk2 = pInfo->iNumOrders;
+					if (NQSAsk2 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk2;
+						NQAPrice = NQLAsk2;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk3)
+				{
+					NQLAsk3 = pInfo->dPrice;
+					NQSAsk3 = pInfo->iSize;
+					NQNAsk3 = pInfo->iNumOrders;
+					if (NQSAsk3 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk3;
+						NQAPrice = NQLAsk3;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk4)
+				{
+					NQLAsk4 = pInfo->dPrice;
+					NQSAsk4 = pInfo->iSize;
+					NQNAsk4 = pInfo->iNumOrders;
+					if (NQSAsk4 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk4;
+						NQAPrice = NQLAsk4;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk5)
+				{
+					NQLAsk5 = pInfo->dPrice;
+					NQSAsk5 = pInfo->iSize;
+					NQNAsk5 = pInfo->iNumOrders;
+					if (NQSAsk5 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk5;
+						NQAPrice = NQLAsk5;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk6)
+				{
+					NQLAsk6 = pInfo->dPrice;
+					NQSAsk6 = pInfo->iSize;
+					NQNAsk6 = pInfo->iNumOrders;
+					if (NQSAsk6 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk6;
+						NQAPrice = NQLAsk6;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk7)
+				{
+					NQLAsk7 = pInfo->dPrice;
+					NQSAsk7 = pInfo->iSize;
+					NQNAsk7 = pInfo->iNumOrders;
+					if (NQSAsk7 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk7;
+						NQAPrice = NQLAsk7;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk8)
+				{
+					NQLAsk8 = pInfo->dPrice;
+					NQSAsk8 = pInfo->iSize;
+					NQNAsk8 = pInfo->iNumOrders;
+					if (NQSAsk8 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk8;
+						NQAPrice = NQLAsk8;
+					};
+				}
+				else if (pInfo->dPrice == NQLAsk9)
+				{
+					NQLAsk9 = pInfo->dPrice;
+					NQSAsk9 = pInfo->iSize;
+					NQNAsk9 = pInfo->iNumOrders;
+					if (NQSAsk9 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk9;
+						NQAPrice = NQLAsk9;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLAsk10)
+				{
+					NQLAsk10 = pInfo->dPrice;
+					NQSAsk10 = pInfo->iSize;
+					NQNAsk10 = pInfo->iNumOrders;
+					if (NQSAsk10 > NQMaxAsk)
+					{
+						NQMaxAsk = NQSAsk10;
+						NQAPrice = NQLAsk10;
+					}
+					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
 		}
 
 	}
@@ -1389,24 +1430,21 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if(!NQBAFree)
-			{
-			NQLAsk1 = pInfo->dPrice;
-			NQSAsk1 = pInfo->iSize;
-			NQNAsk1 = pInfo->iNumOrders;
-			NQLAsk2 = NQLAsk1 + incrNQ;
-			NQLAsk3 = NQLAsk2 + incrNQ;
-			NQLAsk4 = NQLAsk3 + incrNQ;
-			NQLAsk5 = NQLAsk4 + incrNQ;
-			NQLAsk6 = NQLAsk5 + incrNQ;
-			NQLAsk7 = NQLAsk6 + incrNQ;
-			NQLAsk8 = NQLAsk7 + incrNQ;
-			NQLAsk9 = NQLAsk8 + incrNQ;
-			NQLAsk10 = NQLAsk9 + incrNQ;
-
-			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
-			NQBAFree = true;
-			}
+				NQLAsk1 = pInfo->dPrice;
+				NQSAsk1 = pInfo->iSize;
+				NQNAsk1 = pInfo->iNumOrders;
+				NQLAsk2 = NQLAsk1 + incrNQ;
+				NQLAsk3 = NQLAsk2 + incrNQ;
+				NQLAsk4 = NQLAsk3 + incrNQ;
+				NQLAsk5 = NQLAsk4 + incrNQ;
+				NQLAsk6 = NQLAsk5 + incrNQ;
+				NQLAsk7 = NQLAsk6 + incrNQ;
+				NQLAsk8 = NQLAsk7 + incrNQ;
+				NQLAsk9 = NQLAsk8 + incrNQ;
+				NQLAsk10 = NQLAsk9 + incrNQ;
+				NQAPrice = NQLAsk10;
+				NQMaxAsk = NQSAsk1;
+				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1474,23 +1512,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	{
 		if (pAsk->bPriceFlag && pAsk->bSizeFlag)
 		{
-			if(!NQBAFree)
-			{
-			NQLAsk1 = pAsk->dPrice;
-			NQSAsk1 = pAsk->iSize;
-			NQNAsk1 = pAsk->iNumOrders;
-			NQLAsk2 = NQLAsk1 + incrNQ;
-			NQLAsk3 = NQLAsk2 + incrNQ;
-			NQLAsk4 = NQLAsk3 + incrNQ;
-			NQLAsk5 = NQLAsk4 + incrNQ;
-			NQLAsk6 = NQLAsk5 + incrNQ;
-			NQLAsk7 = NQLAsk6 + incrNQ;
-			NQLAsk8 = NQLAsk7 + incrNQ;
-			NQLAsk9 = NQLAsk8 + incrNQ;
-			NQLAsk10 = NQLAsk9 + incrNQ;
-			BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
-			NQBAFree = true;
-			}
+				NQLAsk1 = pAsk->dPrice;
+				NQSAsk1 = pAsk->iSize;
+				NQNAsk1 = pAsk->iNumOrders;
+				NQLAsk2 = NQLAsk1 + incrNQ;
+				NQLAsk3 = NQLAsk2 + incrNQ;
+				NQLAsk4 = NQLAsk3 + incrNQ;
+				NQLAsk5 = NQLAsk4 + incrNQ;
+				NQLAsk6 = NQLAsk5 + incrNQ;
+				NQLAsk7 = NQLAsk6 + incrNQ;
+				NQLAsk8 = NQLAsk7 + incrNQ;
+				NQLAsk9 = NQLAsk8 + incrNQ;
+				NQLAsk10 = NQLAsk9 + incrNQ;
+				BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
 		}
 	}
 
@@ -1498,23 +1532,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	{
 		if (pBid->bPriceFlag && pBid->bSizeFlag)
 		{
-			if(!NQBBFree)
-			{
-			NQLBid1 = pBid->dPrice;
-			NQSBid1 = pBid->iSize;
-			NQNBid1 = pBid->iNumOrders;
-			NQLBid2 = NQLBid1 - incrNQ;
-			NQLBid3 = NQLBid2 - incrNQ;
-			NQLBid4 = NQLBid3 - incrNQ;
-			NQLBid5 = NQLBid4 - incrNQ;
-			NQLBid6 = NQLBid5 - incrNQ;
-			NQLBid7 = NQLBid6 - incrNQ;
-			NQLBid8 = NQLBid7 - incrNQ;
-			NQLBid9 = NQLBid8 - incrNQ;
-			NQLBid10 = NQLBid9 - incrNQ;
-			BBid_T = pBid->iSsboe + pBid->iUsecs;
-			NQBBFree = true;
-			}
+				NQLBid1 = pBid->dPrice;
+				NQSBid1 = pBid->iSize;
+				NQNBid1 = pBid->iNumOrders;
+				NQLBid2 = NQLBid1 - incrNQ;
+				NQLBid3 = NQLBid2 - incrNQ;
+				NQLBid4 = NQLBid3 - incrNQ;
+				NQLBid5 = NQLBid4 - incrNQ;
+				NQLBid6 = NQLBid5 - incrNQ;
+				NQLBid7 = NQLBid6 - incrNQ;
+				NQLBid8 = NQLBid7 - incrNQ;
+				NQLBid9 = NQLBid8 - incrNQ;
+				NQLBid10 = NQLBid9 - incrNQ;
+				BBid_T = pBid->iSsboe + pBid->iUsecs;
 		}
 	}
 
@@ -1600,23 +1630,19 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if(!NQBBFree)
-			{
-			NQLBid1 = pInfo->dPrice;
-			NQSBid1 = pInfo->iSize;
-			NQNBid1 = pInfo->iNumOrders;
-			NQLBid2 = NQLBid1 - incrNQ;
-			NQLBid3 = NQLBid2 - incrNQ;
-			NQLBid4 = NQLBid3 - incrNQ;
-			NQLBid5 = NQLBid4 - incrNQ;
-			NQLBid6 = NQLBid5 - incrNQ;
-			NQLBid7 = NQLBid6 - incrNQ;
-			NQLBid8 = NQLBid7 - incrNQ;
-			NQLBid9 = NQLBid8 - incrNQ;
-			NQLBid10 = NQLBid9 - incrNQ;
-			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
-			NQBBFree = true;
-			}
+				NQLBid1 = pInfo->dPrice;
+				NQSBid1 = pInfo->iSize;
+				NQNBid1 = pInfo->iNumOrders;
+				NQLBid2 = NQLBid1 - incrNQ;
+				NQLBid3 = NQLBid2 - incrNQ;
+				NQLBid4 = NQLBid3 - incrNQ;
+				NQLBid5 = NQLBid4 - incrNQ;
+				NQLBid6 = NQLBid5 - incrNQ;
+				NQLBid7 = NQLBid6 - incrNQ;
+				NQLBid8 = NQLBid7 - incrNQ;
+				NQLBid9 = NQLBid8 - incrNQ;
+				NQLBid10 = NQLBid9 - incrNQ;
+				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1679,73 +1705,69 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-			if(!NQBFree)
-			{
-			if (pInfo->dPrice == NQLBid2)
-			{
-				NQLBid2 = pInfo->dPrice;
-				NQSBid2 = pInfo->iSize;
-				NQNBid2 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid3)
-			{
-				NQLBid3 = pInfo->dPrice;
-				NQSBid3 = pInfo->iSize;
-				NQNBid3 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid4)
-			{
-				NQLBid4 = pInfo->dPrice;
-				NQSBid4 = pInfo->iSize;
-				NQNBid4 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid5)
-			{
-				NQLBid5 = pInfo->dPrice;
-				NQSBid5 = pInfo->iSize;
-				NQNBid5 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid6)
-			{
-				NQLBid6 = pInfo->dPrice;
-				NQSBid6 = pInfo->iSize;
-				NQNBid6 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid7)
-			{
-				NQLBid7 = pInfo->dPrice;
-				NQSBid7 = pInfo->iSize;
-				NQNBid7 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid8)
-			{
-				NQLBid8 = pInfo->dPrice;
-				NQSBid8 = pInfo->iSize;
-				NQNBid8 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid9)
-			{
-				NQLBid9 = pInfo->dPrice;
-				NQSBid9 = pInfo->iSize;
-				NQNBid9 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			else if (pInfo->dPrice == NQLBid10)
-			{
-				NQLBid10 = pInfo->dPrice;
-				NQSBid10 = pInfo->iSize;
-				NQNBid10 = pInfo->iNumOrders;
-				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-			}
-			NQBFree = true;
-			}
+				if (pInfo->dPrice == NQLBid2)
+				{
+					NQLBid2 = pInfo->dPrice;
+					NQSBid2 = pInfo->iSize;
+					NQNBid2 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid3)
+				{
+					NQLBid3 = pInfo->dPrice;
+					NQSBid3 = pInfo->iSize;
+					NQNBid3 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid4)
+				{
+					NQLBid4 = pInfo->dPrice;
+					NQSBid4 = pInfo->iSize;
+					NQNBid4 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid5)
+				{
+					NQLBid5 = pInfo->dPrice;
+					NQSBid5 = pInfo->iSize;
+					NQNBid5 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid6)
+				{
+					NQLBid6 = pInfo->dPrice;
+					NQSBid6 = pInfo->iSize;
+					NQNBid6 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid7)
+				{
+					NQLBid7 = pInfo->dPrice;
+					NQSBid7 = pInfo->iSize;
+					NQNBid7 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid8)
+				{
+					NQLBid8 = pInfo->dPrice;
+					NQSBid8 = pInfo->iSize;
+					NQNBid8 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid9)
+				{
+					NQLBid9 = pInfo->dPrice;
+					NQSBid9 = pInfo->iSize;
+					NQNBid9 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
+				else if (pInfo->dPrice == NQLBid10)
+				{
+					NQLBid10 = pInfo->dPrice;
+					NQSBid10 = pInfo->iSize;
+					NQNBid10 = pInfo->iNumOrders;
+					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
+				}
 		}
 	}
 
@@ -2152,11 +2174,15 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
+		{
 			NQ1BV = (pInfo->iVolumeBought - NQ2BV);
+			NQ2BV = NQ1BV;
+		}
 		if (pInfo->bVolumeSoldFlag)
+		{
 			NQ1SV = (pInfo->iVolumeSold - NQ2SV);
-		NQ2BV = NQ1BV;
-		NQ2SV = NQ1SV;
+			NQ2SV = NQ1SV;
+		}
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2820,8 +2846,8 @@ int main(int      argc,
 			}
 		}
 
-		Psh1 = (NQ1BV - NQ1SV) / (NQ1BV + NQ1SV);
-		Bs1 = (NQSBid1 - NQSAsk1) / (NQSBid1 + NQSAsk1);
+		Psh1 = (NQ1BV - NQ1SV) / (NQ1BV + NQ1SV)*100;
+		Bs1 = (NQSBid1 - NQSAsk1) / (NQSBid1 + NQSAsk1)*100;
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
@@ -2838,10 +2864,6 @@ int main(int      argc,
 		ESAPrice = 0;
 		ESMaxBid = 0;
 		ESBPrice = 0;
-		NQAFree = false;
-		NQBFree = false;
-		NQBAFree = false;
-		NQBBFree = false;
 
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
