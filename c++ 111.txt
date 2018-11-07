@@ -1985,6 +1985,7 @@ int main(int      argc,
 	REngineParams     oParams;
 	QuoteParams	  qParams;
 	LoginParams       oLoginParams;
+	BarParams	  bParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
@@ -2169,6 +2170,9 @@ int main(int      argc,
 
 		oLoginParams.sMdCnnctPt.pData = "login_agent_tp_paperc";
 		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+		
+		oLoginParams.slhCnnctPt.pData = "login_agent_tp_paperc";
+		oLoginParams.slhCnnctPt.iDataLen = (int)strlen(oLoginParams.slhCnnctPt.pData);
 	}
 
 	if (_stricmp(argv[1], user2) == 0)
@@ -2181,6 +2185,9 @@ int main(int      argc,
 
 		oLoginParams.sMdCnnctPt.pData = "login_agent_tpc";
 		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+		
+		oLoginParams.slhCnnctPt.pData = "login_agent_tpc";
+		oLoginParams.slhCnnctPt.iDataLen = (int)strlen(oLoginParams.slhCnnctPt.pData);
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2377,6 +2384,25 @@ int main(int      argc,
 	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
 	{
 		std::cout << "REngine::subscribePnL() error : %d\n" << iCode << endl;
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+	
+	/*   ----------------------------------------------------------------   */
+	/*   Bar Parameters */
+
+	bParams.sExchange = sExchange;
+	bParams.sTicker = sTicker;
+	bParams.iSpecifiedMinutes = 1;
+	bParams.iType = BAR_TYPE_MINUTE;
+	
+	if (!g_pEngine->subscribeBar(&bParams, &iCode))
+	{
+		std::cout << "REngine::subscribeBar() error : \n" << iCode << endl;
 
 		delete g_pEngine;
 		delete pCallbacks;
