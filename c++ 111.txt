@@ -1205,113 +1205,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-				if (pInfo->dPrice == NQLAsk2)
-				{
-					NQLAsk2 = pInfo->dPrice;
-					NQSAsk2 = pInfo->iSize;
-					NQNAsk2 = pInfo->iNumOrders;
-					if (NQSAsk2 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk2;
-						NQAPrice = NQLAsk2;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk3)
-				{
-					NQLAsk3 = pInfo->dPrice;
-					NQSAsk3 = pInfo->iSize;
-					NQNAsk3 = pInfo->iNumOrders;
-					if (NQSAsk3 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk3;
-						NQAPrice = NQLAsk3;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk4)
-				{
-					NQLAsk4 = pInfo->dPrice;
-					NQSAsk4 = pInfo->iSize;
-					NQNAsk4 = pInfo->iNumOrders;
-					if (NQSAsk4 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk4;
-						NQAPrice = NQLAsk4;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk5)
-				{
-					NQLAsk5 = pInfo->dPrice;
-					NQSAsk5 = pInfo->iSize;
-					NQNAsk5 = pInfo->iNumOrders;
-					if (NQSAsk5 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk5;
-						NQAPrice = NQLAsk5;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk6)
-				{
-					NQLAsk6 = pInfo->dPrice;
-					NQSAsk6 = pInfo->iSize;
-					NQNAsk6 = pInfo->iNumOrders;
-					if (NQSAsk6 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk6;
-						NQAPrice = NQLAsk6;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk7)
-				{
-					NQLAsk7 = pInfo->dPrice;
-					NQSAsk7 = pInfo->iSize;
-					NQNAsk7 = pInfo->iNumOrders;
-					if (NQSAsk7 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk7;
-						NQAPrice = NQLAsk7;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk8)
-				{
-					NQLAsk8 = pInfo->dPrice;
-					NQSAsk8 = pInfo->iSize;
-					NQNAsk8 = pInfo->iNumOrders;
-					if (NQSAsk8 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk8;
-						NQAPrice = NQLAsk8;
-					};
-				}
-				else if (pInfo->dPrice == NQLAsk9)
-				{
-					NQLAsk9 = pInfo->dPrice;
-					NQSAsk9 = pInfo->iSize;
-					NQNAsk9 = pInfo->iNumOrders;
-					if (NQSAsk9 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk9;
-						NQAPrice = NQLAsk9;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLAsk10)
-				{
-					NQLAsk10 = pInfo->dPrice;
-					NQSAsk10 = pInfo->iSize;
-					NQNAsk10 = pInfo->iNumOrders;
-					if (NQSAsk10 > NQMaxAsk)
-					{
-						NQMaxAsk = NQSAsk10;
-						NQAPrice = NQLAsk10;
-					}
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
+			Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 
 	}
@@ -1322,70 +1216,7 @@ int MyCallbacks::AskQuote(AskInfo * pInfo,
 		{
 			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				if (pInfo->dPrice == ESLAsk2)
-				{
-					ESLAsk2 = pInfo->dPrice;
-					ESSAsk2 = pInfo->iSize;
-					ESNAsk2 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk3)
-				{
-					ESLAsk3 = pInfo->dPrice;
-					ESSAsk3 = pInfo->iSize;
-					ESNAsk3 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk4)
-				{
-					ESLAsk4 = pInfo->dPrice;
-					ESSAsk4 = pInfo->iSize;
-					ESNAsk4 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk5)
-				{
-					ESLAsk5 = pInfo->dPrice;
-					ESSAsk5 = pInfo->iSize;
-					ESNAsk5 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk6)
-				{
-					ESLAsk6 = pInfo->dPrice;
-					ESSAsk6 = pInfo->iSize;
-					ESNAsk6 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk7)
-				{
-					ESLAsk7 = pInfo->dPrice;
-					ESSAsk7 = pInfo->iSize;
-					ESNAsk7 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk8)
-				{
-					ESLAsk8 = pInfo->dPrice;
-					ESSAsk8 = pInfo->iSize;
-					ESNAsk8 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk9)
-				{
-					ESLAsk9 = pInfo->dPrice;
-					ESSAsk9 = pInfo->iSize;
-					ESNAsk9 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLAsk10)
-				{
-					ESLAsk10 = pInfo->dPrice;
-					ESSAsk10 = pInfo->iSize;
-					ESNAsk10 = pInfo->iNumOrders;
-					Ask_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-
+				Ask_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 
 		}
@@ -1433,17 +1264,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				NQLAsk1 = pInfo->dPrice;
 				NQSAsk1 = pInfo->iSize;
 				NQNAsk1 = pInfo->iNumOrders;
-				NQLAsk2 = NQLAsk1 + incrNQ;
-				NQLAsk3 = NQLAsk2 + incrNQ;
-				NQLAsk4 = NQLAsk3 + incrNQ;
-				NQLAsk5 = NQLAsk4 + incrNQ;
-				NQLAsk6 = NQLAsk5 + incrNQ;
-				NQLAsk7 = NQLAsk6 + incrNQ;
-				NQLAsk8 = NQLAsk7 + incrNQ;
-				NQLAsk9 = NQLAsk8 + incrNQ;
-				NQLAsk10 = NQLAsk9 + incrNQ;
-				NQAPrice = NQLAsk10;
-				NQMaxAsk = NQSAsk1;
 				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
@@ -1457,16 +1277,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				ESLAsk1 = pInfo->dPrice;
 				ESSAsk1 = pInfo->iSize;
 				ESNAsk1 = pInfo->iNumOrders;
-				ESLAsk2 = ESLAsk1 + incrES;
-				ESLAsk3 = ESLAsk2 + incrES;
-				ESLAsk4 = ESLAsk3 + incrES;
-				ESLAsk5 = ESLAsk4 + incrES;
-				ESLAsk6 = ESLAsk5 + incrES;
-				ESLAsk7 = ESLAsk6 + incrES;
-				ESLAsk8 = ESLAsk7 + incrES;
-				ESLAsk9 = ESLAsk8 + incrES;
-				ESLAsk10 = ESLAsk9 + incrES;
-
 				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
@@ -1515,15 +1325,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				NQLAsk1 = pAsk->dPrice;
 				NQSAsk1 = pAsk->iSize;
 				NQNAsk1 = pAsk->iNumOrders;
-				NQLAsk2 = NQLAsk1 + incrNQ;
-				NQLAsk3 = NQLAsk2 + incrNQ;
-				NQLAsk4 = NQLAsk3 + incrNQ;
-				NQLAsk5 = NQLAsk4 + incrNQ;
-				NQLAsk6 = NQLAsk5 + incrNQ;
-				NQLAsk7 = NQLAsk6 + incrNQ;
-				NQLAsk8 = NQLAsk7 + incrNQ;
-				NQLAsk9 = NQLAsk8 + incrNQ;
-				NQLAsk10 = NQLAsk9 + incrNQ;
 				BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
 		}
 	}
@@ -1535,15 +1336,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				NQLBid1 = pBid->dPrice;
 				NQSBid1 = pBid->iSize;
 				NQNBid1 = pBid->iNumOrders;
-				NQLBid2 = NQLBid1 - incrNQ;
-				NQLBid3 = NQLBid2 - incrNQ;
-				NQLBid4 = NQLBid3 - incrNQ;
-				NQLBid5 = NQLBid4 - incrNQ;
-				NQLBid6 = NQLBid5 - incrNQ;
-				NQLBid7 = NQLBid6 - incrNQ;
-				NQLBid8 = NQLBid7 - incrNQ;
-				NQLBid9 = NQLBid8 - incrNQ;
-				NQLBid10 = NQLBid9 - incrNQ;
 				BBid_T = pBid->iSsboe + pBid->iUsecs;
 		}
 	}
@@ -1557,15 +1349,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESLAsk1 = pAsk->dPrice;
 				ESSAsk1 = pAsk->iSize;
 				ESNAsk1 = pAsk->iNumOrders;
-				ESLAsk2 = ESLAsk1 + incrES;
-				ESLAsk3 = ESLAsk2 + incrES;
-				ESLAsk4 = ESLAsk3 + incrES;
-				ESLAsk5 = ESLAsk4 + incrES;
-				ESLAsk6 = ESLAsk5 + incrES;
-				ESLAsk7 = ESLAsk6 + incrES;
-				ESLAsk8 = ESLAsk7 + incrES;
-				ESLAsk9 = ESLAsk8 + incrES;
-				ESLAsk10 = ESLAsk9 + incrES;
 				BAsk_T = pBid->iSsboe + pBid->iUsecs;
 			}
 		}
@@ -1577,15 +1360,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESLBid1 = pBid->dPrice;
 				ESSBid1 = pBid->iSize;
 				ESNBid1 = pBid->iNumOrders;
-				ESLBid2 = ESLBid1 - incrES;
-				ESLBid3 = ESLBid2 - incrES;
-				ESLBid4 = ESLBid3 - incrES;
-				ESLBid5 = ESLBid4 - incrES;
-				ESLBid6 = ESLBid5 - incrES;
-				ESLBid7 = ESLBid6 - incrES;
-				ESLBid8 = ESLBid7 - incrES;
-				ESLBid9 = ESLBid8 - incrES;
-				ESLBid10 = ESLBid9 - incrES;
 				BBid_T = pBid->iSsboe + pBid->iUsecs;
 			}
 		}
@@ -1633,15 +1407,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				NQLBid1 = pInfo->dPrice;
 				NQSBid1 = pInfo->iSize;
 				NQNBid1 = pInfo->iNumOrders;
-				NQLBid2 = NQLBid1 - incrNQ;
-				NQLBid3 = NQLBid2 - incrNQ;
-				NQLBid4 = NQLBid3 - incrNQ;
-				NQLBid5 = NQLBid4 - incrNQ;
-				NQLBid6 = NQLBid5 - incrNQ;
-				NQLBid7 = NQLBid6 - incrNQ;
-				NQLBid8 = NQLBid7 - incrNQ;
-				NQLBid9 = NQLBid8 - incrNQ;
-				NQLBid10 = NQLBid9 - incrNQ;
 				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
@@ -1655,15 +1420,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				ESLBid1 = pInfo->dPrice;
 				ESSBid1 = pInfo->iSize;
 				ESNBid1 = pInfo->iNumOrders;
-				ESLBid2 = ESLBid1 - incrES;
-				ESLBid3 = ESLBid2 - incrES;
-				ESLBid4 = ESLBid3 - incrES;
-				ESLBid5 = ESLBid4 - incrES;
-				ESLBid6 = ESLBid5 - incrES;
-				ESLBid7 = ESLBid6 - incrES;
-				ESLBid8 = ESLBid7 - incrES;
-				ESLBid9 = ESLBid8 - incrES;
-				ESLBid10 = ESLBid9 - incrES;
 				BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
@@ -1705,69 +1461,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 	{
 		if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 		{
-				if (pInfo->dPrice == NQLBid2)
-				{
-					NQLBid2 = pInfo->dPrice;
-					NQSBid2 = pInfo->iSize;
-					NQNBid2 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid3)
-				{
-					NQLBid3 = pInfo->dPrice;
-					NQSBid3 = pInfo->iSize;
-					NQNBid3 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid4)
-				{
-					NQLBid4 = pInfo->dPrice;
-					NQSBid4 = pInfo->iSize;
-					NQNBid4 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid5)
-				{
-					NQLBid5 = pInfo->dPrice;
-					NQSBid5 = pInfo->iSize;
-					NQNBid5 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid6)
-				{
-					NQLBid6 = pInfo->dPrice;
-					NQSBid6 = pInfo->iSize;
-					NQNBid6 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid7)
-				{
-					NQLBid7 = pInfo->dPrice;
-					NQSBid7 = pInfo->iSize;
-					NQNBid7 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid8)
-				{
-					NQLBid8 = pInfo->dPrice;
-					NQSBid8 = pInfo->iSize;
-					NQNBid8 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid9)
-				{
-					NQLBid9 = pInfo->dPrice;
-					NQSBid9 = pInfo->iSize;
-					NQNBid9 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == NQLBid10)
-				{
-					NQLBid10 = pInfo->dPrice;
-					NQSBid10 = pInfo->iSize;
-					NQNBid10 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
+			Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 		}
 	}
 
@@ -1777,69 +1471,7 @@ int MyCallbacks::BidQuote(BidInfo * pInfo,
 		{
 			if (pInfo->bPriceFlag && pInfo->bSizeFlag)
 			{
-				if (pInfo->dPrice == ESLBid2)
-				{
-					ESLBid2 = pInfo->dPrice;
-					ESSBid2 = pInfo->iSize;
-					ESNBid2 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid3)
-				{
-					ESLBid3 = pInfo->dPrice;
-					ESSBid3 = pInfo->iSize;
-					ESNBid3 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid4)
-				{
-					ESLBid4 = pInfo->dPrice;
-					ESSBid4 = pInfo->iSize;
-					ESNBid4 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid5)
-				{
-					ESLBid5 = pInfo->dPrice;
-					ESSBid5 = pInfo->iSize;
-					ESNBid5 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid6)
-				{
-					ESLBid6 = pInfo->dPrice;
-					ESSBid6 = pInfo->iSize;
-					ESNBid6 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid7)
-				{
-					ESLBid7 = pInfo->dPrice;
-					ESSBid7 = pInfo->iSize;
-					ESNBid7 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid8)
-				{
-					ESLBid8 = pInfo->dPrice;
-					ESSBid8 = pInfo->iSize;
-					ESNBid8 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid9)
-				{
-					ESLBid9 = pInfo->dPrice;
-					ESSBid9 = pInfo->iSize;
-					ESNBid9 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
-				else if (pInfo->dPrice == ESLBid10)
-				{
-					ESLBid10 = pInfo->dPrice;
-					ESSBid10 = pInfo->iSize;
-					ESNBid10 = pInfo->iNumOrders;
-					Bid_T = pInfo->iSsboe + pInfo->iUsecs;
-				}
+				Bid_T = pInfo->iSsboe + pInfo->iUsecs;
 			}
 		}
 	}
@@ -2174,15 +1806,10 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
-		{
 			NQ1BV = (pInfo->iVolumeBought - NQ2BV);
-			NQ2BV = NQ1BV;
-		}
 		if (pInfo->bVolumeSoldFlag)
-		{
 			NQ1SV = (pInfo->iVolumeSold - NQ2SV);
-			NQ2SV = NQ1SV;
-		}
+
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2819,35 +2446,22 @@ int main(int      argc,
 	std::cout << "\nReading algorithm..." << endl;
 
 	curr = (lt.wHour * 60) + lt.wMinute;
-	int cnt = 0;
+	int cnt = 0, track = 1;
 
 	while (((curr - trade) <= 2) && !done)
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-		int NQAskArr[10] = { NQSAsk1, NQSAsk2, NQSAsk3, NQSAsk4, NQSAsk5, NQSAsk6, NQSAsk7, NQSAsk8, NQSAsk9, NQSAsk10 };
-		int NQBidArr[10] = { NQSBid1, NQSBid2, NQSBid3, NQSBid4, NQSBid5, NQSBid6, NQSBid7, NQSBid8, NQSBid9, NQSBid10 };
-		double NQAskArrPrice[10] = { NQLAsk1, NQLAsk2, NQLAsk3, NQLAsk4, NQLAsk5, NQLAsk6, NQLAsk7, NQLAsk8, NQLAsk9, NQLAsk10 };
-		double NQBidArrPrice[10] = { NQLBid1, NQLBid2, NQLBid3, NQLBid4, NQLBid5, NQLBid6, NQLBid7, NQLBid8, NQLBid9, NQLBid10 };
-
-		for (int i = 0; i < 10; i++)
-		{
-			if (NQAskArr[i] > NQMaxAsk)
-			{
-				NQMaxAsk = NQAskArr[i];
-				NQAPrice = NQAskArrPrice[i];
-			}
-
-			if (NQBidArr[i] > NQMaxBid)
-			{
-				NQMaxBid = NQBidArr[i];
-				NQBPrice = NQBidArrPrice[i];
-			}
-		}
-
-		Psh1 = (NQ1BV - NQ1SV) / (NQ1BV + NQ1SV)*100;
-		Bs1 = (NQSBid1 - NQSAsk1) / (NQSBid1 + NQSAsk1)*100;
+		Psh1 = NQ1BV - NQ1SV;
+		Psh2 = NQ1BV + NQ1SV;
+		Psh3 = Psh1/Psh2;
+		Bs1 = NQSBid1 - NQSAsk1;
+		Bs2 = NQSBid1 + NQSAsk1;
+		Bs3 = Bs1/Bs2;
+		
+		if(Psh3 >= 0.25 && Bs3 >= 0.25)
+			track = 2;
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
@@ -2859,11 +2473,6 @@ int main(int      argc,
 			std::cout << "\n\nExiting algobox..." << endl;
 			break;
 		}
-
-		ESMaxAsk = 0;
-		ESAPrice = 0;
-		ESMaxBid = 0;
-		ESBPrice = 0;
 
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -2878,54 +2487,18 @@ int main(int      argc,
 			cnt = lt.wMinute;
 			std::cout << "\n\nOrder Book Information..." << endl;
 			std::cout << "\nLevel 1 Ask Price is : " << NQLAsk1 << endl;
-			std::cout << "\nLevel 2 Ask Price is : " << NQLAsk2 << endl;
-			std::cout << "\nLevel 3 Ask Price is : " << NQLAsk3 << endl;
-			std::cout << "\nLevel 4 Ask Price is : " << NQLAsk4 << endl;
-			std::cout << "\nLevel 5 Ask Price is : " << NQLAsk5 << endl;
-			std::cout << "\nLevel 6 Ask Price is : " << NQLAsk6 << endl;
-			std::cout << "\nLevel 7 Ask Price is : " << NQLAsk7 << endl;
-			std::cout << "\nLevel 8 Ask Price is : " << NQLAsk8 << endl;
-			std::cout << "\nLevel 9 Ask Price is : " << NQLAsk9 << endl;
-			std::cout << "\nLevel 10 Ask Price is : " << NQLAsk10 << endl;
 			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
-			std::cout << "\nLevel 2 Ask Size is : " << NQSAsk2 << endl;
-			std::cout << "\nLevel 3 Ask Size is : " << NQSAsk3 << endl;
-			std::cout << "\nLevel 4 Ask Size is : " << NQSAsk4 << endl;
-			std::cout << "\nLevel 5 Ask Size is : " << NQSAsk5 << endl;
-			std::cout << "\nLevel 6 Ask Size is : " << NQSAsk6 << endl;
-			std::cout << "\nLevel 7 Ask Size is : " << NQSAsk7 << endl;
-			std::cout << "\nLevel 8 Ask Size is : " << NQSAsk8 << endl;
-			std::cout << "\nLevel 9 Ask Size is : " << NQSAsk9 << endl;
-			std::cout << "\nLevel 10 Ask Size is : " << NQSAsk10 << endl;
 			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
-			std::cout << "\nLevel 2 Bid Price is : " << NQLBid2 << endl;
-			std::cout << "\nLevel 3 Bid Price is : " << NQLBid3 << endl;
-			std::cout << "\nLevel 4 Bid Price is : " << NQLBid4 << endl;
-			std::cout << "\nLevel 5 Bid Price is : " << NQLBid5 << endl;
-			std::cout << "\nLevel 6 Bid Price is : " << NQLBid6 << endl;
-			std::cout << "\nLevel 7 Bid Price is : " << NQLBid7 << endl;
-			std::cout << "\nLevel 8 Bid Price is : " << NQLBid8 << endl;
-			std::cout << "\nLevel 9 Bid Price is : " << NQLBid9 << endl;
-			std::cout << "\nLevel 10 Bid Price is : " << NQLBid10 << endl;
 			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
-			std::cout << "\nLevel 2 Bid Size is : " << NQSBid2 << endl;
-			std::cout << "\nLevel 3 Bid Size is : " << NQSBid3 << endl;
-			std::cout << "\nLevel 4 Bid Size is : " << NQSBid4 << endl;
-			std::cout << "\nLevel 5 Bid Size is : " << NQSBid5 << endl;
-			std::cout << "\nLevel 6 Bid Size is : " << NQSBid6 << endl;
-			std::cout << "\nLevel 7 Bid Size is : " << NQSBid7 << endl;
-			std::cout << "\nLevel 8 Bid Size is : " << NQSBid8 << endl;
-			std::cout << "\nLevel 9 Bid Size is : " << NQSBid9 << endl;
-			std::cout << "\nLevel 10 Bid Size is : " << NQSBid10 << endl;
-			std::cout << "\n\nMarket traded volume bias is : " << Psh1 << endl;
-			std::cout << "\nLimit orders bias is : " << Bs1 << endl;
+			std::cout << "\n\nNet Market volume (NQ1BV - NQ2BV) is : " << Psh1 << endl;
+			std::cout << "\nTotal Market volume (NQ1BV + NQ2BV) is : " << Psh2 << endl;
+			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
+			std::cout << "\nNet Limit volume (NQSBid1 - NQSAsk1) is : " << Bs1 << endl;
+			std::cout << "\n\nTotal Limit volume (NQSBid1 - NQSAsk1) is : " << Bs2 << endl;
+			std::cout << "\n\nLimit traded volume bias is : " << Bs3 << endl;
 			std::cout << "\nBought volume for NQ is : " << NQ1BV << endl;
 			std::cout << "\nSold volume for NQ is : " << NQ1SV << endl;
 			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
-			std::cout << "\nLargest Ask Limit orders is : " << NQMaxAsk << endl;
-			std::cout << "\nPrice of Largest Ask Limit orders is : " << NQAPrice << endl;
-			std::cout << "\nLargest Bid Limit orders is : " << NQMaxBid << endl;
-			std::cout << "\nPrice of Largest Bid Limit orders is : " << NQBPrice << endl;
 			std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
 			std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
 			std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
@@ -2935,6 +2508,8 @@ int main(int      argc,
 			std::cout << "\n\Trade print Processing speed is : " << SpdTrade << endl;
 			std::cout << "\n\Ask Processing speed is : " << SpdAsk << endl;
 			std::cout << "\n\Bid Processing speed is : " << SpdBid << endl;
+			std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
+			std::cout << "\n\n\Conditional value is : " << track << endl;
 		}
 	}
 
