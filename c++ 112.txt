@@ -150,6 +150,7 @@ double NQ1TP, ES1TP;
 int NQ1BV, NQ1SV, ES1BV, ES1SV, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double LastPrice;
+bool counter = false;
 
 SYSTEMTIME st, lt;
 
@@ -470,7 +471,7 @@ public:
 
 	/*   ----------------------------------------------------------------   */
 
-	virtual void CloseOrder(int &Signal);
+	virtual void Process();
 
 	/*   ----------------------------------------------------------------   */
 
@@ -481,12 +482,20 @@ private:
 /*                          class definitions                                */
 /*   =====================================================================   */
 
-void MyCallbacks::CloseOrder(int &Signal)
+void MyCallbacks::Process()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
+	Psh1 = NQ1BV - NQ1SV;
+	Psh2 = NQ1BV + NQ1SV;
+	Psh3 = Psh1 / Psh2;
+	Bs1 = NQSBid1 - NQSAsk1;
+	Bs2 = NQSBid1 + NQSAsk1;
+	Bs3 = Bs1 / Bs2;
 
+	if (Psh3 >= 0.25 && Bs3 >= 0.25)
+		track = 2;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -495,6 +504,7 @@ void MyCallbacks::CloseOrder(int &Signal)
 
 	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
 		SpdClOrd = ElapsedMicroseconds.QuadPart;
+	counter = false;
 }
 
 
@@ -1740,6 +1750,8 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 	int *       aiCode)
 {
 	int iIgnored;
+	GetSystemTime(&st);
+	GetLocalTime(&lt);
 
 	/*   ----------------------------------------------------------------   */
 	QueryPerformanceFrequency(&Frequency);
@@ -1752,10 +1764,22 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
+		{
+			NQ2BV = pInfo->iVolumeBought - NQ1BV;
 			NQ1BV = pInfo->iVolumeBought;
+		}
 		if (pInfo->bVolumeSoldFlag)
+		{
+			NQ2SV = pInfo->iVolumeBought - NQ1SV;
 			NQ1SV = pInfo->iVolumeSold;
+		}
 
+	}
+	
+	if (!counter)
+	{
+		counter = true;
+		process();
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2470,6 +2494,10 @@ int main(int      argc,
 			std::cout << "\n\nNet Market volume (NQ1BV - NQ2BV) is : " << Psh1 << endl;
 			std::cout << "\nTotal Market volume (NQ1BV + NQ2BV) is : " << Psh2 << endl;
 			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
+			std::cout << "\n\nNew Market Buy volume is : " << NQ2BV << endl;
+			std::cout << "\n\nNew Market Sell volume is : " << NQ2SV << endl;
+			std::cout << "\n\nMarket Buy volume is : " << NQ1BV << endl;
+			std::cout << "\n\nMarket Sell volume is : " << NQ1SV << endl;
 			std::cout << "\nNet Limit volume (NQSBid1 - NQSAsk1) is : " << Bs1 << endl;
 			std::cout << "\n\nTotal Limit volume (NQSBid1 - NQSAsk1) is : " << Bs2 << endl;
 			std::cout << "\n\nLimit traded volume bias is : " << Bs3 << endl;
