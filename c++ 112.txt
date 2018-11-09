@@ -119,9 +119,7 @@ REngine *   g_pEngine;
 MarketOrderParams oMktOrdParams;
 LimitOrderParams  oLmtOrdParams;
 ModifyLimitOrderParams	oModLmtOrdParams;
-LimitOrderBookInfo bInfo;
-void * bContext;
-int biCode;
+
 double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, _PriceToFill = 0;
 double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES, incrNQ = 0, incrES = 0, _PnlAvgOpenPrice;
 double _AvgFillPriceNQ = 0, _AvgFillPriceES = 0, _PriceToFillNQ = 0, _PriceToFillES = 0;
@@ -496,7 +494,27 @@ void MyCallbacks::Process()
 	Bs3 = Bs1 / Bs2;
 
 	if (Psh3 >= 0.25 && Bs3 >= 0.25)
+	{
 		track = 2;
+		if(NQLBid1 < NQ1TP)
+		{
+			oLmtOrdParams.dPrice = NQLBid1;
+			oLmtOrdParams.sBuySellType = "B";
+			if(!g_pEngine(&oLmtOrdParams, &iCode))
+				std::cout << "\n\nBuy Limit order not submitted..." << endl;
+		}
+	}
+	else if(Psh3 <= -0.25 && Bs3 <= -0.25)
+	{
+		track = 2;
+		if(NQLAsk1 > NQ1TP)
+		{
+			oLmtOrdParams.dPrice = NQLAsk1;
+			oLmtOrdParams.sBuySellType = "S";
+			if(!g_pEngine(&oLmtOrdParams, &iCode))
+				std::cout << "\n\nSell Limit order not submitted..." << endl;
+		}
+	}
 
 	if (check < 10)
 		check = check + 1;
@@ -2375,7 +2393,7 @@ int main(int      argc,
 	oLmtOrdParams.sTicker = sTicker;
 	oLmtOrdParams.pAccount = &g_oAccount;
 	oLmtOrdParams.iQty = _qty;
-	oLmtOrdParams.sDuration = sORDER_DURATION_FOK;
+	oLmtOrdParams.sDuration = sORDER_DURATION_IOC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
 
@@ -2434,6 +2452,8 @@ int main(int      argc,
 
 		if (Psh3 >= 0.25 && Bs3 >= 0.25)
 			track = 2;
+		else if (Psh3 <= -0.25 && Bs3 <= -0.25)
+			track = 2;
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
@@ -2487,6 +2507,7 @@ int main(int      argc,
 			std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
 			std::cout << "\n\n\Conditional value is : " << track << endl;
 			std::cout << "\n\n\Function check value is : " << check << endl;
+			track = 1;
 		}
 	}
 
