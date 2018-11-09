@@ -1,35 +1,9 @@
-Microsoft Windows [Version 6.1.7601]
-Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
 
-C:\Users\User>cd Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release
+Day Value is : 9
 
-C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
-PR and222 3600 8 13 4 CME ESZ8
-REngine::REngine() error : %d
-1
+Hour Value is : 7
 
-C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
-PR and222 3600 8 13 6 CME ESZ8
-REngine::login() error : %d
-6
-
-C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
-PR and222 3600 8 13 15 CME ESZ8
-We are looking for a trade route for : Dorman::Stage5-Paper::CME
-Dorman::Stage5-Paper::EUREX::simulator::UP
-Dorman::Stage5-Paper::CBOE::simulator::UP
-Dorman::Stage5-Paper::COMEX::simulator::UP
-Dorman::Stage5-Paper::NYBOT::simulator::UP
-Dorman::Stage5-Paper::ICE::simulator::UP
-Dorman::Stage5-Paper::CBOT::simulator::UP
-Dorman::Stage5-Paper::NYMEX::simulator::UP
-Dorman::Stage5-Paper::CME::simulator::UP
-
-Day Value is : 8
-
-Hour Value is : 13
-
-Minute Value is : 15
+Minute Value is : 53
 
 Starting Account Balance is : 3600
 
@@ -38,34 +12,46 @@ Reading algorithm...
 
 Order Book Information...
 
-Level 1 Ask Price is : 2807.25
+Level 1 Ask Price is : 2798.75
 
-Level 1 Ask Size is : 30
+Level 1 Ask Size is : 33
 
-Level 1 Bid Price is : 2807
+Level 1 Bid Price is : 2798.5
 
-Level 1 Bid Size is : 36
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -6521
-
-Total Market volume (NQ1BV + NQ2BV) is : 184205
-
-Market traded volume bias is : -0.0354008
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : 6
+Level 1 Bid Size is : 91
 
 
-Total Limit volume (NQSBid1 - NQSAsk1) is : 66
+Net Market volume (NQ1BV - NQ2BV) is : -678
+
+Total Market volume (NQ1BV + NQ2BV) is : 71574
+
+Market traded volume bias is : -0.00947271
 
 
-Limit traded volume bias is : 0.0909091
+New Market Buy volume is : 1
 
-Bought volume for NQ is : 88842
 
-Sold volume for NQ is : 95363
+New Market Sell volume is : -36125
 
-Last traded Price (Trade Print) for NQ is : 2807
+
+Market Buy volume is : 35448
+
+
+Market Sell volume is : 36126
+
+Net Limit volume (NQSBid1 - NQSAsk1) is : 48
+
+
+Total Limit volume (NQSBid1 - NQSAsk1) is : 134
+
+
+Limit traded volume bias is : 0.358209
+
+Bought volume for NQ is : 35448
+
+Sold volume for NQ is : 36126
+
+Last traded Price (Trade Print) for NQ is : 2798.5
 
 Last traded Price (Bar Info) for NQ is : 0
 
@@ -76,15 +62,15 @@ Line update Processing speed is : 0
 
 PnL Processing speed is : 0
 
-Best Ask Processing speed is : 1
+Best Ask Processing speed is : 2
 
-Best Bid Processing speed is : 6
+Best Bid Processing speed is : 2
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 2
+Trade print Processing speed is : 1
 
-Ask Processing speed is : 2
+Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
@@ -96,53 +82,65 @@ Conditional value is : 1
 
 Order Book Information...
 
-Level 1 Ask Price is : 2807.25
+Level 1 Ask Price is : 2799
 
-Level 1 Ask Size is : 49
+Level 1 Ask Size is : 46
 
-Level 1 Bid Price is : 2807
+Level 1 Bid Price is : 2798.75
 
-Level 1 Bid Size is : 36
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -6534
-
-Total Market volume (NQ1BV + NQ2BV) is : 184234
-
-Market traded volume bias is : -0.0354658
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : -18
+Level 1 Bid Size is : 15
 
 
-Total Limit volume (NQSBid1 - NQSAsk1) is : 80
+Net Market volume (NQ1BV - NQ2BV) is : -656
+
+Total Market volume (NQ1BV + NQ2BV) is : 71620
+
+Market traded volume bias is : -0.00915945
 
 
-Limit traded volume bias is : -0.225
+New Market Buy volume is : 1
 
-Bought volume for NQ is : 88850
 
-Sold volume for NQ is : 95384
+New Market Sell volume is : -36137
 
-Last traded Price (Trade Print) for NQ is : 2807
+
+Market Buy volume is : 35482
+
+
+Market Sell volume is : 36138
+
+Net Limit volume (NQSBid1 - NQSAsk1) is : -31
+
+
+Total Limit volume (NQSBid1 - NQSAsk1) is : 61
+
+
+Limit traded volume bias is : -0.508197
+
+Bought volume for NQ is : 35482
+
+Sold volume for NQ is : 36138
+
+Last traded Price (Trade Print) for NQ is : 2798.75
 
 Last traded Price (Bar Info) for NQ is : 0
 
 
-While loop Processing speed is : 1215
+While loop Processing speed is : 266
 
 Line update Processing speed is : 0
 
 PnL Processing speed is : 0
 
-Best Ask Processing speed is : 1
+Best Ask Processing speed is : 2
 
-Best Bid Processing speed is : 6
+Best Bid Processing speed is : 2
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 2
+Trade print Processing speed is : 1
 
-Ask Processing speed is : 2
+Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
@@ -154,39 +152,51 @@ Conditional value is : 1
 
 Order Book Information...
 
-Level 1 Ask Price is : 2807.25
+Level 1 Ask Price is : 2799
 
-Level 1 Ask Size is : 20
+Level 1 Ask Size is : 45
 
-Level 1 Bid Price is : 2807
+Level 1 Bid Price is : 2798.75
 
-Level 1 Bid Size is : 46
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -6555
-
-Total Market volume (NQ1BV + NQ2BV) is : 184463
-
-Market traded volume bias is : -0.0355356
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : 26
+Level 1 Bid Size is : 9
 
 
-Total Limit volume (NQSBid1 - NQSAsk1) is : 66
+Net Market volume (NQ1BV - NQ2BV) is : -715
+
+Total Market volume (NQ1BV + NQ2BV) is : 71823
+
+Market traded volume bias is : -0.00995503
 
 
-Limit traded volume bias is : 0.393939
-
-Bought volume for NQ is : 88954
-
-Sold volume for NQ is : 95509
-
-Last traded Price (Trade Print) for NQ is : 2807.25
-
-Last traded Price (Bar Info) for NQ is : 2807
+New Market Buy volume is : 1
 
 
-While loop Processing speed is : 1942
+New Market Sell volume is : -36268
+
+
+Market Buy volume is : 35554
+
+
+Market Sell volume is : 36269
+
+Net Limit volume (NQSBid1 - NQSAsk1) is : -36
+
+
+Total Limit volume (NQSBid1 - NQSAsk1) is : 54
+
+
+Limit traded volume bias is : -0.666667
+
+Bought volume for NQ is : 35554
+
+Sold volume for NQ is : 36269
+
+Last traded Price (Trade Print) for NQ is : 2799
+
+Last traded Price (Bar Info) for NQ is : 2798.75
+
+
+While loop Processing speed is : 706
 
 Line update Processing speed is : 0
 
@@ -194,13 +204,13 @@ PnL Processing speed is : 0
 
 Best Ask Processing speed is : 2
 
-Best Bid Processing speed is : 6
+Best Bid Processing speed is : 2
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 2
+Trade print Processing speed is : 1
 
-Ask Processing speed is : 2
+Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
@@ -212,39 +222,51 @@ Conditional value is : 1
 
 Order Book Information...
 
-Level 1 Ask Price is : 2807
+Level 1 Ask Price is : 2798.75
 
-Level 1 Ask Size is : 54
+Level 1 Ask Size is : 38
 
-Level 1 Bid Price is : 2806.75
+Level 1 Bid Price is : 2798.5
 
-Level 1 Bid Size is : 33
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -6565
-
-Total Market volume (NQ1BV + NQ2BV) is : 184833
-
-Market traded volume bias is : -0.0355185
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : -22
+Level 1 Bid Size is : 12
 
 
-Total Limit volume (NQSBid1 - NQSAsk1) is : 86
+Net Market volume (NQ1BV - NQ2BV) is : -693
+
+Total Market volume (NQ1BV + NQ2BV) is : 71919
+
+Market traded volume bias is : -0.00963584
 
 
-Limit traded volume bias is : -0.255814
-
-Bought volume for NQ is : 89134
-
-Sold volume for NQ is : 95699
-
-Last traded Price (Trade Print) for NQ is : 2806.75
-
-Last traded Price (Bar Info) for NQ is : 2807.25
+New Market Buy volume is : 1
 
 
-While loop Processing speed is : 3807
+New Market Sell volume is : -36305
+
+
+Market Buy volume is : 35613
+
+
+Market Sell volume is : 36306
+
+Net Limit volume (NQSBid1 - NQSAsk1) is : -26
+
+
+Total Limit volume (NQSBid1 - NQSAsk1) is : 50
+
+
+Limit traded volume bias is : -0.52
+
+Bought volume for NQ is : 35613
+
+Sold volume for NQ is : 36306
+
+Last traded Price (Trade Print) for NQ is : 2798.75
+
+Last traded Price (Bar Info) for NQ is : 2799
+
+
+While loop Processing speed is : 3138
 
 Line update Processing speed is : 0
 
@@ -252,13 +274,13 @@ PnL Processing speed is : 0
 
 Best Ask Processing speed is : 2
 
-Best Bid Processing speed is : 6
+Best Bid Processing speed is : 2
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 2
+Trade print Processing speed is : 1
 
-Ask Processing speed is : 2
+Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
