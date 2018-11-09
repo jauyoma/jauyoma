@@ -138,7 +138,7 @@ LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds, Frequency;
 std::string trial, test, _sExchange;
 int  hr_T = 19, min_T = 36, day_T;
 double spreadA, spreadB, _RiskBal;
-int _qty = 1, iCode, trade, curr;
+int _qty = 1, iCode, trade, curr,track = 1;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
 long SpdAsk, SpdBid, SpdTrade;
 bool done = false, contract = false;
@@ -151,6 +151,7 @@ int NQ1BV, NQ1SV, ES1BV, ES1SV, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV,
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double LastPrice;
 bool counter = false;
+int check = 0;
 
 SYSTEMTIME st, lt;
 
@@ -496,6 +497,9 @@ void MyCallbacks::Process()
 
 	if (Psh3 >= 0.25 && Bs3 >= 0.25)
 		track = 2;
+
+	if (check < 0)
+		check = check + 1;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1775,11 +1779,11 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		}
 
 	}
-	
+
 	if (!counter)
 	{
 		counter = true;
-		process();
+		Process();
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2447,7 +2451,7 @@ int main(int      argc,
 	std::cout << "\nReading algorithm..." << endl;
 
 	curr = (lt.wHour * 60) + lt.wMinute;
-	int cnt = 0, track = 1;
+	int cnt = 0;
 
 	while (((curr - trade) <= 2) && !done)
 	{
@@ -2482,7 +2486,7 @@ int main(int      argc,
 
 		if (ElapsedMicroseconds.QuadPart > SpdProc)
 			SpdProc = ElapsedMicroseconds.QuadPart;
-
+		
 		if (cnt != lt.wMinute)
 		{
 			cnt = lt.wMinute;
@@ -2491,18 +2495,18 @@ int main(int      argc,
 			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
 			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
 			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
-			std::cout << "\n\nNet Market volume (NQ1BV - NQ2BV) is : " << Psh1 << endl;
-			std::cout << "\nTotal Market volume (NQ1BV + NQ2BV) is : " << Psh2 << endl;
+			std::cout << "\n\nNet Market volume (NQ1BV - NQ1SV) is : " << Psh1 << endl;
+			std::cout << "\nTotal Market volume (NQ1BV + NQ1SV) is : " << Psh2 << endl;
 			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
 			std::cout << "\n\nNew Market Buy volume is : " << NQ2BV << endl;
 			std::cout << "\n\nNew Market Sell volume is : " << NQ2SV << endl;
 			std::cout << "\n\nMarket Buy volume is : " << NQ1BV << endl;
 			std::cout << "\n\nMarket Sell volume is : " << NQ1SV << endl;
 			std::cout << "\nNet Limit volume (NQSBid1 - NQSAsk1) is : " << Bs1 << endl;
-			std::cout << "\n\nTotal Limit volume (NQSBid1 - NQSAsk1) is : " << Bs2 << endl;
+			std::cout << "\n\nTotal Limit volume (NQSBid1 + NQSAsk1) is : " << Bs2 << endl;
 			std::cout << "\n\nLimit traded volume bias is : " << Bs3 << endl;
-			std::cout << "\nBought volume for NQ is : " << NQ1BV << endl;
-			std::cout << "\nSold volume for NQ is : " << NQ1SV << endl;
+			std::cout << "\nBid Limit volume for NQ is : " << NQSBid1 << endl;
+			std::cout << "\nAsk Limit volume for NQ is : " << NQSAsk1 << endl;
 			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
 			std::cout << "\nLast traded Price (Bar Info) for NQ is : " << LastPrice << endl;
 			std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
@@ -2516,6 +2520,7 @@ int main(int      argc,
 			std::cout << "\n\Bid Processing speed is : " << SpdBid << endl;
 			std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
 			std::cout << "\n\n\Conditional value is : " << track << endl;
+			std::cout << "\n\n\Function check value is : " << check << endl;
 		}
 	}
 
