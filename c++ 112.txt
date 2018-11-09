@@ -488,8 +488,8 @@ void MyCallbacks::Process()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	Psh1 = NQ1BV - NQ1SV;
-	Psh2 = NQ1BV + NQ1SV;
+	Psh1 = NQ2BV - NQ2SV;
+	Psh2 = NQ2BV + NQ2SV;
 	Psh3 = Psh1 / Psh2;
 	Bs1 = NQSBid1 - NQSAsk1;
 	Bs2 = NQSBid1 + NQSAsk1;
@@ -498,7 +498,7 @@ void MyCallbacks::Process()
 	if (Psh3 >= 0.25 && Bs3 >= 0.25)
 		track = 2;
 
-	if (check < 0)
+	if (check < 10)
 		check = check + 1;
 
 	QueryPerformanceCounter(&EndingTime);
@@ -1774,17 +1774,13 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		}
 		if (pInfo->bVolumeSoldFlag)
 		{
-			NQ2SV = pInfo->iVolumeBought - NQ1SV;
+			NQ2SV = pInfo->iVolumeSold - NQ1SV;
 			NQ1SV = pInfo->iVolumeSold;
 		}
 
 	}
 
-	if (!counter)
-	{
-		counter = true;
-		Process();
-	}
+	Process();
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1933,7 +1929,6 @@ int MyCallbacks::Bar(BarInfo * pInfo,
 	void *    pContext,
 	int *     aiCode)
 {
-	LastPrice = pInfo->dClosePrice;
 
 	*aiCode = API_OK;
 	return (OK);
@@ -2146,15 +2141,6 @@ int main(int      argc,
 
 		oLoginParams.sMdCnnctPt.pData = "login_agent_tp_paperc";
 		oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
-
-		oLoginParams.sIhCnnctPt.pData = "login_agent_history_paperc";
-		oLoginParams.sIhCnnctPt.iDataLen = (int)strlen(oLoginParams.sIhCnnctPt.pData);
-
-		oLoginParams.sIhPassword.pData = argv[2];
-		oLoginParams.sIhPassword.iDataLen = (int)strlen(oLoginParams.sIhPassword.pData);
-
-		oLoginParams.sIhUser.pData = argv[1];
-		oLoginParams.sIhUser.iDataLen = (int)strlen(oLoginParams.sIhUser.pData);
 	}
 
 	if (_stricmp(argv[1], user2) == 0)
@@ -2372,25 +2358,6 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	/*   Bar Parameters */
-
-	bParams.sExchange = sExchange;
-	bParams.sTicker = sTicker;
-	bParams.iSpecifiedMinutes = 1;
-	bParams.iType = BAR_TYPE_MINUTE;
-
-	if (!g_pEngine->subscribeBar(&bParams, &iCode))
-	{
-		std::cout << "REngine::subscribeBar() error : \n" << iCode << endl;
-
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
-
-		return (BAD);
-	}
-
-	/*   ----------------------------------------------------------------   */
 	/*   send market order */
 
 	oMktOrdParams.sExchange = sExchange;
@@ -2458,8 +2425,8 @@ int main(int      argc,
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-		Psh1 = NQ1BV - NQ1SV;
-		Psh2 = NQ1BV + NQ1SV;
+		Psh1 = NQ2BV - NQ2SV;
+		Psh2 = NQ2BV + NQ2SV;
 		Psh3 = Psh1 / Psh2;
 		Bs1 = NQSBid1 - NQSAsk1;
 		Bs2 = NQSBid1 + NQSAsk1;
@@ -2495,8 +2462,8 @@ int main(int      argc,
 			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
 			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
 			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
-			std::cout << "\n\nNet Market volume (NQ1BV - NQ1SV) is : " << Psh1 << endl;
-			std::cout << "\nTotal Market volume (NQ1BV + NQ1SV) is : " << Psh2 << endl;
+			std::cout << "\n\nNet Market volume (NQ2BV - NQ2SV) is : " << Psh1 << endl;
+			std::cout << "\nTotal Market volume (NQ2BV + NQ2SV) is : " << Psh2 << endl;
 			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
 			std::cout << "\n\nNew Market Buy volume is : " << NQ2BV << endl;
 			std::cout << "\n\nNew Market Sell volume is : " << NQ2SV << endl;
@@ -2508,7 +2475,6 @@ int main(int      argc,
 			std::cout << "\nBid Limit volume for NQ is : " << NQSBid1 << endl;
 			std::cout << "\nAsk Limit volume for NQ is : " << NQSAsk1 << endl;
 			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
-			std::cout << "\nLast traded Price (Bar Info) for NQ is : " << LastPrice << endl;
 			std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
 			std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
 			std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
