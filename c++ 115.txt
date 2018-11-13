@@ -75,7 +75,6 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include <thread>
 #include <future>
 
 #ifdef WinOS
@@ -157,8 +156,6 @@ double LastPrice;
 bool counter = false, BvolTracker = false, SvolTracker = false;
 int check = 0;
 bool BuyLimit = true, SellLimit = true;
-std::future<bool> buy_future;
-std::future<bool> sell_future;
 
 SYSTEMTIME st, lt;
 
@@ -482,14 +479,6 @@ public:
 	virtual void Process();
 
 	/*   ----------------------------------------------------------------   */
-	
-	virtual bool BuyFn();
-
-	/*   ----------------------------------------------------------------   */
-	
-	virtual bool SellFn();
-
-	/*   ----------------------------------------------------------------   */
 
 private:
 };
@@ -497,43 +486,6 @@ private:
 /*   =====================================================================   */
 /*                          class definitions                                */
 /*   =====================================================================   */
-bool MyCallbacks::BuyFn()
-{
-	QueryPerformanceFrequency(&Frequency);
-	QueryPerformanceCounter(&StartingTime);
-	
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		std::cout << "\n\nBuy Limit order not submitted..." << endl;
-	BuyLimit = false;
-	
-	QueryPerformanceCounter(&EndingTime);
-	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-	ElapsedMicroseconds.QuadPart *= 1000000;
-	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
-	if (ElapsedMicroseconds.QuadPart > SpdBuyFn)
-		SpdBuyFn = ElapsedMicroseconds.QuadPart;
-	return BuyLimit;
-}
-
-bool MyCallbacks::SellFn()
-{
-	QueryPerformanceFrequency(&Frequency);
-	QueryPerformanceCounter(&StartingTime);
-	
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		std::cout << "\n\nSell Limit order not submitted..." << endl;
-	SellLimit = false;
-	
-	QueryPerformanceCounter(&EndingTime);
-	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-	ElapsedMicroseconds.QuadPart *= 1000000;
-	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
-	if (ElapsedMicroseconds.QuadPart > SpdSellFn)
-		SpdSellFn = ElapsedMicroseconds.QuadPart;
-	return SellLimit;
-}
 
 void MyCallbacks::Process()
 {
@@ -559,7 +511,7 @@ void MyCallbacks::Process()
 			oLmtOrdParams.sBuySellType.pData = "B";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if(!BuyLimit)
-				buy_future = std::async(std::launch::async, BuyFn);
+				BuyLimit = true;
 		}
 
 	}
@@ -572,7 +524,7 @@ void MyCallbacks::Process()
 			oLmtOrdParams.sBuySellType.pData = "S";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if(!SellLimit)
-				sell_future = std::async(std::launch::async, SellFn);
+				SellLimit = true;
 		}
 
 	}
@@ -2522,24 +2474,28 @@ int main(int      argc,
 
 	curr = (lt.wHour * 60) + lt.wMinute;
 	int cnt = 0;
-	BuyLimit = false;
-	SellLimit = false;
-	while (((curr - trade) <= 2) && !done)
+
+	while (!done)
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-
-		if (lt.wHour > hr_T)
-			curr = (60 + lt.wMinute) - min_T;
-		else
-			curr = (lt.wHour * 60) + lt.wMinute;
-
-		if ((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T))
+		if(BuyLimit)
 		{
-			std::cout << "\n\nExiting algobox..." << endl;
-			break;
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				std::cout << "\n\nBuy Limit order not submitted..." << endl;
+			else
+				BuyLimit = false;
 		}
+		
+		if(SellLimit)
+		{
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				std::cout << "\n\nSell Limit order not submitted..." << endl;
+			else
+				SellLimit = false;
+		}
+	
 
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -2547,48 +2503,13 @@ int main(int      argc,
 		ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
 
 		if (ElapsedMicroseconds.QuadPart > SpdProc)
-			SpdProc = ElapsedMicroseconds.QuadPart;
-
-		if (cnt != lt.wMinute)
 		{
-			cnt = lt.wMinute;
-			std::cout << "\n\nOrder Book Information..." << endl;
-			std::cout << "\nLevel 1 Ask Price is : " << NQLAsk1 << endl;
-			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
-			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
-			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
-			std::cout << "\n\nNet Market volume (NQ2BV - NQ2SV) is : " << Psh1 << endl;
-			std::cout << "\nTotal Market volume (NQ2BV + NQ2SV) is : " << Psh2 << endl;
-			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
-			std::cout << "\n\nAccumulated Net Market volume (NQ4BV - NQ4SV) is : " << Psh4 << endl;
-			std::cout << "\nAccumulated Total Market volume (NQ4BV + NQ4SV) is : " << Psh5 << endl;
-			std::cout << "\nAccumulated Market traded volume bias is : " << Psh6 << endl;
-			std::cout << "\n\nAccumulated Market Buy volume is : " << NQ4BV << endl;
-			std::cout << "\n\nAccumulated Market Sell volume is : " << NQ4SV << endl;
-			std::cout << "\n\nNew Market Buy volume is : " << NQ2BV << endl;
-			std::cout << "\n\nNew Market Sell volume is : " << NQ2SV << endl;
-			std::cout << "\n\nMarket Buy volume is : " << NQ1BV << endl;
-			std::cout << "\n\nMarket Sell volume is : " << NQ1SV << endl;
-			std::cout << "\nNet Limit volume (NQSBid1 - NQSAsk1) is : " << Bs1 << endl;
-			std::cout << "\n\nTotal Limit volume (NQSBid1 + NQSAsk1) is : " << Bs2 << endl;
-			std::cout << "\n\nLimit traded volume bias is : " << Bs3 << endl;
-			std::cout << "\nBid Limit volume for NQ is : " << NQSBid1 << endl;
-			std::cout << "\nAsk Limit volume for NQ is : " << NQSAsk1 << endl;
-			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
+			SpdProc = ElapsedMicroseconds.QuadPart;
 			std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
-			std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
-			std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
-			std::cout << "\n\Best Ask Processing speed is : " << SpdBAsk << endl;
-			std::cout << "\n\Best Bid Processing speed is : " << SpdBBid << endl;
-			std::cout << "\n\Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
 			std::cout << "\n\Trade print Processing speed is : " << SpdTrade << endl;
-			std::cout << "\n\Ask Processing speed is : " << SpdAsk << endl;
-			std::cout << "\n\Bid Processing speed is : " << SpdBid << endl;
 			std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
-			std::cout << "\n\n\Conditional value is : " << track << endl;
-			std::cout << "\n\n\Function check value is : " << check << endl;
-			track = 1;
 		}
+
 	}
 
 	/*   ----------------------------------------------------------------   */
