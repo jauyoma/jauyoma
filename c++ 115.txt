@@ -75,6 +75,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <thread>
 #include <future>
 
 #ifdef WinOS
