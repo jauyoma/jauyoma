@@ -177,7 +177,11 @@ bool BuyFn()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
+	
+	oLmtOrdParams.dPrice = NQLBid1;
+	oLmtOrdParams.sBuySellType.pData = "B";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			
 	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
 	BuyLimit = false;
 
@@ -500,7 +504,11 @@ bool MyCallbacks::SellFn()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
+	
+	oLmtOrdParams.dPrice = NQLAsk1;
+	oLmtOrdParams.sBuySellType.pData = "S";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			
 	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
 	SellLimit = false;
 
@@ -535,9 +543,6 @@ void MyCallbacks::Process()
 		track = 2;
 		if (NQLBid1 < NQ1TP && !BuyLimit)
 		{
-			oLmtOrdParams.dPrice = NQLBid1;
-			oLmtOrdParams.sBuySellType.pData = "B";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if (!BuyLimit)
 				BuyLimit = true;
 		}
@@ -548,9 +553,6 @@ void MyCallbacks::Process()
 		track = 3;
 		if (NQLAsk1 > NQ1TP && !SellLimit)
 		{
-			oLmtOrdParams.dPrice = NQLAsk1;
-			oLmtOrdParams.sBuySellType.pData = "S";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if (!SellLimit)
 				SellLimit = true;
 		}
