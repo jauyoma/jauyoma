@@ -1,65 +1,4 @@
 
-Day Value is : 9
-
-Hour Value is : 7
-
-Minute Value is : 53
-
-Starting Account Balance is : 3600
-
-Reading algorithm...
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2798.75
-
-Level 1 Ask Size is : 33
-
-Level 1 Bid Price is : 2798.5
-
-Level 1 Bid Size is : 91
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -678
-
-Total Market volume (NQ1BV + NQ2BV) is : 71574
-
-Market traded volume bias is : -0.00947271
-
-
-New Market Buy volume is : 1
-
-
-New Market Sell volume is : -36125
-
-
-Market Buy volume is : 35448
-
-
-Market Sell volume is : 36126
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : 48
-
-
-Total Limit volume (NQSBid1 - NQSAsk1) is : 134
-
-
-Limit traded volume bias is : 0.358209
-
-Bought volume for NQ is : 35448
-
-Sold volume for NQ is : 36126
-
-Last traded Price (Trade Print) for NQ is : 2798.5
-
-Last traded Price (Bar Info) for NQ is : 0
-
-
-While loop Processing speed is : 0
-
-Line update Processing speed is : 0
-
 PnL Processing speed is : 0
 
 Best Ask Processing speed is : 2
@@ -68,226 +7,287 @@ Best Bid Processing speed is : 2
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 1
+Trade print Processing speed is : 867
 
 Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
-Function Processing speed is : 0
+Function Processing speed is : 867
+
+Buy function processing speed is : 866
+
+Sell Function Processing speed is : 658
 
 
-Conditional value is : 1
+Conditional value is : 3
+
+
+Function check value is : 10
 
 
 Order Book Information...
 
-Level 1 Ask Price is : 2799
+Level 1 Ask Price is : 2708.25
 
-Level 1 Ask Size is : 46
+Level 1 Ask Size is : 111
 
-Level 1 Bid Price is : 2798.75
+Level 1 Bid Price is : 2708
 
-Level 1 Bid Size is : 15
+Level 1 Bid Size is : 35
 
 
-Net Market volume (NQ1BV - NQ2BV) is : -656
+Net Market volume (NQ2BV - NQ2SV) is : 1
 
-Total Market volume (NQ1BV + NQ2BV) is : 71620
+Total Market volume (NQ2BV + NQ2SV) is : 3
 
-Market traded volume bias is : -0.00915945
+Market traded volume bias is : 0.333333
+
+
+Accumulated Net Market volume (NQ4BV - NQ4SV) is : -92
+
+Accumulated Total Market volume (NQ4BV + NQ4SV) is : 119
+
+Accumulated Market traded volume bias is : -0.764706
+
+
+Accumulated Market Buy volume is : 14
+
+
+Accumulated Market Sell volume is : 105
 
 
 New Market Buy volume is : 1
 
 
-New Market Sell volume is : -36137
+New Market Sell volume is : 1
 
 
-Market Buy volume is : 35482
+Market Buy volume is : 1008201
 
 
-Market Sell volume is : 36138
+Market Sell volume is : 1015830
 
-Net Limit volume (NQSBid1 - NQSAsk1) is : -31
-
-
-Total Limit volume (NQSBid1 - NQSAsk1) is : 61
+Net Limit volume (NQSBid1 - NQSAsk1) is : -88
 
 
-Limit traded volume bias is : -0.508197
-
-Bought volume for NQ is : 35482
-
-Sold volume for NQ is : 36138
-
-Last traded Price (Trade Print) for NQ is : 2798.75
-
-Last traded Price (Bar Info) for NQ is : 0
+Total Limit volume (NQSBid1 + NQSAsk1) is : 138
 
 
-While loop Processing speed is : 266
+Limit traded volume bias is : -0.637681
 
-Line update Processing speed is : 0
+Bid Limit volume for NQ is : 31
+
+Ask Limit volume for NQ is : 108
+
+Last traded Price (Trade Print) for NQ is : 2708.25
+
+
+While loop Processing speed is : 1658
+
+Line update Processing speed is : 7
 
 PnL Processing speed is : 0
 
-Best Ask Processing speed is : 2
+Best Ask Processing speed is : 12
 
-Best Bid Processing speed is : 2
+Best Bid Processing speed is : 5
 
 Best Ask & Bid Processing speed is : 1
 
-Trade print Processing speed is : 1
+Trade print Processing speed is : 867
 
 Ask Processing speed is : 0
 
 Bid Processing speed is : 0
 
-Function Processing speed is : 0
+Function Processing speed is : 867
+
+Buy function processing speed is : 866
+
+Sell Function Processing speed is : 658
 
 
-Conditional value is : 1
+Conditional value is : 2
+
+
+Function check value is : 10
 
 
 Order Book Information...
 
-Level 1 Ask Price is : 2799
+Level 1 Ask Price is : 2705.25
 
-Level 1 Ask Size is : 45
+Level 1 Ask Size is : 5
 
-Level 1 Bid Price is : 2798.75
+Level 1 Bid Price is : 2704.75
 
-Level 1 Bid Size is : 9
+Level 1 Bid Size is : 117
 
 
-Net Market volume (NQ1BV - NQ2BV) is : -715
+Net Market volume (NQ2BV - NQ2SV) is : -5
 
-Total Market volume (NQ1BV + NQ2BV) is : 71823
+Total Market volume (NQ2BV + NQ2SV) is : 7
 
-Market traded volume bias is : -0.00995503
+Market traded volume bias is : -0.714286
+
+
+Accumulated Net Market volume (NQ4BV - NQ4SV) is : -6
+
+Accumulated Total Market volume (NQ4BV + NQ4SV) is : 10
+
+Accumulated Market traded volume bias is : -0.6
+
+
+Accumulated Market Buy volume is : 2
+
+
+Accumulated Market Sell volume is : 8
 
 
 New Market Buy volume is : 1
 
 
-New Market Sell volume is : -36268
+New Market Sell volume is : 6
 
 
-Market Buy volume is : 35554
+Market Buy volume is : 1011651
 
 
-Market Sell volume is : 36269
+Market Sell volume is : 1020018
 
-Net Limit volume (NQSBid1 - NQSAsk1) is : -36
-
-
-Total Limit volume (NQSBid1 - NQSAsk1) is : 54
+Net Limit volume (NQSBid1 - NQSAsk1) is : 114
 
 
-Limit traded volume bias is : -0.666667
-
-Bought volume for NQ is : 35554
-
-Sold volume for NQ is : 36269
-
-Last traded Price (Trade Print) for NQ is : 2799
-
-Last traded Price (Bar Info) for NQ is : 2798.75
+Total Limit volume (NQSBid1 + NQSAsk1) is : 120
 
 
-While loop Processing speed is : 706
+Limit traded volume bias is : 0.95
 
-Line update Processing speed is : 0
+Bid Limit volume for NQ is : 117
+
+Ask Limit volume for NQ is : 143
+
+Last traded Price (Trade Print) for NQ is : 2705
+
+
+While loop Processing speed is : 1943
+
+Line update Processing speed is : 11
 
 PnL Processing speed is : 0
 
-Best Ask Processing speed is : 2
+Best Ask Processing speed is : 12
 
-Best Bid Processing speed is : 2
+Best Bid Processing speed is : 5
 
-Best Ask & Bid Processing speed is : 1
+Best Ask & Bid Processing speed is : 2
 
-Trade print Processing speed is : 1
+Trade print Processing speed is : 867
 
-Ask Processing speed is : 0
+Ask Processing speed is : 20
 
 Bid Processing speed is : 0
 
-Function Processing speed is : 0
+Function Processing speed is : 867
+
+Buy function processing speed is : 866
+
+Sell Function Processing speed is : 658
 
 
-Conditional value is : 1
+Conditional value is : 3
+
+
+Function check value is : 10
 
 
 Order Book Information...
 
-Level 1 Ask Price is : 2798.75
+Level 1 Ask Price is : 2703
 
-Level 1 Ask Size is : 38
+Level 1 Ask Size is : 23
 
-Level 1 Bid Price is : 2798.5
+Level 1 Bid Price is : 2702.75
 
-Level 1 Bid Size is : 12
-
-
-Net Market volume (NQ1BV - NQ2BV) is : -693
-
-Total Market volume (NQ1BV + NQ2BV) is : 71919
-
-Market traded volume bias is : -0.00963584
+Level 1 Bid Size is : 96
 
 
-New Market Buy volume is : 1
+Net Market volume (NQ2BV - NQ2SV) is : 1
+
+Total Market volume (NQ2BV + NQ2SV) is : 5
+
+Market traded volume bias is : 0.2
 
 
-New Market Sell volume is : -36305
+Accumulated Net Market volume (NQ4BV - NQ4SV) is : 169
+
+Accumulated Total Market volume (NQ4BV + NQ4SV) is : 173
+
+Accumulated Market traded volume bias is : 0.976879
 
 
-Market Buy volume is : 35613
+Accumulated Market Buy volume is : 171
 
 
-Market Sell volume is : 36306
-
-Net Limit volume (NQSBid1 - NQSAsk1) is : -26
+Accumulated Market Sell volume is : 2
 
 
-Total Limit volume (NQSBid1 - NQSAsk1) is : 50
+New Market Buy volume is : 3
 
 
-Limit traded volume bias is : -0.52
-
-Bought volume for NQ is : 35613
-
-Sold volume for NQ is : 36306
-
-Last traded Price (Trade Print) for NQ is : 2798.75
-
-Last traded Price (Bar Info) for NQ is : 2799
+New Market Sell volume is : 2
 
 
-While loop Processing speed is : 3138
+Market Buy volume is : 1015658
 
-Line update Processing speed is : 0
+
+Market Sell volume is : 1023895
+
+Net Limit volume (NQSBid1 - NQSAsk1) is : 85
+
+
+Total Limit volume (NQSBid1 + NQSAsk1) is : 117
+
+
+Limit traded volume bias is : 0.726496
+
+Bid Limit volume for NQ is : 96
+
+Ask Limit volume for NQ is : 20
+
+Last traded Price (Trade Print) for NQ is : 2702.75
+
+
+While loop Processing speed is : 1943
+
+Line update Processing speed is : 11
 
 PnL Processing speed is : 0
 
-Best Ask Processing speed is : 2
+Best Ask Processing speed is : 12
 
-Best Bid Processing speed is : 2
+Best Bid Processing speed is : 5
 
-Best Ask & Bid Processing speed is : 1
+Best Ask & Bid Processing speed is : 2
 
-Trade print Processing speed is : 1
+Trade print Processing speed is : 867
 
-Ask Processing speed is : 0
+Ask Processing speed is : 20
 
 Bid Processing speed is : 0
 
-Function Processing speed is : 0
+Function Processing speed is : 867
+
+Buy function processing speed is : 866
+
+Sell Function Processing speed is : 658
 
 
-Conditional value is : 1
+Conditional value is : 2
+
+
+Function check value is : 10
 
 
 Exiting algobox...
