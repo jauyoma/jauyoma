@@ -175,19 +175,23 @@ BOOL ctrl_handler(DWORD event)
 	return FALSE;
 }
 
-int mymaximum(int a[], int numberOfElements)
+bool BuyFn()
 {
-	// moved code from main() to here
-	int mymaximum = 0;
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
 
-	for (int i = 0; i < numberOfElements; i++)
-	{
-		if (a[i] > mymaximum)
-		{
-			mymaximum = a[i];
-		}
-	}
-	return mymaximum;
+	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+	BuyLimit = false;
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdBuyFn)
+		SpdBuyFn = ElapsedMicroseconds.QuadPart;
+	
+	return BuyLimit;
 }
 
 int main(int      argc,
@@ -482,10 +486,6 @@ public:
 
 	/*   ----------------------------------------------------------------   */
 
-	virtual bool BuyFn();
-
-	/*   ----------------------------------------------------------------   */
-
 	virtual bool SellFn();
 
 	/*   ----------------------------------------------------------------   */
@@ -496,23 +496,7 @@ private:
 /*   =====================================================================   */
 /*                          class definitions                                */
 /*   =====================================================================   */
-bool MyCallbacks::BuyFn()
-{
-	QueryPerformanceFrequency(&Frequency);
-	QueryPerformanceCounter(&StartingTime);
 
-	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-
-	QueryPerformanceCounter(&EndingTime);
-	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-	ElapsedMicroseconds.QuadPart *= 1000000;
-	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
-	if (ElapsedMicroseconds.QuadPart > SpdBuyFn)
-		SpdBuyFn = ElapsedMicroseconds.QuadPart;
-	BuyLimit = false;
-	return BuyLimit;
-}
 
 bool MyCallbacks::SellFn()
 {
@@ -520,15 +504,16 @@ bool MyCallbacks::SellFn()
 	QueryPerformanceCounter(&StartingTime);
 
 	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+	SellLimit = false;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
+	
 	if (ElapsedMicroseconds.QuadPart > SpdSellFn)
 		SpdSellFn = ElapsedMicroseconds.QuadPart;
-	SellLimit = false;
+	
 	return SellLimit;
 }
 
@@ -2053,6 +2038,7 @@ int main(int      argc,
 
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
+	MyCallbacks *	  mCallbacks;
 	REngineParams     oParams;
 	QuoteParams	  qParams;
 	LoginParams       oLoginParams;
@@ -2518,23 +2504,26 @@ int main(int      argc,
 	std::cout << "\nReading algorithm..." << endl;
 
 	curr = (lt.wHour * 60) + lt.wMinute;
-	int cnt = 0;
-
-	while (((curr - trade) <= 2) && !done)
+	int cnt = 0, monitor, cutoff;
+	monitor = lt.wMinute;
+	if((monitor+5)>=60)
+		cutoff = (monitor+5)-60;
+	else
+		cutoff = monitor+5;
+	
+	while ((lt.wMinute > cutoff) && !done)
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
-
-
-		if (lt.wHour > hr_T)
-			curr = (60 + lt.wMinute) - min_T;
-		else
-			curr = (lt.wHour * 60) + lt.wMinute;
-
-		if ((lt.wMinute > (min_T + 2) && lt.wHour == hr_T) || (lt.wHour > hr_T))
+		
+		if(BuyLimit)
 		{
-			std::cout << "\n\nExiting algobox..." << endl;
-			break;
+			BuyFn();
+		}
+		
+		if(SellLimit)
+		{
+			mCallbacks->SellFn();
 		}
 
 		QueryPerformanceCounter(&EndingTime);
@@ -2613,9 +2602,7 @@ int main(int      argc,
 
 	return (GOOD);
 
-
 	/*   ----------------------------------------------------------------   */
-
 
 }
 
