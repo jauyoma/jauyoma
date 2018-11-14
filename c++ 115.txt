@@ -156,8 +156,6 @@ double LastPrice;
 bool counter = false, BvolTracker = false, SvolTracker = false;
 int check = 0;
 bool BuyLimit = false, SellLimit = false;
-std::future<bool> buy_future;
-std::future<bool> sell_future;
 
 SYSTEMTIME st, lt;
 
@@ -541,7 +539,7 @@ void MyCallbacks::Process()
 			oLmtOrdParams.sBuySellType.pData = "B";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if (!BuyLimit)
-				BuyFn();
+				BuyLimit = true;
 		}
 
 	}
@@ -554,7 +552,7 @@ void MyCallbacks::Process()
 			oLmtOrdParams.sBuySellType.pData = "S";
 			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 			if (!SellLimit)
-				SellFn();
+				SellLimit = true;
 		}
 
 	}
