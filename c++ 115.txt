@@ -152,7 +152,7 @@ int NQ1BV, NQ1SV, ES1BV, ES1SV, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV,
 int NQ4BV, NQ4SV, ES4BV, ES4SV;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double Psh4, Psh5, Psh6;
-double LastPrice;
+double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false;
 int check = 0;
 bool BuyLimit = false, SellLimit = false;
@@ -577,6 +577,46 @@ void MyCallbacks::Process()
 
 	if (check < 10)
 		check = check + 1;
+	
+	if(Vol == 0)
+	{
+		if(NQ3BV > NQ3SV)
+		{
+			Vol = 1;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+		}
+		if(NQ3BV < NQ3SV)
+		{
+			Vol = 2;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+		}
+	}
+	
+	if(Vol == 1)
+	{
+		if(NQ3BV < NQ3SV)
+		{
+			Vol = 2;
+			NQ3BV = 0;
+			NQ3BV = 0;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+		}
+	}
+	
+	if(Vol == 2)
+	{
+		if(NQ3BV > NQ3SV)
+		{
+			Vol = 1;
+			NQ3BV = 0;
+			NQ3BV = 0;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+		}
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1852,6 +1892,8 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 				NQ4BV = NQ4BV + NQ2BV;
 			else
 				NQ4BV = NQ2BV;
+			NQ3BV = NQ3BV + NQ2BV;
+			
 		}
 		if (pInfo->bVolumeSoldFlag)
 		{
@@ -1861,6 +1903,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 				NQ4SV = NQ4SV + NQ2SV;
 			else
 				NQ4SV = NQ2SV;
+			NQ3SV = NQ3SV + NQ2SV;
 		}
 
 	}
