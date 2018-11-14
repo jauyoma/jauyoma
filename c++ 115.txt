@@ -2511,7 +2511,7 @@ int main(int      argc,
 	else
 		cutoff = monitor+5;
 	
-	while ((lt.wMinute > cutoff) && !done)
+	while (1)
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
@@ -2533,7 +2533,10 @@ int main(int      argc,
 
 		if (ElapsedMicroseconds.QuadPart > SpdProc)
 			SpdProc = ElapsedMicroseconds.QuadPart;
-
+		
+		if((lt.wMinute > cutoff) || done)
+			break;
+		
 		if (cnt != lt.wMinute)
 		{
 			cnt = lt.wMinute;
