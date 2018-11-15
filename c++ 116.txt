@@ -157,9 +157,6 @@ double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false;
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false;
-std::promise<int> promiseObj;
-std::future<int> futureObj = promiseObj.get_future();
-std::thread th;
 
 SYSTEMTIME st, lt;
 
@@ -534,7 +531,9 @@ void MyCallbacks::Process()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
+	
+	MyCallbacks * point = new MyCallbacks();
+	
 	Psh1 = NQ2BV - NQ2SV;
 	Psh2 = NQ2BV + NQ2SV;
 	Psh3 = Psh1 / Psh2;
@@ -553,10 +552,9 @@ void MyCallbacks::Process()
 			if (!BuyLimit)
 			{
 				BuyLimit = true;
-				BuyFn();
+				std::thread NQThrd BuyFn();
 			}
 		}
-
 	}
 	else if (Psh3 <= -0.25 && Bs3 <= -0.25)
 	{
@@ -566,7 +564,8 @@ void MyCallbacks::Process()
 			if (!SellLimit)
 			{
 				SellLimit = true;
-				SellFn();
+				std::thread NQThrd(&MyCallbacks::SellFn);
+				std::thread NQThrd(&MyCallbacks::SellFn, point);
 			}
 		}
 
@@ -630,7 +629,9 @@ void MyCallbacks::Process()
 			NQSVP = NQLBid1;
 		}
 	}
-
+	
+	NQThrd.join();
+	
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -638,6 +639,8 @@ void MyCallbacks::Process()
 
 	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
 		SpdClOrd = ElapsedMicroseconds.QuadPart;
+	
+	delete point;
 	counter = false;
 }
 
