@@ -532,8 +532,6 @@ void MyCallbacks::Process()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 	
-	MyCallbacks * point = new MyCallbacks();
-	
 	Psh1 = NQ2BV - NQ2SV;
 	Psh2 = NQ2BV + NQ2SV;
 	Psh3 = Psh1 / Psh2;
@@ -552,7 +550,7 @@ void MyCallbacks::Process()
 			if (!BuyLimit)
 			{
 				BuyLimit = true;
-				std::thread NQThrd BuyFn();
+				BuyFn();
 			}
 		}
 	}
@@ -564,8 +562,7 @@ void MyCallbacks::Process()
 			if (!SellLimit)
 			{
 				SellLimit = true;
-				std::thread NQThrd(&MyCallbacks::SellFn);
-				std::thread NQThrd(&MyCallbacks::SellFn, point);
+				SellFn();
 			}
 		}
 
@@ -630,8 +627,6 @@ void MyCallbacks::Process()
 		}
 	}
 	
-	NQThrd.join();
-	
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -640,7 +635,6 @@ void MyCallbacks::Process()
 	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
 		SpdClOrd = ElapsedMicroseconds.QuadPart;
 	
-	delete point;
 	counter = false;
 }
 
@@ -2096,7 +2090,6 @@ int main(int      argc,
 	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2(Optional) | Ticker2(Optional)\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
-	MyCallbacks *	  mCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	QuoteParams	  qParams;
@@ -2145,16 +2138,6 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	try
-	{
-		mCallbacks = new MyCallbacks();
-	}
-	catch (OmneException& oEx)
-	{
-		iCode = oEx.getErrorCode();
-		std::cout << "MyCallbacks::MyCallbacks() error : %d\n" << iCode << endl;
-		return (BAD);
-	}
 	/*   ----------------------------------------------------------------   */
 	/*   The following fake envp contains the settings for connecting to    */
 	/*   Rithmic 01 Test.  To connect to a different instance of the        */
