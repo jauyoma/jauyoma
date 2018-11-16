@@ -555,6 +555,8 @@ void MyCallbacks::Process()
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
 
+	if(Psh4 > 0)
+	{
 	if (Psh3 >= 0.25 && Bs3 >= 0.25)
 	{
 		track = 2;
@@ -568,7 +570,10 @@ void MyCallbacks::Process()
 		}
 
 	}
-	else if (Psh3 <= -0.25 && Bs3 <= -0.25)
+	}
+	else if(Psh4 < 0)
+	{
+	if (Psh3 <= -0.25 && Bs3 <= -0.25)
 	{
 		track = 3;
 		if (NQLAsk1 > NQ1TP && !SellLimit)
@@ -580,6 +585,7 @@ void MyCallbacks::Process()
 			}
 		}
 
+	}
 	}
 
 	if (NQLAsk1 != NQLAsk2)
@@ -800,6 +806,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
 		(int)strlen("order sent to exch") };
 	int iIgnored;
+	tsNCharcb EntTyp;
+	void pcontxt;
 
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
@@ -849,10 +857,35 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_OrderNumNQ = pInfo->sOrderNum;
 		if (_sCompReason == "F")
 		{
-			if (_stypeNQ == "B" && SellLimit)
-				SellLimit = false;
-			if (_stypeNQ == "S" && BuyLimit)
-				BuyLimit = false;
+			if (_stypeNQ == "B")
+			{
+				if(SellLimit)
+					SellLimit = false;
+				if(!BuyLimit)
+					BuyLimit = true;	
+				if (Psh3 < 0 && Bs3 < 0 && NQLAsk1 <= _AvgFillPriceNQ)
+				{
+					if (g_pEngine->cancelOrder(&g_oAccount, _OrderNumNQ, &EntType, &pcontxt, &iCode))
+						BuyLimit = false;
+				}
+			}
+			if (_stypeNQ == "S")
+			{
+				if(BuyLimit)
+					BuyLimit = false;
+				if(!SellLimit)
+					SellLimit = true;
+				if (Psh3 > 0 && Bs3 > 0  && NQLBid1 >= _AvgFillPriceNQ)
+				{
+					if (g_pEngine->cancelOrder(&g_oAccount, _OrderNumNQ, &EntType, &pcontxt, &iCode))
+						SellLimit = false;
+				}
+			}
+		}
+		else
+		{
+			BuyLimit = false;
+			SellLimit = false;
 		}
 	}
 
