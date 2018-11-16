@@ -157,6 +157,9 @@ double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false;
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false;
+std::promise<int> promiseObj;
+std::future<int> futureObj = promiseObj.get_future();
+std::thread th;
 
 SYSTEMTIME st, lt;
 
@@ -531,7 +534,7 @@ void MyCallbacks::Process()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-	
+
 	Psh1 = NQ2BV - NQ2SV;
 	Psh2 = NQ2BV + NQ2SV;
 	Psh3 = Psh1 / Psh2;
@@ -553,6 +556,7 @@ void MyCallbacks::Process()
 				BuyFn();
 			}
 		}
+
 	}
 	else if (Psh3 <= -0.25 && Bs3 <= -0.25)
 	{
@@ -626,7 +630,7 @@ void MyCallbacks::Process()
 			NQSVP = NQLBid1;
 		}
 	}
-	
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -634,7 +638,6 @@ void MyCallbacks::Process()
 
 	if (ElapsedMicroseconds.QuadPart > SpdClOrd)
 		SpdClOrd = ElapsedMicroseconds.QuadPart;
-	
 	counter = false;
 }
 
@@ -1918,6 +1921,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	}
 
+
 	Process();
 
 	QueryPerformanceCounter(&EndingTime);
@@ -2090,6 +2094,7 @@ int main(int      argc,
 	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2(Optional) | Ticker2(Optional)\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
+	MyCallbacks *	  mCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	QuoteParams	  qParams;
@@ -2138,6 +2143,16 @@ int main(int      argc,
 		return (BAD);
 	}
 
+	try
+	{
+		mCallbacks = new MyCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		iCode = oEx.getErrorCode();
+		std::cout << "MyCallbacks::MyCallbacks() error : %d\n" << iCode << endl;
+		return (BAD);
+	}
 	/*   ----------------------------------------------------------------   */
 	/*   The following fake envp contains the settings for connecting to    */
 	/*   Rithmic 01 Test.  To connect to a different instance of the        */
