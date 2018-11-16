@@ -493,8 +493,13 @@ bool MyCallbacks::BuyFn()
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-	BuyLimit = false;
+	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		BuyLimit = false;
+	else
+	{
+		BuyLimit = true;
+		SellLimit = false;
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -516,8 +521,13 @@ bool MyCallbacks::SellFn()
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-	SellLimit = false;
+	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		SellLimit = false;
+	else
+	{
+		SellLimit = true;
+		BuyLimit = false;
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -837,6 +847,13 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
+		if (_sCompReason == "F")
+		{
+			if (_stypeNQ == "B" && SellLimit)
+				SellLimit = false;
+			if (_stypeNQ == "S" && BuyLimit)
+				BuyLimit = false;
+		}
 	}
 
 	if (contract)
