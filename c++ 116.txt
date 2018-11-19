@@ -2577,7 +2577,7 @@ int main(int      argc,
 	oLmtOrdParams.sTicker = sTicker;
 	oLmtOrdParams.pAccount = &g_oAccount;
 	oLmtOrdParams.iQty = _qty;
-	oLmtOrdParams.sDuration = sORDER_DURATION_IOC;
+	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
 
