@@ -73,10 +73,8 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <string.h>
 #include <windows.h>
 #include <fstream>
-#include <vector>
 #include <sstream>
-#include <future>
-#include <thread>
+
 
 #ifdef WinOS
 #include <unistd.h>
@@ -492,8 +490,13 @@ bool MyCallbacks::BuyFn()
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-	NQBLmt = oLmtOrdParams.dPrice;
+	if(!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		std::cout << "\n\nBuyFn() error : " << iCode << endl;
+	else
+	{
+		std::cout << "\n\nBuyFn() order successfully submitted : " << endl;
+		NQBLmt = oLmtOrdParams.dPrice;
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -515,8 +518,13 @@ bool MyCallbacks::SellFn()
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-	NQSLmt = oLmtOrdParams.dPrice;
+	if(!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		std::cout << "\n\nSellFn() error : " << iCode << endl;
+	else
+	{
+		NQSLmt = oLmtOrdParams.dPrice;
+		std::cout << "\n\nSellFn() order successfully submitted : " << endl;
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -719,7 +727,7 @@ int MyCallbacks::AccountList(AccountListInfo * pInfo,
 
 			if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
 			{
-				std::cout << "REngine::subscribeOrder() error : %d\n" << iCode << endl;;
+				std::cout << "REngine::subscribeOrder() error : %d\n" << iCode << endl;
 			}
 
 			g_bRcvdAccount = true;
@@ -860,7 +868,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						BuyLimit = false;
 				}
-				if(_sOrdType == "M" && Vol == 2)
+				if (_sOrdType == "M" && Vol == 2)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						BuyLimit = false;
@@ -877,7 +885,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						SellLimit = false;
 				}
-				if(_sOrdType == "M" && Vol == 1)
+				if (_sOrdType == "M" && Vol == 1)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						BuyLimit = false;
@@ -1952,7 +1960,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bVolumeBoughtFlag)
 		{
 			NQ2BV = pInfo->iVolumeBought - NQ1BV;
-			if(NQ1BV > 0)
+			if (NQ1BV > 0)
 				NQ3BV = NQ3BV + NQ2BV;
 			NQ1BV = pInfo->iVolumeBought;
 			if (!BvolTracker)
@@ -1963,7 +1971,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
-			if(NQ1SV > 0)
+			if (NQ1SV > 0)
 				NQ3SV = NQ3SV + NQ2SV;
 			NQ1SV = pInfo->iVolumeSold;
 			if (!SvolTracker)
@@ -2193,7 +2201,7 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	
+
 	/*   ----------------------------------------------------------------   */
 	/*   The following fake envp contains the settings for connecting to    */
 	/*   Rithmic 01 Test.  To connect to a different instance of the        */
@@ -2572,7 +2580,7 @@ int main(int      argc,
 	oLmtOrdParams.sDuration = sORDER_DURATION_IOC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
-	
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
