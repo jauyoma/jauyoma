@@ -157,6 +157,7 @@ double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false;
+double NQBLmt, NQSLmt;
 
 
 SYSTEMTIME st, lt;
@@ -492,6 +493,7 @@ bool MyCallbacks::BuyFn()
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
 	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+	NQBLmt = oLmtOrdParams.dPrice;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -514,6 +516,7 @@ bool MyCallbacks::SellFn()
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
 	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+	NQSLmt = oLmtOrdParams.dPrice;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -591,7 +594,7 @@ void MyCallbacks::Process()
 			track = 2;
 			if (NQLBid1 < NQ1TP && !BuyLimit)
 			{
-				if (!BuyLimit)
+				if (!BuyLimit && !SellLimit)
 				{
 					BuyLimit = true;
 					BuyFn();
@@ -607,7 +610,7 @@ void MyCallbacks::Process()
 			track = 3;
 			if (NQLAsk1 > NQ1TP && !SellLimit)
 			{
-				if (!SellLimit)
+				if (!SellLimit && !BuyLimit)
 				{
 					SellLimit = true;
 					SellFn();
@@ -852,7 +855,12 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					SellLimit = false;
 				if (!BuyLimit)
 					BuyLimit = true;
-				if (Psh3 < 0 && Bs3 < 0 && NQLAsk1 <= _AvgFillPriceNQ)
+				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
+				{
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+						BuyLimit = false;
+				}
+				if(_sOrdType == "M" && Vol == 2)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						BuyLimit = false;
@@ -864,10 +872,15 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					BuyLimit = false;
 				if (!SellLimit)
 					SellLimit = true;
-				if (Psh3 > 0 && Bs3 > 0 && NQLBid1 >= _AvgFillPriceNQ)
+				if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						SellLimit = false;
+				}
+				if(_sOrdType == "M" && Vol == 1)
+				{
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+						BuyLimit = false;
 				}
 			}
 		}
