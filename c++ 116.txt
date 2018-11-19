@@ -149,17 +149,15 @@ int NQSAsk1, NQSBid1, ESSAsk1, ESSBid1;
 int NQSAsk2, NQSBid2, ESSAsk2, ESSBid2;
 int BBid_T, Bid_T, BAsk_T, Ask_T;
 double NQ1TP, ES1TP;
-int NQ1BV, NQ1SV, ES1BV, ES1SV, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
+int NQ1BV = 0, NQ1SV = 0, ES1BV = 0, ES1SV = 0, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
 int NQ4BV, NQ4SV, ES4BV, ES4SV;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double Psh4, Psh5, Psh6;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
-bool counter = false, BvolTracker = false, SvolTracker = false;
+bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false;
-std::promise<int> promiseObj;
-std::future<int> futureObj = promiseObj.get_future();
-std::thread th;
+
 
 SYSTEMTIME st, lt;
 
@@ -493,13 +491,7 @@ bool MyCallbacks::BuyFn()
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		BuyLimit = false;
-	else
-	{
-		BuyLimit = true;
-		SellLimit = false;
-	}
+	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -521,13 +513,7 @@ bool MyCallbacks::SellFn()
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		SellLimit = false;
-	else
-	{
-		SellLimit = true;
-		BuyLimit = false;
-	}
+	g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -555,37 +541,80 @@ void MyCallbacks::Process()
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
 
-	if(Psh4 > 0)
+	if (Vol == 0)
 	{
-	if (Psh3 >= 0.25 && Bs3 >= 0.25)
-	{
-		track = 2;
-		if (NQLBid1 < NQ1TP && !BuyLimit)
+		if (NQ3BV > NQ3SV)
 		{
-			if (!BuyLimit)
-			{
-				BuyLimit = true;
-				BuyFn();
-			}
+			Vol = 1;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
 		}
-
-	}
-	}
-	else if(Psh4 < 0)
-	{
-	if (Psh3 <= -0.25 && Bs3 <= -0.25)
-	{
-		track = 3;
-		if (NQLAsk1 > NQ1TP && !SellLimit)
+		if (NQ3BV < NQ3SV)
 		{
-			if (!SellLimit)
-			{
-				SellLimit = true;
-				SellFn();
-			}
+			Vol = 2;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
 		}
-
+		Tracker = true;
 	}
+
+	if (Vol == 1)
+	{
+		if (NQ3BV < NQ3SV)
+		{
+			Vol = 2;
+			NQ3BV = 0;
+			NQ3SV = 0;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+			Tracker = true;
+		}
+	}
+
+	if (Vol == 2)
+	{
+		if (NQ3BV > NQ3SV)
+		{
+			Vol = 1;
+			NQ3BV = 0;
+			NQ3SV = 0;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+			Tracker = true;
+		}
+	}
+
+	if (Vol == 1)
+	{
+		if (Psh3 >= 0.25 && Bs3 >= 0.25)
+		{
+			track = 2;
+			if (NQLBid1 < NQ1TP && !BuyLimit)
+			{
+				if (!BuyLimit)
+				{
+					BuyLimit = true;
+					BuyFn();
+				}
+			}
+
+		}
+	}
+	else if (Vol == 2)
+	{
+		if (Psh3 <= -0.25 && Bs3 <= -0.25)
+		{
+			track = 3;
+			if (NQLAsk1 > NQ1TP && !SellLimit)
+			{
+				if (!SellLimit)
+				{
+					SellLimit = true;
+					SellFn();
+				}
+			}
+
+		}
 	}
 
 	if (NQLAsk1 != NQLAsk2)
@@ -606,46 +635,6 @@ void MyCallbacks::Process()
 
 	if (check < 10)
 		check = check + 1;
-
-	if (Vol == 0)
-	{
-		if (NQ3BV > NQ3SV)
-		{
-			Vol = 1;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-	}
-
-	if (Vol == 1)
-	{
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQ3BV = 0;
-			NQ3BV = 0;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-	}
-
-	if (Vol == 2)
-	{
-		if (NQ3BV > NQ3SV)
-		{
-			Vol = 1;
-			NQ3BV = 0;
-			NQ3BV = 0;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -806,8 +795,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
 		(int)strlen("order sent to exch") };
 	int iIgnored;
-	tsNCharcb EntTyp;
-	void pcontxt;
+	tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
+	void * pcontxt;
 
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
@@ -859,25 +848,25 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		{
 			if (_stypeNQ == "B")
 			{
-				if(SellLimit)
+				if (SellLimit)
 					SellLimit = false;
-				if(!BuyLimit)
-					BuyLimit = true;	
+				if (!BuyLimit)
+					BuyLimit = true;
 				if (Psh3 < 0 && Bs3 < 0 && NQLAsk1 <= _AvgFillPriceNQ)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, _OrderNumNQ, &EntType, &pcontxt, &iCode))
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						BuyLimit = false;
 				}
 			}
 			if (_stypeNQ == "S")
 			{
-				if(BuyLimit)
+				if (BuyLimit)
 					BuyLimit = false;
-				if(!SellLimit)
+				if (!SellLimit)
 					SellLimit = true;
-				if (Psh3 > 0 && Bs3 > 0  && NQLBid1 >= _AvgFillPriceNQ)
+				if (Psh3 > 0 && Bs3 > 0 && NQLBid1 >= _AvgFillPriceNQ)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, _OrderNumNQ, &EntType, &pcontxt, &iCode))
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 						SellLimit = false;
 				}
 			}
@@ -1950,23 +1939,24 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 		if (pInfo->bVolumeBoughtFlag)
 		{
 			NQ2BV = pInfo->iVolumeBought - NQ1BV;
+			if(NQ1BV > 0)
+				NQ3BV = NQ3BV + NQ2BV;
 			NQ1BV = pInfo->iVolumeBought;
 			if (!BvolTracker)
 				NQ4BV = NQ4BV + NQ2BV;
 			else
 				NQ4BV = NQ2BV;
-			NQ3BV = NQ3BV + NQ2BV;
-
 		}
 		if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
+			if(NQ1SV > 0)
+				NQ3SV = NQ3SV + NQ2SV;
 			NQ1SV = pInfo->iVolumeSold;
 			if (!SvolTracker)
 				NQ4SV = NQ4SV + NQ2SV;
 			else
 				NQ4SV = NQ2SV;
-			NQ3SV = NQ3SV + NQ2SV;
 		}
 
 	}
@@ -2144,12 +2134,9 @@ int main(int      argc,
 	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2(Optional) | Ticker2(Optional)\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
-	MyCallbacks *	  mCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
-	QuoteParams	  qParams;
 	LoginParams       oLoginParams;
-	BarParams	  bParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
@@ -2193,16 +2180,7 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	try
-	{
-		mCallbacks = new MyCallbacks();
-	}
-	catch (OmneException& oEx)
-	{
-		iCode = oEx.getErrorCode();
-		std::cout << "MyCallbacks::MyCallbacks() error : %d\n" << iCode << endl;
-		return (BAD);
-	}
+	
 	/*   ----------------------------------------------------------------   */
 	/*   The following fake envp contains the settings for connecting to    */
 	/*   Rithmic 01 Test.  To connect to a different instance of the        */
@@ -2581,6 +2559,7 @@ int main(int      argc,
 	oLmtOrdParams.sDuration = sORDER_DURATION_IOC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
+	
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
@@ -2653,47 +2632,26 @@ int main(int      argc,
 			SpdProc = ElapsedMicroseconds.QuadPart;
 
 
-		if (cnt != lt.wMinute)
+		if (Tracker)
 		{
-			cnt = lt.wMinute;
 			std::cout << "\n\nOrder Book Information..." << endl;
 			std::cout << "\nLevel 1 Ask Price is : " << NQLAsk1 << endl;
 			std::cout << "\nLevel 1 Ask Size is : " << NQSAsk1 << endl;
 			std::cout << "\nLevel 1 Bid Price is : " << NQLBid1 << endl;
 			std::cout << "\nLevel 1 Bid Size is : " << NQSBid1 << endl;
-			std::cout << "\n\nNet Market volume (NQ2BV - NQ2SV) is : " << Psh1 << endl;
-			std::cout << "\nTotal Market volume (NQ2BV + NQ2SV) is : " << Psh2 << endl;
-			std::cout << "\nMarket traded volume bias is : " << Psh3 << endl;
-			std::cout << "\n\nAccumulated Net Market volume (NQ4BV - NQ4SV) is : " << Psh4 << endl;
-			std::cout << "\nAccumulated Total Market volume (NQ4BV + NQ4SV) is : " << Psh5 << endl;
-			std::cout << "\nAccumulated Market traded volume bias is : " << Psh6 << endl;
 			std::cout << "\n\nAccumulated Market Buy volume is : " << NQ4BV << endl;
-			std::cout << "\n\nAccumulated Market Sell volume is : " << NQ4SV << endl;
-			std::cout << "\n\nNew Market Buy volume is : " << NQ2BV << endl;
-			std::cout << "\n\nNew Market Sell volume is : " << NQ2SV << endl;
-			std::cout << "\n\nMarket Buy volume is : " << NQ1BV << endl;
-			std::cout << "\n\nMarket Sell volume is : " << NQ1SV << endl;
-			std::cout << "\nNet Limit volume (NQSBid1 - NQSAsk1) is : " << Bs1 << endl;
-			std::cout << "\n\nTotal Limit volume (NQSBid1 + NQSAsk1) is : " << Bs2 << endl;
-			std::cout << "\n\nLimit traded volume bias is : " << Bs3 << endl;
-			std::cout << "\nBid Limit volume for NQ is : " << NQSBid1 << endl;
-			std::cout << "\nAsk Limit volume for NQ is : " << NQSAsk1 << endl;
+			std::cout << "\nAccumulated Market Sell volume is : " << NQ4SV << endl;
+			std::cout << "\nNew Market Buy volume is : " << NQ2BV << endl;
+			std::cout << "\nNew Market Sell volume is : " << NQ2SV << endl;
+			std::cout << "\nMarket Buy volume is : " << NQ1BV << endl;
+			std::cout << "\nMarket Sell volume is : " << NQ1SV << endl;
+			std::cout << "\n\nTracked Market Buy volume is : " << NQ3BV << endl;
+			std::cout << "\nTracked Market Sell volume is : " << NQ3SV << endl;
+			std::cout << "\nTracked Market Buy pivot price is : " << NQBVP << endl;
+			std::cout << "\nTracked Market Sell pivot price is : " << NQSVP << endl;
+			std::cout << "\nCurrent trend is : " << Vol << endl;
 			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
-			std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
-			std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
-			std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
-			std::cout << "\n\Best Ask Processing speed is : " << SpdBAsk << endl;
-			std::cout << "\n\Best Bid Processing speed is : " << SpdBBid << endl;
-			std::cout << "\n\Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
-			std::cout << "\n\Trade print Processing speed is : " << SpdTrade << endl;
-			std::cout << "\n\Ask Processing speed is : " << SpdAsk << endl;
-			std::cout << "\n\Bid Processing speed is : " << SpdBid << endl;
-			std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
-			std::cout << "\n\Buy function processing speed is : " << SpdBuyFn << endl;
-			std::cout << "\n\Sell Function Processing speed is : " << SpdSellFn << endl;
-			std::cout << "\n\n\Conditional value is : " << track << endl;
-			std::cout << "\n\n\Function check value is : " << check << endl;
-			track = 1;
+			Tracker = false;
 		}
 	}
 
