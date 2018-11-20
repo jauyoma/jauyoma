@@ -166,6 +166,7 @@ bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = fal
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false;
 double NQBLmt, NQSLmt;
+bool NQBCl, NQSCl;
 
 
 SYSTEMTIME st, lt;
@@ -569,10 +570,10 @@ void MyCallbacks::Process()
 	Bs1 = NQSBid1 - NQSAsk1;
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
-	
-	if(!BuyLimit && !SellLimit)
+
+	if (!BuyLimit && !SellLimit)
 		OpenOrd = false;
-		
+
 	if (Vol == 0)
 	{
 		if (NQ3BV > NQ3SV)
@@ -825,8 +826,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
 		(int)strlen("order sent to exch") };
 	int iIgnored;
-	tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
-	void * pcontxt;
 
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
@@ -884,13 +883,11 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					BuyLimit = true;
 				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-						BuyLimit = false;
+					NQBCl = true;
 				}
 				if (_sOrdType == "M" && Vol == 2)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-						BuyLimit = false;
+					NQBCl = true;
 				}
 			}
 			if (_stypeNQ == "S")
@@ -901,13 +898,13 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					SellLimit = true;
 				if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-						SellLimit = false;
+					NQSCl = true;
+					
 				}
 				if (_sOrdType == "M" && Vol == 1)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-						BuyLimit = false;
+					NQSCl = true;
+					
 				}
 			}
 		}
@@ -2192,6 +2189,9 @@ int main(int      argc,
 	std::string		  OpenFile;
 	stringstream	  strValue;
 
+	tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
+	void * pcontxt;
+
 	/*   ----------------------------------------------------------------   */
 
 	if (argc < 9 || argc == 10)
@@ -2660,6 +2660,26 @@ int main(int      argc,
 			if (SellLimit)
 				pMyCallbacks.SellFn();
 		}
+		else
+		{
+			if (NQBCl)
+			{
+				if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					BuyLimit = false;
+					NQBCl = false;
+				}
+			}
+
+			if (NQSCl)
+			{
+				if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					SellLimit = false;
+					NQSCl = false;
+				}
+			}
+		}
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
@@ -2720,7 +2740,19 @@ int main(int      argc,
 		std::cout << "\n\nWritten text file CLS = 1..." << endl;
 	}
 
-	std::cout << "\nClosing Black Box..." << endl;
+	std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
+	std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
+	std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
+	std::cout << "\n\Best Ask Processing speed is : " << SpdBAsk << endl;
+	std::cout << "\n\Best Bid Processing speed is : " << SpdBBid << endl;
+	std::cout << "\n\Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
+	std::cout << "\n\Trade print Processing speed is : " << SpdTrade << endl;
+	std::cout << "\n\Ask Processing speed is : " << SpdAsk << endl;
+	std::cout << "\n\Bid Processing speed is : " << SpdBid << endl;
+	std::cout << "\n\Function Processing speed is : " << SpdClOrd << endl;
+	std::cout << "\n\Buy function processing speed is : " << SpdBuyFn << endl;
+	std::cout << "\n\Sell Function Processing speed is : " << SpdSellFn << endl;
+	std::cout << "\n\nClosing Black Box..." << endl;
 
 	delete g_pEngine;
 	delete pCallbacks;
