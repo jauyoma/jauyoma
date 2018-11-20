@@ -826,6 +826,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
 		(int)strlen("order sent to exch") };
 	int iIgnored;
+	std::string _sBuySell;
 
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
@@ -863,6 +864,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_sCompReason = std::string(pInfo->sCompletionReason.pData, pInfo->sCompletionReason.iDataLen);
 	_sOrdDuration = std::string(pInfo->sOrderDuration.pData, pInfo->sOrderDuration.iDataLen);
 	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
+	_sBuySell = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
 	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
@@ -877,10 +879,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		{
 			if (_stypeNQ == "B")
 			{
-				if (SellLimit)
-					SellLimit = false;
-				if (!BuyLimit)
-					BuyLimit = true;
 				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
 				{
 					NQBCl = true;
@@ -892,10 +890,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			}
 			if (_stypeNQ == "S")
 			{
-				if (BuyLimit)
-					BuyLimit = false;
-				if (!SellLimit)
-					SellLimit = true;
 				if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
 				{
 					NQSCl = true;
@@ -910,8 +904,10 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		}
 		else
 		{
-			BuyLimit = false;
-			SellLimit = false;
+			if(_sBuySell == "B")
+				BuyLimit = false;
+			if(_sBuySell == "S")
+				SellLimit = false;
 		}
 	}
 
