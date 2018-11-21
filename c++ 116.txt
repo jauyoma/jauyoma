@@ -163,7 +163,7 @@ double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double Psh4, Psh5, Psh6;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
-int check = 0, Vol = 0;
+int check = 0, Vol = 0, iCod;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false;
 double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl;
@@ -513,6 +513,15 @@ bool MyCallbacks::BuyFn()
 		OpenOrd = true;
 	}
 
+	while(1)
+	{
+		if(g_pEngine->unlock(&iCod) == 1)
+		{
+			return -1;
+			break;
+		}
+	}
+	
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -543,6 +552,15 @@ bool MyCallbacks::SellFn()
 		NQSLmt = oLmtOrdParams.dPrice;
 		std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
 		OpenOrd = true;
+	}
+	
+	while(1)
+	{
+		if(g_pEngine->unlock(&iCod) == 1)
+		{
+			return -1;
+			break;
+		}
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -626,7 +644,11 @@ void MyCallbacks::Process()
 			{
 				if (!BuyLimit && !SellLimit)
 				{
-					BuyLimit = true;
+					if(g_pEngine->trylock(&iCod) == 1)
+					{
+						BuyLimit = true;
+						BuyFn();
+					}
 				}
 			}
 
@@ -641,7 +663,11 @@ void MyCallbacks::Process()
 			{
 				if (!SellLimit && !BuyLimit)
 				{
-					SellLimit = true;
+					if(g_pEngine->trylock(&iCod) == 1)
+					{
+						SellLimit = true;
+						SellFn();
+					}
 				}
 			}
 
