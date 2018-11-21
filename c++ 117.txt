@@ -513,12 +513,6 @@ bool MyCallbacks::BuyFn()
 		OpenOrd = true;
 	}
 
-	while (1)
-	{
-		if (g_pEngine->unlock(&iCode) == 1)
-			break;
-	}
-
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -549,12 +543,6 @@ bool MyCallbacks::SellFn()
 		NQSLmt = oLmtOrdParams.dPrice;
 		std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
 		OpenOrd = true;
-	}
-
-	while (1)
-	{
-		if (g_pEngine->unlock(&iCode) == 1)
-			break;
 	}
 		
 	QueryPerformanceCounter(&EndingTime);
@@ -642,6 +630,7 @@ void MyCallbacks::Process()
 					{
 						BuyLimit = true;
 						BuyFn();
+						g_pEngine->unlock(&iCode)
 					}
 				}
 			}
@@ -661,6 +650,7 @@ void MyCallbacks::Process()
 					{
 						SellLimit = true;
 						SellFn();
+						g_pEngine->unlock(&iCode)
 					}
 				}
 			}
