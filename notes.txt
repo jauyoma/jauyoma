@@ -1,19 +1,92 @@
-Market Buy volume is : 74626
 
-Market Sell volume is : 73853
+Market Sell volume is : 947658
 
 
-Tracked Market Buy volume is : 3
+Tracked Market Buy volume is : 155
 
 Tracked Market Sell volume is : 0
 
-Tracked Market Buy pivot price is : 2733
+Tracked Market Buy pivot price is : 2643.75
 
-Tracked Market Sell pivot price is : 2732.75
+Tracked Market Sell pivot price is : 2643.5
 
 Current trend is : 1
 
-Last traded Price (Trade Print) for NQ is : 2733
+Last traded Price (Trade Print) for NQ is : 2643.75
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2642.75
+
+Level 1 Ask Size is : 8
+
+Level 1 Bid Price is : 2642.5
+
+Level 1 Bid Size is : 58
+
+
+Accumulated Market Buy volume is : 7
+
+Accumulated Market Sell volume is : 9
+
+New Market Buy volume is : 1
+
+New Market Sell volume is : 3
+
+Market Buy volume is : 938507
+
+Market Sell volume is : 948291
+
+
+Tracked Market Buy volume is : 0
+
+Tracked Market Sell volume is : 6
+
+Tracked Market Buy pivot price is : 2643
+
+Tracked Market Sell pivot price is : 2642.75
+
+Current trend is : 2
+
+Last traded Price (Trade Print) for NQ is : 2642.75
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2643.25
+
+Level 1 Ask Size is : 115
+
+Level 1 Bid Price is : 2643
+
+Level 1 Bid Size is : 10
+
+
+Accumulated Market Buy volume is : 23
+
+Accumulated Market Sell volume is : 15
+
+New Market Buy volume is : 1
+
+New Market Sell volume is : 1
+
+Market Buy volume is : 938543
+
+Market Sell volume is : 948333
+
+
+Tracked Market Buy volume is : 4
+
+Tracked Market Sell volume is : 16
+
+Tracked Market Buy pivot price is : 2643.25
+
+Tracked Market Sell pivot price is : 2643
+
+Current trend is : 2
+
+Last traded Price (Trade Print) for NQ is : 2643
 
 
 Exiting algobox...
@@ -21,10 +94,36 @@ Exiting algobox...
 
 Written text file CLS = 1...
 
+
+While loop Processing speed is : 43013
+
+Line update Processing speed is : 2
+
+PnL Processing speed is : 0
+
+Best Ask Processing speed is : 27
+
+Best Bid Processing speed is : 156
+
+Best Ask & Bid Processing speed is : 2
+
+Trade print Processing speed is : 7
+
+Ask Processing speed is : 1
+
+Bid Processing speed is : 0
+
+Function Processing speed is : 7
+
+Buy function processing speed is : 0
+
+Sell Function Processing speed is : 12319
+
+
 Closing Black Box...
 
 C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
-PR and222 3600 19 13 30 CME ESZ8
+PR and222 3600 21 13 7 CME ESZ8
 We are looking for a trade route for : Dorman::Stage5-Paper::CME
 Dorman::Stage5-Paper::EUREX::simulator::UP
 Dorman::Stage5-Paper::CBOE::simulator::UP
@@ -34,11 +133,11 @@ Dorman::Stage5-Paper::ICE::simulator::UP
 Dorman::Stage5-Paper::CBOT::simulator::UP
 Dorman::Stage5-Paper::CME::simulator::UP
 
-Day Value is : 19
+Day Value is : 21
 
 Hour Value is : 13
 
-Minute Value is : 30
+Minute Value is : 7
 
 Starting Account Balance is : 3600
 
@@ -47,254 +146,155 @@ Reading algorithm...
 
 Order Book Information...
 
-Level 1 Ask Price is : 2737
+Level 1 Ask Price is : 2665
 
-Level 1 Ask Size is : 136
+Level 1 Ask Size is : 18
 
-Level 1 Bid Price is : 2736.75
+Level 1 Bid Price is : 2664.75
 
-Level 1 Bid Size is : 50
+Level 1 Bid Size is : 37
 
 
-Accumulated Market Buy volume is : 78617
+Accumulated Market Buy volume is : 131946
 
-Accumulated Market Sell volume is : 5
+Accumulated Market Sell volume is : 116964
 
-New Market Buy volume is : 78617
+New Market Buy volume is : 131946
 
-New Market Sell volume is : 2
+New Market Sell volume is : 116964
 
-Market Buy volume is : 78617
+Market Buy volume is : 131946
 
-Market Sell volume is : 76898
+Market Sell volume is : 116964
 
 
 Tracked Market Buy volume is : 0
 
-Tracked Market Sell volume is : 6
+Tracked Market Sell volume is : 0
 
-Tracked Market Buy pivot price is : 2737
+Tracked Market Buy pivot price is : 0
 
-Tracked Market Sell pivot price is : 2736.75
+Tracked Market Sell pivot price is : 0
 
-Current trend is : 2
+Current trend is : 0
 
-Last traded Price (Trade Print) for NQ is : 2736.75
+Last traded Price (Trade Print) for NQ is : 2665
 
 
 Order Book Information...
 
-Level 1 Ask Price is : 2737
+Level 1 Ask Price is : 2665
 
-Level 1 Ask Size is : 123
+Level 1 Ask Size is : 18
 
-Level 1 Bid Price is : 2736.75
+Level 1 Bid Price is : 2664.75
 
-Level 1 Bid Size is : 62
+Level 1 Bid Size is : 13
 
 
-Accumulated Market Buy volume is : 78628
+Accumulated Market Buy volume is : 17
 
-Accumulated Market Sell volume is : 7
+Accumulated Market Sell volume is : 116964
 
 New Market Buy volume is : 1
 
-New Market Sell volume is : 1
+New Market Sell volume is : 7
 
-Market Buy volume is : 78628
+Market Buy volume is : 131964
 
-Market Sell volume is : 76900
+Market Sell volume is : 116971
 
 
-Tracked Market Buy volume is : 1
+Tracked Market Buy volume is : 18
 
-Tracked Market Sell volume is : 0
+Tracked Market Sell volume is : 7
 
-Tracked Market Buy pivot price is : 2737
+Tracked Market Buy pivot price is : 2665
 
-Tracked Market Sell pivot price is : 2736.75
+Tracked Market Sell pivot price is : 2664.75
 
 Current trend is : 1
 
-Last traded Price (Trade Print) for NQ is : 2737
+Last traded Price (Trade Print) for NQ is : 2665
 
 
 Order Book Information...
 
-Level 1 Ask Price is : 2737
 
-Level 1 Ask Size is : 107
+SellFn() order successfully submitted : 2665.25
 
-Level 1 Bid Price is : 2736.75
+Level 1 Ask Price is : 2665.25
 
-Level 1 Bid Size is : 68
+Level 1 Ask Size is : 51
 
+Level 1 Bid Price is : 2665
 
-Accumulated Market Buy volume is : 78631
-
-Accumulated Market Sell volume is : 19
-
-New Market Buy volume is : 1
-
-New Market Sell volume is : 8
-
-Market Buy volume is : 78631
-
-Market Sell volume is : 76912
+Level 1 Bid Size is : 3
 
 
-Tracked Market Buy volume is : 0
+Accumulated Market Buy volume is : 18
 
-Tracked Market Sell volume is : 0
-
-Tracked Market Buy pivot price is : 2737
-
-Tracked Market Sell pivot price is : 2736.75
-
-Current trend is : 2
-
-Last traded Price (Trade Print) for NQ is : 2736.75
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2737
-
-Level 1 Ask Size is : 107
-
-Level 1 Bid Price is : 2736.75
-
-Level 1 Bid Size is : 74
-
-
-Accumulated Market Buy volume is : 78632
-
-Accumulated Market Sell volume is : 19
-
-New Market Buy volume is : 1
-
-New Market Sell volume is : 8
-
-Market Buy volume is : 78632
-
-Market Sell volume is : 76912
-
-
-Tracked Market Buy volume is : 0
-
-Tracked Market Sell volume is : 0
-
-Tracked Market Buy pivot price is : 2737
-
-Tracked Market Sell pivot price is : 2736.75
-
-Current trend is : 1
-
-Last traded Price (Trade Print) for NQ is : 2737
-
-
-BuyFn() order successfully submitted :
-
-
-BuyFn() order successfully submitted :
-
-
-BuyFn() order successfully submitted :
-
-
-BuyFn() order successfully submitted :
-
-
-BuyFn() order successfully submitted :
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2736.75
-
-Level 1 Ask Size is : 1
-
-Level 1 Bid Price is : 2736.25
-
-Level 1 Bid Size is : 55
-
-
-Accumulated Market Buy volume is : 1
-
-Accumulated Market Sell volume is : 165
+Accumulated Market Sell volume is : 6
 
 New Market Buy volume is : 1
 
 New Market Sell volume is : 2
 
-Market Buy volume is : 78808
+Market Buy volume is : 131965
 
-Market Sell volume is : 77224
+Market Sell volume is : 116985
 
 
 Tracked Market Buy volume is : 0
 
-Tracked Market Sell volume is : 132
+Tracked Market Sell volume is : 0
 
-Tracked Market Buy pivot price is : 2736.75
+Tracked Market Buy pivot price is : 2665.25
 
-Tracked Market Sell pivot price is : 2736.5
+Tracked Market Sell pivot price is : 2665
 
 Current trend is : 2
 
-Last traded Price (Trade Print) for NQ is : 2736.5
+Last traded Price (Trade Print) for NQ is : 2665
 
 
-SellFn() order successfully submitted :
+Order Book Information...
+
+BuyFn() order successfully submitted : 2665
 
 
-SellFn() order successfully submitted :
+Level 1 Ask Price is : 2665.5
+
+Level 1 Ask Size is : 96
+
+Level 1 Bid Price is : 2665.25
+
+Level 1 Bid Size is : 15
 
 
-SellFn() order successfully submitted :
+Accumulated Market Buy volume is : 35
+
+Accumulated Market Sell volume is : 15
+
+New Market Buy volume is : 1
+
+New Market Sell volume is : 8
+
+Market Buy volume is : 131982
+
+Market Sell volume is : 116994
 
 
-SellFn() order successfully submitted :
+Tracked Market Buy volume is : 14
 
+Tracked Market Sell volume is : 8
 
-SellFn() order successfully submitted :
+Tracked Market Buy pivot price is : 2665.25
 
+Tracked Market Sell pivot price is : 2665
 
-SellFn() order successfully submitted :
+Current trend is : 1
 
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-SellFn() order successfully submitted :
-
-
-Exiting algobox...
-
-
-Written text file CLS = 1...
-
-Closing Black Box...
+Last traded Price (Trade Print) for NQ is : 2665.25
 
 C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
