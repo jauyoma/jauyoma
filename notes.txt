@@ -1,129 +1,10 @@
+Microsoft Windows [Version 6.1.7601]
+Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
 
-Market Sell volume is : 947658
-
-
-Tracked Market Buy volume is : 155
-
-Tracked Market Sell volume is : 0
-
-Tracked Market Buy pivot price is : 2643.75
-
-Tracked Market Sell pivot price is : 2643.5
-
-Current trend is : 1
-
-Last traded Price (Trade Print) for NQ is : 2643.75
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2642.75
-
-Level 1 Ask Size is : 8
-
-Level 1 Bid Price is : 2642.5
-
-Level 1 Bid Size is : 58
-
-
-Accumulated Market Buy volume is : 7
-
-Accumulated Market Sell volume is : 9
-
-New Market Buy volume is : 1
-
-New Market Sell volume is : 3
-
-Market Buy volume is : 938507
-
-Market Sell volume is : 948291
-
-
-Tracked Market Buy volume is : 0
-
-Tracked Market Sell volume is : 6
-
-Tracked Market Buy pivot price is : 2643
-
-Tracked Market Sell pivot price is : 2642.75
-
-Current trend is : 2
-
-Last traded Price (Trade Print) for NQ is : 2642.75
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2643.25
-
-Level 1 Ask Size is : 115
-
-Level 1 Bid Price is : 2643
-
-Level 1 Bid Size is : 10
-
-
-Accumulated Market Buy volume is : 23
-
-Accumulated Market Sell volume is : 15
-
-New Market Buy volume is : 1
-
-New Market Sell volume is : 1
-
-Market Buy volume is : 938543
-
-Market Sell volume is : 948333
-
-
-Tracked Market Buy volume is : 4
-
-Tracked Market Sell volume is : 16
-
-Tracked Market Buy pivot price is : 2643.25
-
-Tracked Market Sell pivot price is : 2643
-
-Current trend is : 2
-
-Last traded Price (Trade Print) for NQ is : 2643
-
-
-Exiting algobox...
-
-
-Written text file CLS = 1...
-
-
-While loop Processing speed is : 43013
-
-Line update Processing speed is : 2
-
-PnL Processing speed is : 0
-
-Best Ask Processing speed is : 27
-
-Best Bid Processing speed is : 156
-
-Best Ask & Bid Processing speed is : 2
-
-Trade print Processing speed is : 7
-
-Ask Processing speed is : 1
-
-Bid Processing speed is : 0
-
-Function Processing speed is : 7
-
-Buy function processing speed is : 0
-
-Sell Function Processing speed is : 12319
-
-
-Closing Black Box...
+C:\Users\User>cd Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release
 
 C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>hendon 42554P
-PR and222 3600 21 13 7 CME ESZ8
+PR and222 3600 21 20 29 CME ESZ8
 We are looking for a trade route for : Dorman::Stage5-Paper::CME
 Dorman::Stage5-Paper::EUREX::simulator::UP
 Dorman::Stage5-Paper::CBOE::simulator::UP
@@ -135,9 +16,9 @@ Dorman::Stage5-Paper::CME::simulator::UP
 
 Day Value is : 21
 
-Hour Value is : 13
+Hour Value is : 20
 
-Minute Value is : 7
+Minute Value is : 29
 
 Starting Account Balance is : 3600
 
@@ -146,155 +27,189 @@ Reading algorithm...
 
 Order Book Information...
 
-Level 1 Ask Price is : 2665
+Level 1 Ask Price is : 2659.75
 
-Level 1 Ask Size is : 18
+Level 1 Ask Size is : 91
 
-Level 1 Bid Price is : 2664.75
+Level 1 Bid Price is : 2659.5
 
-Level 1 Bid Size is : 37
-
-
-Accumulated Market Buy volume is : 131946
-
-Accumulated Market Sell volume is : 116964
-
-New Market Buy volume is : 131946
-
-New Market Sell volume is : 116964
-
-Market Buy volume is : 131946
-
-Market Sell volume is : 116964
+Level 1 Bid Size is : 75
 
 
-Tracked Market Buy volume is : 0
+Accumulated Market Buy volume is : 2
 
-Tracked Market Sell volume is : 0
-
-Tracked Market Buy pivot price is : 0
-
-Tracked Market Sell pivot price is : 0
-
-Current trend is : 0
-
-Last traded Price (Trade Print) for NQ is : 2665
-
-
-Order Book Information...
-
-Level 1 Ask Price is : 2665
-
-Level 1 Ask Size is : 18
-
-Level 1 Bid Price is : 2664.75
-
-Level 1 Bid Size is : 13
-
-
-Accumulated Market Buy volume is : 17
-
-Accumulated Market Sell volume is : 116964
+Accumulated Market Sell volume is : 8
 
 New Market Buy volume is : 1
 
-New Market Sell volume is : 7
+New Market Sell volume is : 1
 
-Market Buy volume is : 131964
+Market Buy volume is : 585477
 
-Market Sell volume is : 116971
-
-
-Tracked Market Buy volume is : 18
-
-Tracked Market Sell volume is : 7
-
-Tracked Market Buy pivot price is : 2665
-
-Tracked Market Sell pivot price is : 2664.75
-
-Current trend is : 1
-
-Last traded Price (Trade Print) for NQ is : 2665
+Market Sell volume is : 572394
 
 
-Order Book Information...
+Tracked Market Buy volume is : 6
 
+Tracked Market Sell volume is : 9
 
-SellFn() order successfully submitted : 2665.25
+Tracked Market Buy pivot price is : 2660
 
-Level 1 Ask Price is : 2665.25
-
-Level 1 Ask Size is : 51
-
-Level 1 Bid Price is : 2665
-
-Level 1 Bid Size is : 3
-
-
-Accumulated Market Buy volume is : 18
-
-Accumulated Market Sell volume is : 6
-
-New Market Buy volume is : 1
-
-New Market Sell volume is : 2
-
-Market Buy volume is : 131965
-
-Market Sell volume is : 116985
-
-
-Tracked Market Buy volume is : 0
-
-Tracked Market Sell volume is : 0
-
-Tracked Market Buy pivot price is : 2665.25
-
-Tracked Market Sell pivot price is : 2665
+Tracked Market Sell pivot price is : 2659.75
 
 Current trend is : 2
 
-Last traded Price (Trade Print) for NQ is : 2665
+Last traded Price (Trade Print) for NQ is : 2659.75
+
+
+SellFn() order successfully submitted : 2659.75
 
 
 Order Book Information...
 
-BuyFn() order successfully submitted : 2665
+Level 1 Ask Price is : 2659.75
+
+Level 1 Ask Size is : 43
+
+Level 1 Bid Price is : 2659.5
+
+Level 1 Bid Size is : 51
 
 
-Level 1 Ask Price is : 2665.5
+Accumulated Market Buy volume is : 145
 
-Level 1 Ask Size is : 96
-
-Level 1 Bid Price is : 2665.25
-
-Level 1 Bid Size is : 15
-
-
-Accumulated Market Buy volume is : 35
-
-Accumulated Market Sell volume is : 15
+Accumulated Market Sell volume is : 30
 
 New Market Buy volume is : 1
 
-New Market Sell volume is : 8
+New Market Sell volume is : 1
 
-Market Buy volume is : 131982
+Market Buy volume is : 585712
 
-Market Sell volume is : 116994
+Market Sell volume is : 572599
 
 
-Tracked Market Buy volume is : 14
+Tracked Market Buy volume is : 26
 
-Tracked Market Sell volume is : 8
+Tracked Market Sell volume is : 0
 
-Tracked Market Buy pivot price is : 2665.25
+Tracked Market Buy pivot price is : 2659.75
 
-Tracked Market Sell pivot price is : 2665
+Tracked Market Sell pivot price is : 2659.5
 
 Current trend is : 1
 
-Last traded Price (Trade Print) for NQ is : 2665.25
+Last traded Price (Trade Print) for NQ is : 2660
+
+
+BuyFn() order successfully submitted : 2660
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2660.25
+
+Level 1 Ask Size is : 6
+
+Level 1 Bid Price is : 2660
+
+Level 1 Bid Size is : 164
+
+
+Accumulated Market Buy volume is : 51
+
+Accumulated Market Sell volume is : 5
+
+New Market Buy volume is : 1
+
+New Market Sell volume is : 1
+
+Market Buy volume is : 585842
+
+Market Sell volume is : 572720
+
+
+Tracked Market Buy volume is : 51
+
+Tracked Market Sell volume is : 11
+
+Tracked Market Buy pivot price is : 2660.25
+
+Tracked Market Sell pivot price is : 2660
+
+Current trend is : 1
+
+Last traded Price (Trade Print) for NQ is : 2660.25
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2659.5
+
+Level 1 Ask Size is : 70
+
+Level 1 Bid Price is : 2659.25
+
+Level 1 Bid Size is : 55
+
+
+Accumulated Market Buy volume is : 5
+
+Accumulated Market Sell volume is : 102
+
+New Market Buy volume is : 1
+
+New Market Sell volume is : 5
+
+Market Buy volume is : 586818
+
+Market Sell volume is : 573751
+
+
+Tracked Market Buy volume is : 0
+
+Tracked Market Sell volume is : 13
+
+Tracked Market Buy pivot price is : 2659.5
+
+Tracked Market Sell pivot price is : 2659.25
+
+Current trend is : 2
+
+Last traded Price (Trade Print) for NQ is : 2659.25
+
+
+Exiting algobox...
+
+
+Written text file CLS = 1...
+
+
+While loop Processing speed is : 2122
+
+Line update Processing speed is : 3
+
+PnL Processing speed is : 0
+
+Best Ask Processing speed is : 2
+
+Best Bid Processing speed is : 40
+
+Best Ask & Bid Processing speed is : 1
+
+Trade print Processing speed is : 15
+
+Ask Processing speed is : 7
+
+Bid Processing speed is : 0
+
+Function Processing speed is : 4
+
+Buy function processing speed is : 0
+
+Sell Function Processing speed is : 4
+
+
+Closing Black Box...
 
 C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
