@@ -501,16 +501,20 @@ bool MyCallbacks::BuyFn()
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+	if (!BuyLimit)
 	{
-		std::cout << "\n\nBuyFn() error : " << iCode << endl;
-		BuyLimit = false;
-	}
-	else
-	{
-		NQBLmt = oLmtOrdParams.dPrice;
-		std::cout << "\n\nBuyFn() order successfully submitted : " << NQBLmt << endl;
-		OpenOrd = true;
+		if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		{
+			std::cout << "\n\nBuyFn() error : " << iCode << endl;
+			BuyLimit = false;
+		}
+		else
+		{
+			BuyLimit = true;
+			NQBLmt = oLmtOrdParams.dPrice;
+			std::cout << "\n\nBuyFn() order successfully submitted : " << NQBLmt << endl;
+			OpenOrd = true;
+		}
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -533,16 +537,20 @@ bool MyCallbacks::SellFn()
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
-	if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+	if (!SellLimit)
 	{
-		std::cout << "\n\nSellFn() error : " << iCode << endl;
-		SellLimit = false;
-	}
-	else
-	{
-		NQSLmt = oLmtOrdParams.dPrice;
-		std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
-		OpenOrd = true;
+		if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		{
+			std::cout << "\n\nSellFn() error : " << iCode << endl;
+			SellLimit = false;
+		}
+		else
+		{
+			SellLimit = true;
+			NQSLmt = oLmtOrdParams.dPrice;
+			std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
+			OpenOrd = true;
+		}
 	}
 		
 	QueryPerformanceCounter(&EndingTime);
@@ -624,13 +632,12 @@ void MyCallbacks::Process()
 			track = 2;
 			if (NQLBid1 < NQ1TP)
 			{
-				if (!BuyLimit && !SellLimit)
+				if (!BuyLimit)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
-						BuyLimit = true;
 						BuyFn();
-						g_pEngine->unlock(&iCode)
+						g_pEngine->unlock(&iCode);
 					}
 				}
 			}
@@ -644,13 +651,12 @@ void MyCallbacks::Process()
 			track = 3;
 			if (NQLAsk1 > NQ1TP)
 			{
-				if (!SellLimit && !BuyLimit)
+				if (!SellLimit)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
-						SellLimit = true;
 						SellFn();
-						g_pEngine->unlock(&iCode)
+						g_pEngine->unlock(&iCode);
 					}
 				}
 			}
@@ -912,13 +918,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 				}
 			}
 		}
-		else
-		{
-			if (_sBuySell == "B")
-				BuyLimit = false;
-			if (_sBuySell == "S")
-				SellLimit = false;
-		}
+		
 	}
 
 	if (contract)
