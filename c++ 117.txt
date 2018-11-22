@@ -630,8 +630,6 @@ void MyCallbacks::Process()
 		if (Psh3 >= 0.25 && Bs3 >= 0.25)
 		{
 			track = 2;
-			if (NQLBid1 < NQ1TP)
-			{
 				if (!BuyLimit)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
@@ -640,7 +638,6 @@ void MyCallbacks::Process()
 						g_pEngine->unlock(&iCode);
 					}
 				}
-			}
 
 		}
 	}
@@ -649,8 +646,6 @@ void MyCallbacks::Process()
 		if (Psh3 <= -0.25 && Bs3 <= -0.25)
 		{
 			track = 3;
-			if (NQLAsk1 > NQ1TP)
-			{
 				if (!SellLimit)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
@@ -659,8 +654,6 @@ void MyCallbacks::Process()
 						g_pEngine->unlock(&iCode);
 					}
 				}
-			}
-
 		}
 	}
 
@@ -891,34 +884,47 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
-		if (_sCompReason == "F")
-		{
+		
+		
 			if (_stypeNQ == "B")
 			{
 				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
 				{
-					NQBCl = true;
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					{
+						BuyLimit = false;
+						NQBCl = false;
+					}
 				}
 				if (_sOrdType == "M" && Vol == 2)
 				{
-					NQBCl = true;
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					{
+						BuyLimit = false;
+						NQBCl = false;
+					}
 				}
 			}
+			
 			if (_stypeNQ == "S")
 			{
 				if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
 				{
-					NQSCl = true;
-
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					{
+						SellLimit = false;
+						NQSCl = false;
+					}
 				}
 				if (_sOrdType == "M" && Vol == 1)
 				{
-					NQSCl = true;
-
+					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					{
+						SellLimit = false;
+						NQSCl = false;
+					}
 				}
 			}
-		}
-		
 	}
 
 	if (contract)
@@ -2659,23 +2665,7 @@ int main(int      argc,
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-			if (NQBCl)
-			{
-				if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-				{
-					BuyLimit = false;
-					NQBCl = false;
-				}
-			}
-
-			if (NQSCl)
-			{
-				if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
-				{
-					SellLimit = false;
-					NQSCl = false;
-				}
-			}
+			
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
