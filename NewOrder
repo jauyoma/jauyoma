@@ -79,6 +79,9 @@ tsNCharcb   g_sTradeRoute      = {(char *)NULL, 0};
 
 REngine *   g_pEngine;
 
+tsNCharcb _OrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
+void * pcontxt;
+
 int main(int      argc,
          char * * argv,
          char * * envp);
@@ -552,18 +555,22 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	 memcmp(pInfo -> sStatus.pData, 
 		sOrderSentToExch.pData, 
 		sOrderSentToExch.iDataLen) == 0)
-	  {
+    {
 	  g_iToExchSsboe = pInfo -> iSsboe;
 	  g_iToExchUsecs = pInfo -> iUsecs;
-	  }
+     }
+	
+     _OrderNumNQ = pInfo->sOrderNum;
+     EntTyp = pInfo->sEntryType;
+     pcontxt = pInfo->Context;
 
      /*   ----------------------------------------------------------------   */
      /*   if there's a completion reason, the order is complete... */
 
      if (pInfo -> sCompletionReason.pData)
-          {
+     {
           g_bDone = true;
-          }
+     }
 
      /*   ----------------------------------------------------------------   */
 
@@ -1637,6 +1644,8 @@ int main(int      argc,
           Sleep(1000);
 #endif
           }
+     
+     g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
 
      /*   ----------------------------------------------------------------   */
      /*   The order is complete.  Clean up and exit.                         */
