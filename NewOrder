@@ -1421,7 +1421,7 @@ int main(int      argc,
 	/*   REngineParams::sAppName must be changed in order to log into the   */
 	/*   Rithmic Paper Trading environment, or any production environment.  */
 
-	oParams.sAppName.pData = "SampleOrder";
+	oParams.sAppName.pData = "anko:UYOMA";
 	oParams.sAppName.iDataLen = (int)strlen(oParams.sAppName.pData);
 	oParams.sAppVersion.pData = "1.0.0.0";
 	oParams.sAppVersion.iDataLen = (int)strlen(oParams.sAppVersion.pData);
