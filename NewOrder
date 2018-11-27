@@ -1375,7 +1375,7 @@ int main(int      argc,
 	char * * envp)
 {
 	char * USAGE = (char *)"SampleOrder user password exchange ticker [B|S]\n";
-
+	
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
@@ -1386,6 +1386,8 @@ int main(int      argc,
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
 	int               iCode;
+        int               iFlags;
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1540,11 +1542,11 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	if (!pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
 	{
 		cout << "REngine::subscribe() error : " << iCode << endl;
 
-		delete pEngine;
+		delete g_pEngine;
 		delete pCallbacks;
 		delete pAdmCallbacks;
 
