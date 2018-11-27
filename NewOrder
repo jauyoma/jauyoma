@@ -37,9 +37,10 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 =====================================================================   */
 
 #include "RApiPlus.h"
-
+#include <string>
 #include <stdio.h>
 #include <string.h>
+
 #ifdef WinOS
 #include <unistd.h>
 #else
@@ -81,6 +82,9 @@ REngine *   g_pEngine;
 
 tsNCharcb _OrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
 void * pcontxt;
+std::string _sBuySell, _sOrdType;
+double Bid = 0, Ask = 0;
+bool BidP = false, AskP = false;
 
 int main(int      argc,
 	char * * argv,
@@ -563,6 +567,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_OrderNumNQ = pInfo->sOrderNum;
 	EntTyp = pInfo->sEntryType;
 	pcontxt = pInfo->pContext;
+	_sBuySell = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
 
 	/*   ----------------------------------------------------------------   */
 	/*   if there's a completion reason, the order is complete... */
@@ -969,6 +975,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	void *    pContext,
 	int *     aiCode)
 {
+	AskP = pInfo->bPriceFlag;
+	Ask = pInfo->dPrice;
+	
 	*aiCode = API_OK;
 	return (OK);
 }
@@ -980,6 +989,10 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 	void *    pContext,
 	int *     aiCode)
 {
+	AskP = pAsk->bPriceFlag;
+	BidP = pBid->bPriceFlag;
+	Ask = pAsk->dPrice;
+	Bid = pBid->dPrice;
 	*aiCode = API_OK;
 	return (OK);
 }
@@ -990,6 +1003,9 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	void *    pContext,
 	int *     aiCode)
 {
+	BidP = pInfo->bPriceFlag;
+	Ask = pInfo->dPrice;
+
 	*aiCode = API_OK;
 	return (OK);
 }
@@ -1365,6 +1381,7 @@ int main(int      argc,
 	REngineParams     oParams;
 	LoginParams       oLoginParams;
 	MarketOrderParams oMktOrdParams;
+	LimitOrderParams  oLmtOrdParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
@@ -1517,6 +1534,24 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
+	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+	iFlags = (MD_PRINTS | MD_BEST);
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	{
+		cout << "REngine::subscribe() error : " << iCode << endl;
+
+		delete pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
 	/*   Once logged in, we request price increment info for the instrument */
 	/*   that we want to trade.  This call will return price increment      */
 	/*   information as well as set up internal instrument-specific data.   */
@@ -1606,7 +1641,7 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
-	/*   send the order */
+	/*   send market order */
 
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
@@ -1618,8 +1653,6 @@ int main(int      argc,
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
-	/*   ----------------------------------------------------------------   */
-
 	if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 	{
 		printf("REngine::sendOrder() error : %d\n", iCode);
@@ -1629,6 +1662,43 @@ int main(int      argc,
 		delete pAdmCallbacks;
 
 		return (BAD);
+	}
+	else
+		printf("\n\nMarket order sent");
+
+	/*   ----------------------------------------------------------------   */
+	/*   send limit order */
+
+	oLmtOrdParams.sExchange = sExchange;
+	oLmtOrdParams.sTicker = sTicker;
+	oLmtOrdParams.pAccount = &g_oAccount;
+	oLmtOrdParams.iQty = 1;
+	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
+	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
+	
+
+	/*   ----------------------------------------------------------------   */
+
+	while (!BidP && !AskP)
+	{
+		if (BidP)
+		{
+			oLmtOrdParams.dPrice = Bid - 0.25;
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+			printf("\n\nBuy limit order sent");
+		}
+
+		if (AskP)
+		{
+			oLmtOrdParams.dPrice = Ask + 0.25;
+			oLmtOrdParams.sBuySellType.pData = "S";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
+			printf("\n\nSell limit order sent");
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1645,7 +1715,39 @@ int main(int      argc,
 #endif
 	}
 
-	g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
+	if (_sOrdType == "M")
+	{
+		if (_sBuySell == "B")
+		{
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			g_pEngine->sendOrder(&oMktOrdParams, &iCode);
+		}
+
+		if (_sBuySell == "S")
+		{
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			g_pEngine->sendOrder(&oMktOrdParams, &iCode);
+		}
+	}
+
+	if (_sOrdType == "L")
+	{
+		if (_sBuySell == "B")
+		{
+			oLmtOrdParams.sBuySellType.pData = "S";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
+		}
+
+		if (_sBuySell == "S")
+		{
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
+		}
+	}
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
