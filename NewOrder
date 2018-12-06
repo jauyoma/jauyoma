@@ -40,6 +40,8 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <string>
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
+
 
 #ifdef WinOS
 #include <unistd.h>
@@ -51,6 +53,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #define BAD  1
 
 using namespace RApi;
+using namespace std;
 
 /*   =====================================================================   */
 /*   Use global variables to share between the callback thread and main      */
@@ -390,10 +393,7 @@ int MyAdmCallbacks::Alert(AlertInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	if (!pInfo->dump(&iIgnored))
-	{
-		printf("error in pInfo -> dump : %d", iIgnored);
-	}
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -414,10 +414,7 @@ int MyCallbacks::AccountList(AccountListInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	if (!pInfo->dump(&iIgnored))
-	{
-		printf("error in pInfo -> dump : %d", iIgnored);
-	}
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -493,10 +490,7 @@ int MyCallbacks::Alert(AlertInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	if (!pInfo->dump(&iIgnored))
-	{
-		printf("error in pInfo -> dump : %d", iIgnored);
-	}
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   signal when the login to the trading system is complete */
@@ -547,10 +541,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	if (!pInfo->dump(&iIgnored))
-	{
-		printf("error in pInfo -> dump : %d", iIgnored);
-	}
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   record when the order was sent to the exchange... */
@@ -573,7 +564,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 	/*   if there's a completion reason, the order is complete... */
 
-	if (pInfo->sCompletionReason.pData)
+	if (pInfo->sCompletionReason.pData || _sOrdType == "L")
 	{
 		g_bDone = true;
 	}
@@ -638,10 +629,7 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	if (!pInfo->dump(&iIgnored))
-	{
-		printf("error in pInfo -> dump : %d", iIgnored);
-	}
+
 
 	g_bRcvdPriceIncr = true;
 
@@ -977,7 +965,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 {
 	AskP = pInfo->bPriceFlag;
 	Ask = pInfo->dPrice;
-	
+
 	*aiCode = API_OK;
 	return (OK);
 }
@@ -1375,7 +1363,7 @@ int main(int      argc,
 	char * * envp)
 {
 	char * USAGE = (char *)"SampleOrder user password exchange ticker [B|S]\n";
-	
+
 	MyAdmCallbacks *  pAdmCallbacks;
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
@@ -1386,7 +1374,7 @@ int main(int      argc,
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
 	int               iCode;
-        int               iFlags;
+	int               iFlags;
 
 
 	/*   ----------------------------------------------------------------   */
@@ -1416,11 +1404,11 @@ int main(int      argc,
 	/*   Rithmic trading platform, consult appropriate connection params    */
 	/*   document in your download directory.                               */
 
-	fake_envp[0] = "MML_DMN_SRVR_ADDR=ritpz01004.01.rithmic.com:65000~ritpz04063.04.rithmic.com:65000~ritpz01004.01.rithmic.net:65000~ritpz04063.04.rithmic.net:65000~ritpz01004.01.theomne.net:65000~ritpz04063.04.theomne.net:65000~ritpz01004.01.theomne.com:65000~ritpz04063.04.theomne.com:65000";
-	fake_envp[1] = "MML_DOMAIN_NAME=rithmic_paper_prod_domain";
-	fake_envp[2] = "MML_LIC_SRVR_ADDR=ritpz04063.04.rithmic.com:56000~ritpz01004.01.rithmic.com:56000~ritpz04063.04.rithmic.net:56000~ritpz01004.01.rithmic.net:56000~ritpz04063.04.theomne.net:56000~ritpz01004.01.theomne.net:56000~ritpz04063.04.theomne.com:56000~ritpz01004.01.theomne.com:56000";
-	fake_envp[3] = "MML_LOC_BROK_ADDR=ritpz04063.04.rithmic.com:64100";
-	fake_envp[4] = "MML_LOGGER_ADDR=ritpz04063.04.rithmic.com:45454~ritpz01004.01.rithmic.com:45454~ritpz04063.04.rithmic.net:45454~ritpz01004.01.rithmic.net:45454~ritpz04063.04.theomne.net:45454~ritpz01004.01.theomne.net:45454~ritpz04063.04.theomne.com:45454~ritpz01004.01.theomne.com:45454";
+	fake_envp[0] = "MML_DMN_SRVR_ADDR=rituz00100.00.rithmic.com:65000~rituz00100.00.rithmic.net:65000~rituz00100.00.theomne.net:65000~rituz00100.00.theomne.com:65000";
+	fake_envp[1] = "MML_DOMAIN_NAME=rithmic_uat_dmz_domain";
+	fake_envp[2] = "MML_LIC_SRVR_ADDR=rituz00100.00.rithmic.com:56000~rituz00100.00.rithmic.net:56000~rituz00100.00.theomne.net:56000~rituz00100.00.theomne.com:56000";
+	fake_envp[3] = "MML_LOC_BROK_ADDR=rituz00100.00.rithmic.com:64100";
+	fake_envp[4] = "MML_LOGGER_ADDR=rituz00100.00.rithmic.com:45454~rituz00100.00.rithmic.net:45454~rituz00100.00.theomne.com:45454~rituz00100.00.theomne.net:45454";
 	fake_envp[5] = "MML_LOG_TYPE=log_net";
 
 	/*   The SSL files are located in the ./<version>/etc directory         */
@@ -1431,7 +1419,7 @@ int main(int      argc,
 	fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
 	fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
 
-	fake_envp[9] = "USER=42554PPR";
+	fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
 	fake_envp[10] = NULL;
 
 	/*   ----------------------------------------------------------------   */
@@ -1440,7 +1428,7 @@ int main(int      argc,
 	/*   REngineParams::sAppName must be changed in order to log into the   */
 	/*   Rithmic Paper Trading environment, or any production environment.  */
 
-	oParams.sAppName.pData = "anko:UYOMA";
+	oParams.sAppName.pData = "SampleOrder";
 	oParams.sAppName.iDataLen = (int)strlen(oParams.sAppName.pData);
 	oParams.sAppVersion.pData = "1.0.0.0";
 	oParams.sAppVersion.iDataLen = (int)strlen(oParams.sAppVersion.pData);
@@ -1496,7 +1484,7 @@ int main(int      argc,
 	oLoginParams.sMdPassword.pData = argv[2];
 	oLoginParams.sMdPassword.iDataLen = (int)strlen(oLoginParams.sMdPassword.pData);
 
-	oLoginParams.sMdCnnctPt.pData = "login_agent_tp_paperc";
+	oLoginParams.sMdCnnctPt.pData = "login_agent_tpc";
 	oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
 
 	oLoginParams.sUser.pData = argv[1];
@@ -1505,8 +1493,11 @@ int main(int      argc,
 	oLoginParams.sPassword.pData = argv[2];
 	oLoginParams.sPassword.iDataLen = (int)strlen(oLoginParams.sPassword.pData);
 
-	oLoginParams.sTsCnnctPt.pData = "login_agent_op_paperc";
+	oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
 	oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+	oLoginParams.sPnlCnnctPt.pData = "login_agent_pnlc";
+	oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1536,6 +1527,18 @@ int main(int      argc,
 	}
 
 	/*   ----------------------------------------------------------------   */
+
+	sExchange.pData = argv[3];
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	sTicker.pData = argv[4];
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
 	iFlags = (MD_PRINTS | MD_BEST);
@@ -1544,7 +1547,7 @@ int main(int      argc,
 
 	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
 	{
-		cout << "REngine::subscribe() error : " << iCode << endl;
+		printf("REngine::subscribe() error : %d\n", iCode);
 
 		delete g_pEngine;
 		delete pCallbacks;
@@ -1552,6 +1555,8 @@ int main(int      argc,
 
 		return (BAD);
 	}
+	else
+		printf("Successfully subscribed to data engine");
 
 	/*   ----------------------------------------------------------------   */
 	/*   Once logged in, we request price increment info for the instrument */
@@ -1655,18 +1660,7 @@ int main(int      argc,
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
 
-	if (!g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-	{
-		printf("REngine::sendOrder() error : %d\n", iCode);
-
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
-
-		return (BAD);
-	}
-	else
-		printf("\n\nMarket order sent");
+	
 
 	/*   ----------------------------------------------------------------   */
 	/*   send limit order */
@@ -1678,35 +1672,29 @@ int main(int      argc,
 	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
-	while (!BidP && !AskP)
-	{
-		if (BidP)
-		{
-			oLmtOrdParams.dPrice = Bid - 0.25;
-			oLmtOrdParams.sBuySellType.pData = "B";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-			g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-			printf("\n\nBuy limit order sent");
-		}
+	oLmtOrdParams.dPrice = 2713.25 - 3.25;
+	oLmtOrdParams.sBuySellType.pData = "B";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	if(g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		printf("\n\nBuy limit order sent");
 
-		if (AskP)
-		{
-			oLmtOrdParams.dPrice = Ask + 0.25;
-			oLmtOrdParams.sBuySellType.pData = "S";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-			g_pEngine->sendOrder(&oLmtOrdParams, &iCode);
-			printf("\n\nSell limit order sent");
-		}
-	}
+	oLmtOrdParams.dPrice = 2817 + 3.25;
+	oLmtOrdParams.sBuySellType.pData = "S";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	if(g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		printf("\n\nSell limit order sent");
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
 	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
 	/*   for details.                                                       */
+
+	printf("\n\nProcessed limit orders");
 
 	while (!g_bDone)
 	{
@@ -1717,37 +1705,35 @@ int main(int      argc,
 #endif
 	}
 
-	if (_sOrdType == "M")
-	{
-		if (_sBuySell == "B")
-		{
-			oMktOrdParams.sBuySellType.pData = "S";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-			g_pEngine->sendOrder(&oMktOrdParams, &iCode);
-		}
+	std::cout << "\nValue of type of order is " << _sOrdType << endl;
 
-		if (_sBuySell == "S")
-		{
-			oMktOrdParams.sBuySellType.pData = "B";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-			g_pEngine->sendOrder(&oMktOrdParams, &iCode);
-		}
-	}
+	
 
 	if (_sOrdType == "L")
 	{
-		if (_sBuySell == "B")
+		int chk = 0;
+		bool lbuy = false, lsell = false;
+		while (chk != 2)
 		{
-			oLmtOrdParams.sBuySellType.pData = "S";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-			g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
-		}
+			if (_sBuySell == "B" && !lbuy)
+			{
+				std::cout << "\nBuyLimit identified " << endl;
+				if (g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					chk = chk + 1;
+					lbuy = true;
+				}
+			}
 
-		if (_sBuySell == "S")
-		{
-			oLmtOrdParams.sBuySellType.pData = "B";
-			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-			g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode);
+			if (_sBuySell == "S" && !lsell)
+			{
+				std::cout << "\nSellLimit identified " << endl;
+				if (g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					chk = chk + 1;
+					lsell = true;
+				}
+			}
 		}
 	}
 
