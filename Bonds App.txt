@@ -1,727 +1,1772 @@
-/* -*- C++ -*- */
+/*   =====================================================================
 
-/****************************************************************************
-** Copyright (c) quickfixengine.org  All rights reserved.
-**
-** This file is part of the QuickFIX FIX Engine
-**
-** This file may be distributed under the terms of the quickfixengine.org
-** license as defined by quickfixengine.org and appearing in the file
-** LICENSE included in the packaging of this file.
-**
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
-** See http://www.quickfixengine.org/LICENSE for licensing information.
-**
-** Contact ask@quickfixengine.org if any conditions of this licensing are
-** not clear to you.
-**
-****************************************************************************/
+Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4503 4355 4786 )
-#else
-#include "config.h"
-#endif
+Warning :
+This Software Product is protected by copyright law and international
+treaties.  Unauthorized use, reproduction or distribution of this
+Software Product (including its documentation), or any portion of it,
+may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
 
-#include "C:\Users\User\Documents\BondsProClient\Application.h"
-#include "C:\Users\User\Documents\quickfix-master\include\quickfix\Session.h"
-#include "C:\Users\User\Documents\quickfix-master\include\quickfix\fieldmap.h"
-#include "C:\Users\User\Documents\quickfix-master\include\quickfix\fix44\MarketDataIncrementalRefresh.h"
+Omnesys Technologies, Inc. will compensate individuals providing
+admissible evidence of any unauthorized use, reproduction, distribution
+or redistribution of this Software Product by any person, company or
+organization.
+
+This Software Product is licensed strictly in accordance with a separate
+Software System License Agreement, granted by Omnesys Technologies, Inc., which
+contains restrictions on use, reverse engineering, disclosure, confidentiality
+and other matters.
+
+=====================================================================   */
+/*   =====================================================================
+Compile/link commands for linux and darwin using R | API+.  These should
+work if your pwd is the ./samples directory.  You may need to change the
+name of the RApi library if you are using one of the library variants,
+like R | API or R | Diamond API.
+
+64-bit linux (2.6.32 kernel) :
+
+g++ -O3 -DLINUX -D_REENTRANT -Wall -Wno-sign-compare -Wno-write-strings -Wpointer-arith -Winline -Wno-deprecated -fno-strict-aliasing -I../include -o SampleOrder ../samples/SampleOrder.cpp -L../linux-gnu-2.6.32-x86_64/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib64 -lz -L/usr/kerberos/lib -lkrb5 -lk5crypto -lcom_err -lresolv -lm -lpthread -lrt
+
+64-bit darwin :
+
+g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpointer-arith -Winline -Wno-deprecated -Wno-write-strings -I../include -o ./SampleOrder ../samples/SampleOrder.cpp -L../darwin-10/lib -lRApiPlus-optimize -lOmneStreamEngine-optimize -lOmneChannel-optimize -lOmneEngine-optimize -l_api-optimize -l_apipoll-stubs-optimize -l_kit-optimize -lssl -lcrypto -L/usr/lib -lz -L/usr/lib -lkrb5 -lresolv -lm -lpthread
+
+=====================================================================   */
+
+#include "RApiPlus.h"
+#include <string>
+#include <stdio.h>
+#include <string.h>
 #include <iostream>
-#include <fstream>
 
-#ifdef WIN32	
-#include <Userenv.h> 
-#pragma comment(lib,"Userenv.lib")
-#else
+
+#ifdef WinOS
 #include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
+#else
+#include <Windows.h>
 #endif
 
-#ifdef WIN32
-const int BUFLEN = 512;
-BOOL getCurrentUserDir( char* buf, DWORD buflen ){
-    HANDLE hToken;
+#define GOOD 0
+#define BAD  1
 
-    if( !OpenProcessToken( GetCurrentProcess(), TOKEN_READ, &hToken ))
-        return FALSE;
+using namespace RApi;
+using namespace std;
 
-    if( !GetUserProfileDirectory( hToken, buf, &buflen ))
-        return FALSE;
+/*   =====================================================================   */
+/*   Use global variables to share between the callback thread and main      */
+/*   thread.  The booleans are a primitive method of signaling state         */
+/*   between the two threads.                                                */
 
-    CloseHandle( hToken );
-    return TRUE;
-}
-#endif
+bool        g_bTsLoginComplete = false;
+bool        g_bRcvdAccount = false;
+bool        g_bRcvdPriceIncr = false;
+bool        g_bRcvdTradeRoutes = false;
+bool        g_bDone = false;
 
-std::string getHomeFolder()
+int         g_iToExchSsboe = 0;
+int         g_iToExchUsecs = 0;
+int         g_iFromExchSsboe = 0;
+int         g_iFromExchUsecs = 0;
+
+const int   g_iMAX_LEN = 256;
+char        g_cAccountId[g_iMAX_LEN];
+char        g_cFcmId[g_iMAX_LEN];
+char        g_cIbId[g_iMAX_LEN];
+char        g_cExchange[g_iMAX_LEN];
+char        g_cTradeRoute[g_iMAX_LEN];
+AccountInfo g_oAccount;
+tsNCharcb   g_sExchange;
+tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
+
+REngine *   g_pEngine;
+
+tsNCharcb _BOrderNumNQ, _SOrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
+void * pcontxt;
+std::string _sBuySell, _sOrdType;
+double Bid = 0, Ask = 0;
+bool BidP = false, AskP = false, LBid = false, LOff = false;
+
+int main(int      argc,
+	char * * argv,
+	char * * envp);
+
+/*   =====================================================================   */
+/*                          class declarations                               */
+/*   =====================================================================   */
+
+class MyAdmCallbacks : public AdmCallbacks
 {
-	#ifdef WIN32
-		char buf[ BUFLEN ];
-		if( !getCurrentUserDir( buf, BUFLEN )){
-			std::cerr << "getCurrentUserDir failed" << std::endl;
-			exit( 1 );
+public:
+	MyAdmCallbacks() {};
+	~MyAdmCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+};
+
+/*   =====================================================================   */
+
+class MyCallbacks : public RCallbacks
+{
+public:
+	MyCallbacks() {};
+	~MyCallbacks() {};
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Alert(AlertInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestAskQuote(AskInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidAskQuote(BidInfo * pBid,
+		AskInfo * pAsk,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BestBidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BidQuote(BidInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BinaryContractList(BinaryContractListInfo * pInfo,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int ClosePrice(ClosePriceInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int ClosingIndicator(ClosingIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int EndQuote(EndQuoteInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+		void *                         pContext,
+		int *                          aiCode);
+
+	virtual int HighPrice(HighPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+		void *                       pContext,
+		int *                        aiCode);
+
+	virtual int InstrumentSearch(InstrumentSearchInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int LimitOrderBook(LimitOrderBookInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int LowPrice(LowPriceInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int MarketMode(MarketModeInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int OpenInterest(OpenInterestInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int OpenPrice(OpenPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int OpeningIndicator(OpeningIndicatorInfo * pInfo,
+		void *                 pContext,
+		int *                  aiCode);
+
+	virtual int OptionList(OptionListInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int RefData(RefDataInfo * pInfo,
+		void *        pContext,
+		int *         aiCode);
+
+	virtual int SettlementPrice(SettlementPriceInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int Strategy(StrategyInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
+
+	virtual int StrategyList(StrategyListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int TradeCondition(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradePrint(TradeInfo * pInfo,
+		void *      pContext,
+		int *       aiCode);
+
+	virtual int TradeReplay(TradeReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int TradeRoute(TradeRouteInfo * pInfo,
+		void *           pContext,
+		int *            aiCode);
+
+	virtual int TradeRouteList(TradeRouteListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int TradeVolume(TradeVolumeInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Bar(BarInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int BarReplay(BarReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int AccountList(AccountListInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PasswordChange(PasswordChangeInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int ExchangeList(ExchangeListInfo * pInfo,
+		void *             pContext,
+		int *              aiCode);
+
+	virtual int ExecutionReplay(ExecutionReplayInfo * pInfo,
+		void *                pContext,
+		int *                 aiCode);
+
+	virtual int LineUpdate(LineInfo * pInfo,
+		void *     pContext,
+		int *      aiCode);
+
+	virtual int OpenOrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int OrderReplay(OrderReplayInfo * pInfo,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int PnlReplay(PnlReplayInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int PnlUpdate(PnlInfo * pInfo,
+		void *    pContext,
+		int *     aiCode);
+
+	virtual int PriceIncrUpdate(PriceIncrInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
+	virtual int ProductRmsList(ProductRmsListInfo * pInfo,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+		void *                  pContext,
+		int *                   aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int BustReport(OrderBustReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int CancelReport(OrderCancelReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int FailureReport(OrderFailureReport * pReport,
+		void *               pContext,
+		int *                aiCode);
+
+	virtual int FillReport(OrderFillReport * pReport,
+		void *            pContext,
+		int *             aiCode);
+
+	virtual int ModifyReport(OrderModifyReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int NotCancelledReport(OrderNotCancelledReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int NotModifiedReport(OrderNotModifiedReport * pReport,
+		void *                   pContext,
+		int *                    aiCode);
+
+	virtual int RejectReport(OrderRejectReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int StatusReport(OrderStatusReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int TradeCorrectReport(OrderTradeCorrectReport * pReport,
+		void *                    pContext,
+		int *                     aiCode);
+
+	virtual int TriggerPulledReport(OrderTriggerPulledReport * pReport,
+		void *                     pContext,
+		int *                      aiCode);
+
+	virtual int TriggerReport(OrderTriggerReport * pReport,
+		void *              pContext,
+		int *               aiCode);
+
+	virtual int OtherReport(OrderReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int SodUpdate(SodReport * pReport,
+		void *      pContext,
+		int *       aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+	virtual int Quote(QuoteReport * pReport,
+		void *        pContext,
+		int *         aiCode);
+
+	/*   ----------------------------------------------------------------   */
+
+private:
+};
+
+/*   =====================================================================   */
+/*                          class definitions                                */
+/*   =====================================================================   */
+
+int MyAdmCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AccountList(AccountListInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	AccountInfo * pAccount;
+	int iCode;
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+
+
+	/*   ----------------------------------------------------------------   */
+
+	if (pInfo->iArrayLen > 0)
+	{
+		pAccount = &pInfo->asAccountInfoArray[0];
+
+		/* copy the first account */
+		if ((pAccount->sAccountId.iDataLen > g_iMAX_LEN) ||
+			(pAccount->sFcmId.iDataLen     > g_iMAX_LEN) ||
+			(pAccount->sIbId.iDataLen      > g_iMAX_LEN))
+		{
+			printf("one or more of the char arrays is too small.\n");
 		}
-		return buf;
-	#else
-		struct passwd *pw = getpwuid(getuid());
-		const char *homedir = pw->pw_dir;
-		return homedir;
-	#endif
-}
+		else
+		{
+			memcpy(&g_cAccountId,
+				pAccount->sAccountId.pData,
+				pAccount->sAccountId.iDataLen);
 
-void Application::onLogon( const FIX::SessionID& sessionID )
-{
-  std::cout << std::endl << "Logon - " << sessionID << std::endl;
-}
+			g_oAccount.sAccountId.pData = g_cAccountId;
+			g_oAccount.sAccountId.iDataLen = pAccount->sAccountId.iDataLen;
 
-void Application::onLogout( const FIX::SessionID& sessionID )
-{
-  std::cout << std::endl << "Logout - " << sessionID << std::endl;
-}
+			/*   ------------------------------------------------------   */
 
-void Application::toAdmin( FIX::Message& message, const FIX::SessionID& )
-{
-	//std::cout << std::endl << "ADMIN OUT: " << message << std::endl;
-	if(msg_type == "A"){
-		string data = 112A04B0-5AAF-42F4-994E-FA7CB959C60B;
-		string datalen = 36;
-		message.setField(RawData(data));
-		message.setField(RawDataLength(datalen));
+			memcpy(&g_cFcmId,
+				pAccount->sFcmId.pData,
+				pAccount->sFcmId.iDataLen);
+			g_oAccount.sFcmId.pData = g_cFcmId;
+			g_oAccount.sFcmId.iDataLen = pAccount->sFcmId.iDataLen;
+
+			/*   ------------------------------------------------------   */
+
+			memcpy(&g_cIbId,
+				pAccount->sIbId.pData,
+				pAccount->sIbId.iDataLen);
+			g_oAccount.sIbId.pData = g_cIbId;
+			g_oAccount.sIbId.iDataLen = pAccount->sIbId.iDataLen;
+
+			if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
+			{
+				printf("REngine::subscribeOrder() error : %d\n", iCode);
+			}
+
+			g_bRcvdAccount = true;
+		}
 	}
-}
-void Application::fromAdmin( const FIX::Message& message, const FIX::SessionID& )
-  throw( FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::RejectLogon ) 
-{
-	//std::cout << std::endl << "ADMIN IN: " << message << std::endl;
-}
-void Application::fromApp( const FIX::Message& message, const FIX::SessionID& sessionID )
-throw( FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType )
-{
-  std::cout << std::endl << "IN: " << message << std::endl;
-  crack( message, sessionID );
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
 }
 
-void Application::toApp( FIX::Message& message, const FIX::SessionID& sessionID )
-throw( FIX::DoNotSend )
-{
-  try
-  {
-    FIX::PossDupFlag possDupFlag;
-    message.getHeader().getField( possDupFlag );
-    if ( possDupFlag ) throw FIX::DoNotSend();
-  }
-  catch ( FIX::FieldNotFound& ) {}
+/*   =====================================================================   */
 
-  std::cout << std::endl << "OUT: " << message << std::endl;
+int MyCallbacks::PasswordChange(PasswordChangeInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
 }
 
-namespace FIX
+/*   =====================================================================   */
+
+int MyCallbacks::Alert(AlertInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
 {
-  namespace FIELD
-  {
-	const int MinInc = 6350;
-	const int MinBR = 6351;
-	const int YTM = 6360;
-	const int YTW = 6361;
-  }
-	DEFINE_QTY(MinInc);
-	DEFINE_QTY(MinBR);
-	DEFINE_PERCENTAGE(YTM);
-	DEFINE_PERCENTAGE(YTW);
-}
-namespace FIX44
-{
-	class NoMDEntriesBondsPro : public MarketDataIncrementalRefresh::NoMDEntries//add custom fields to the MarketDataIncrementalRefresh message
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   signal when the login to the trading system is complete */
+
+	if (pInfo->iAlertType == ALERT_LOGIN_COMPLETE &&
+		pInfo->iConnectionId == TRADING_SYSTEM_CONNECTION_ID)
 	{
-	public:
-		NoMDEntriesBondsPro() : MarketDataIncrementalRefresh::NoMDEntries() {}
-		FIELD_SET(*this, FIX::MinInc);
-		FIELD_SET(*this, FIX::MinBR);
-		FIELD_SET(*this, FIX::YTM);
-		FIELD_SET(*this, FIX::YTW);
-	};
+		g_bTsLoginComplete = true;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
 }
 
-void Application::onMessage
-( const FIX44::MarketDataIncrementalRefresh& message, const FIX::SessionID& ) 
-{
-	FIX::NoMDEntries noMDEntries;
-    message.get(noMDEntries);
-	if (noMDEntries.getValue()!=1){
-		std::cout << "NoMDEntries in MarketDataIncrementalRefresh is not 1!" <<std::endl;
-		return;
-	}
-	FIX44::MarketDataIncrementalRefresh::NoMDEntries group;
-	message.getGroup(1, group);
+/*   =====================================================================   */
 
-	FIX::MDEntryID entryID; group.get(entryID);      
-	FIX::MDUpdateAction action; group.get(action);  
-	char actionvalue = action.getValue();//0=New, 1=Update, 2=Delete)
-	if (actionvalue=='2') //ignore the delete
+int MyCallbacks::ExchangeList(ExchangeListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ExecutionReplay(ExecutionReplayInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::LineUpdate(LineInfo * pInfo,
+	void *     pContext,
+	int *      aiCode)
+{
+	tsNCharcb sOrderSentToExch = { (char *)"order sent to exch",
+		(int)strlen("order sent to exch") };
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order was sent to the exchange... */
+
+	if (pInfo->sStatus.iDataLen == sOrderSentToExch.iDataLen &&
+		memcmp(pInfo->sStatus.pData,
+			sOrderSentToExch.pData,
+			sOrderSentToExch.iDataLen) == 0)
 	{
-		std::map<std::string, SECURITY>::iterator it = securities_.end();
-		it=securities_.find(entryID);
-		if (it!=securities_.end())
-			securities_.erase(it);
-		return;
+		g_iToExchSsboe = pInfo->iSsboe;
+		g_iToExchUsecs = pInfo->iUsecs;
 	}
-	SECURITY security;
-	security.MDEntryID = entryID;
-	security.MDUpdateAction = action;
-	FIX::Symbol symbol;		
-	if(group.isSet(symbol)){
-		group.get(symbol); 
-		security.Symbol = symbol;
+
+	EntTyp = pInfo->sEntryType;
+	pcontxt = pInfo->pContext;
+	_sBuySell = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
+	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
+
+	if (_sBuySell == "B")
+	{
+		LBid = true;
+		_BOrderNumNQ = pInfo->sOrderNum;
 	}
-	FIX::MDEntryType entryType; 
-	if(group.isSet(entryType)) {
-		group.get(entryType);      
-		security.MDEntryType = entryType;
+
+	if (_sBuySell == "S")
+	{
+		LOff = true;
+		_SOrderNumNQ = pInfo->sOrderNum;
 	}
-	FIX::MDEntryPx price;	
-	if(group.isSet(price)) {
-		group.get(price); 
-		security.MDEntryPx		= price.getValue();
+
+	/*   ----------------------------------------------------------------   */
+	/*   if there's a completion reason, the order is complete... */
+
+	if (pInfo->sCompletionReason.pData || _sOrdType == "L")
+	{
+		g_bDone = true;
 	}
-	FIX::MDEntrySize size;	
-	if(group.isSet(size)) {
-		group.get(size); 
-		security.MDEntrySize	= size.getValue();
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::OrderReplay(OrderReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\n");
+
+
+	g_bRcvdPriceIncr = true;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ProductRmsList(ProductRmsListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SingleOrderReplay(SingleOrderReplayInfo * pInfo,
+	void *                  pContext,
+	int *                   aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BustReport(OrderBustReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Bust Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::CancelReport(OrderCancelReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Cancel Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FailureReport(OrderFailureReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Failure Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::FillReport(OrderFillReport * pReport,
+	void *            pContext,
+	int *             aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Fill Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Modify Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived NotCancelled Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::NotModifiedReport(OrderNotModifiedReport * pReport,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived NotModified Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RejectReport(OrderRejectReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Reject Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StatusReport(OrderStatusReport * pReport,
+	void *              pContext,
+	int *               aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Status Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+	/*   record when the order returned from the exchange... */
+
+	g_iFromExchSsboe = pReport->iSsboe;
+	g_iFromExchUsecs = pReport->iUsecs;
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCorrectReport(OrderTradeCorrectReport * pReport,
+	void *                    pContext,
+	int *                     aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trade Correct Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerPulledReport(OrderTriggerPulledReport * pReport,
+	void *                     pContext,
+	int *                      aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trigger Pulled Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TriggerReport(OrderTriggerReport * pReport,
+	void *               pContext,
+	int *                aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Trigger Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OtherReport(OrderReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Other Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SodUpdate(SodReport * pReport,
+	void *      pContext,
+	int *       aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	printf("\n\nReceived Sod Report\n");
+	pReport->dump(&iIgnored);
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Quote(QuoteReport * pReport,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::AskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestAskQuote(AskInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	AskP = pInfo->bPriceFlag;
+	Ask = pInfo->dPrice;
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
+	AskInfo * pAsk,
+	void *    pContext,
+	int *     aiCode)
+{
+	AskP = pAsk->bPriceFlag;
+	BidP = pBid->bPriceFlag;
+	Ask = pAsk->dPrice;
+	Bid = pBid->dPrice;
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BestBidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	BidP = pInfo->bPriceFlag;
+	Ask = pInfo->dPrice;
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BidQuote(BidInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BinaryContractList(BinaryContractListInfo * pInfo,
+	void *                   pContext,
+	int *                    aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosePrice(ClosePriceInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::ClosingIndicator(ClosingIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EndQuote(EndQuoteInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
+	void *                         pContext,
+	int *                          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentByUnderlying(InstrumentByUnderlyingInfo * pInfo,
+	void *                       pContext,
+	int *                        aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::InstrumentSearch(InstrumentSearchInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::MarketMode(MarketModeInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenInterest(OpenInterestInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OpeningIndicator(OpeningIndicatorInfo * pInfo,
+	void *                 pContext,
+	int *                  aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::OptionList(OptionListInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::RefData(RefDataInfo * pInfo,
+	void *        pContext,
+	int *         aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::SettlementPrice(SettlementPriceInfo * pInfo,
+	void *                pContext,
+	int *                 aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Strategy(StrategyInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::StrategyList(StrategyListInfo * pInfo,
+	void *             pContext,
+	int *              aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeCondition(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradePrint(TradeInfo * pInfo,
+	void *      pContext,
+	int *       aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeReplay(TradeReplayInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRoute(TradeRouteInfo * pInfo,
+	void *           pContext,
+	int *            aiCode)
+{
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeRouteList(TradeRouteListInfo * pInfo,
+	void *               pContext,
+	int *                aiCode)
+{
+	printf("We are looking for a trade route for : %*.*s::%*.*s::%*.*s\n",
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.iDataLen,
+		g_oAccount.sFcmId.pData,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.iDataLen,
+		g_oAccount.sIbId.pData,
+		g_sExchange.iDataLen,
+		g_sExchange.iDataLen,
+		g_sExchange.pData);
+
+	tsNCharcb sFcmId;
+	tsNCharcb sIbId;
+	tsNCharcb sExchange;
+	tsNCharcb sTradeRoute;
+	tsNCharcb sStatus;
+
+	for (int i = 0; i < pInfo->iArrayLen; i++)
+	{
+		sFcmId = pInfo->asTradeRouteInfoArray[i].sFcmId;
+		sIbId = pInfo->asTradeRouteInfoArray[i].sIbId;
+		sExchange = pInfo->asTradeRouteInfoArray[i].sExchange;
+		sTradeRoute = pInfo->asTradeRouteInfoArray[i].sTradeRoute;
+		sStatus = pInfo->asTradeRouteInfoArray[i].sStatus;
+
+		printf("%*.*s::%*.*s::%*.*s::%*.*s::%*.*s\n",
+			sFcmId.iDataLen,
+			sFcmId.iDataLen,
+			sFcmId.pData,
+			sIbId.iDataLen,
+			sIbId.iDataLen,
+			sIbId.pData,
+			sExchange.iDataLen,
+			sExchange.iDataLen,
+			sExchange.pData,
+			sTradeRoute.iDataLen,
+			sTradeRoute.iDataLen,
+			sTradeRoute.pData,
+			sStatus.iDataLen,
+			sStatus.iDataLen,
+			sStatus.pData);
+
+		/* use first trade route where fcm/ib/exch matches, and status is "UP" */
+		if (g_oAccount.sFcmId.iDataLen == sFcmId.iDataLen &&
+			(memcmp(g_oAccount.sFcmId.pData,
+				sFcmId.pData,
+				g_oAccount.sFcmId.iDataLen) == 0) &&
+
+			g_oAccount.sIbId.iDataLen == sIbId.iDataLen &&
+			(memcmp(g_oAccount.sIbId.pData,
+				sIbId.pData,
+				g_oAccount.sIbId.iDataLen) == 0) &&
+
+			g_sExchange.iDataLen == sExchange.iDataLen &&
+			(memcmp(g_sExchange.pData,
+				sExchange.pData,
+				g_sExchange.iDataLen) == 0) &&
+
+			sTRADE_ROUTE_STATUS_UP.iDataLen == sStatus.iDataLen &&
+			(memcmp(sTRADE_ROUTE_STATUS_UP.pData,
+				sStatus.pData,
+				sTRADE_ROUTE_STATUS_UP.iDataLen) == 0))
+		{
+			/*   copy memory into global trade route string */
+			memcpy(&g_cTradeRoute,
+				sTradeRoute.pData,
+				sTradeRoute.iDataLen);
+
+			g_sTradeRoute.pData = g_cTradeRoute;
+			g_sTradeRoute.iDataLen = sTradeRoute.iDataLen;
+
+			break;
+		}
+
+		g_sTradeRoute.pData = NULL;
+		g_sTradeRoute.iDataLen = 0;
 	}
-	FIX::MinQty qty;		
-	if(group.isSet(qty)) {
-		group.get(qty); 
-		security.MinQty			= qty.getValue();
+
+	g_bRcvdTradeRoutes = true;
+
+	*aiCode = API_OK;
+	return(OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::TradeVolume(TradeVolumeInfo * pInfo,
+	void *            pContext,
+	int *             aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::Bar(BarInfo * pInfo,
+	void *    pContext,
+	int *     aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
+int MyCallbacks::BarReplay(BarReplayInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	*aiCode = API_OK;
+	return (OK);
+}
+/*   =====================================================================   */
+
+int main(int      argc,
+	char * * argv,
+	char * * envp)
+{
+	char * USAGE = (char *)"SampleOrder user password exchange ticker [B|S]\n";
+
+	MyAdmCallbacks *  pAdmCallbacks;
+	RCallbacks *      pCallbacks;
+	REngineParams     oParams;
+	LoginParams       oLoginParams;
+	MarketOrderParams oMktOrdParams;
+	LimitOrderParams  oLmtOrdParams;
+	tsNCharcb         sExchange;
+	tsNCharcb         sTicker;
+	char *            fake_envp[11];
+	int               iCode;
+	int               iFlags;
+
+
+	/*   ----------------------------------------------------------------   */
+
+	if (argc < 6)
+	{
+		printf("%s", USAGE);
+		return (BAD);
 	}
-	FIX::MinInc inc;		
-	if(message.isSetField(inc)) {
-		message.getField(inc); 
-		security.MinInc			= inc.getValue();
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		pAdmCallbacks = new MyAdmCallbacks();
 	}
-	FIX::MinBR br;			
-	if(message.isSetField(br)) {
-		message.getField(br); 
-		security.MinBR			= br.getValue();
+	catch (OmneException& oEx)
+	{
+		iCode = oEx.getErrorCode();
+		printf("MyAdmCallbacks::MyAdmCallbacks() error : %d\n", iCode);
+		return (BAD);
 	}
-	FIX::YTM ytm;			
-	if(message.isSetField(ytm)) {
-		message.getField(ytm); 
-		security.YTM			= ytm.getValue();
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following fake envp contains the settings for connecting to    */
+	/*   Rithmic 01 Test.  To connect to a different instance of the        */
+	/*   Rithmic trading platform, consult appropriate connection params    */
+	/*   document in your download directory.                               */
+
+	fake_envp[0] = "MML_DMN_SRVR_ADDR=rituz00100.00.rithmic.com:65000~rituz00100.00.rithmic.net:65000~rituz00100.00.theomne.net:65000~rituz00100.00.theomne.com:65000";
+	fake_envp[1] = "MML_DOMAIN_NAME=rithmic_uat_dmz_domain";
+	fake_envp[2] = "MML_LIC_SRVR_ADDR=rituz00100.00.rithmic.com:56000~rituz00100.00.rithmic.net:56000~rituz00100.00.theomne.net:56000~rituz00100.00.theomne.com:56000";
+	fake_envp[3] = "MML_LOC_BROK_ADDR=rituz00100.00.rithmic.com:64100";
+	fake_envp[4] = "MML_LOGGER_ADDR=rituz00100.00.rithmic.com:45454~rituz00100.00.rithmic.net:45454~rituz00100.00.theomne.com:45454~rituz00100.00.theomne.net:45454";
+	fake_envp[5] = "MML_LOG_TYPE=log_net";
+
+	/*   The SSL files are located in the ./<version>/etc directory         */
+	/*   of the R | API package.  The settings below assume that those      */
+	/*   files are in the current working directory.  Normally you should   */
+	/*   specify the full path to these files.                              */
+	fake_envp[6] = "MML_SSL_CLNT_AUTH_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_cert_auth_params";
+	fake_envp[7] = "MML_SSL_CLNT_CERT_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_params";
+	fake_envp[8] = "MML_SSL_CLNT_KEY_FILE=C:\\Users\\User\\Documents\\9.9.0.0\\etc\\rithmic_ssl_client_private_key";
+
+	fake_envp[9] = "USER=andrew.kowuoche@gmail.com";
+	fake_envp[10] = NULL;
+
+	/*   ----------------------------------------------------------------   */
+	/*   The following value for REngineParams::sAdmCnnctPt assumes the     */
+	/*   app is connecting to the Rithmic 01 Test environment.              */
+	/*   REngineParams::sAppName must be changed in order to log into the   */
+	/*   Rithmic Paper Trading environment, or any production environment.  */
+
+	oParams.sAppName.pData = "SampleOrder";
+	oParams.sAppName.iDataLen = (int)strlen(oParams.sAppName.pData);
+	oParams.sAppVersion.pData = "1.0.0.0";
+	oParams.sAppVersion.iDataLen = (int)strlen(oParams.sAppVersion.pData);
+	oParams.sAdmCnnctPt.pData = "dd_admin_sslc";
+	oParams.sAdmCnnctPt.iDataLen = (int)strlen(oParams.sAdmCnnctPt.pData);
+	oParams.envp = fake_envp;
+	oParams.pAdmCallbacks = pAdmCallbacks;
+	oParams.sLogFilePath.pData = "so.log";
+	oParams.sLogFilePath.iDataLen = (int)strlen(oParams.sLogFilePath.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	try
+	{
+		g_pEngine = new REngine(&oParams);
 	}
-	FIX::YTW ytw;			
-	if(message.isSetField(ytw)) {
-		message.getField(ytw); 
-		security.YTW			= ytw.getValue();
+	catch (OmneException& oEx)
+	{
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		printf("REngine::REngine() error : %d\n", iCode);
+		return (BAD);
 	}
-	securities_[entryID] = security;
-} 
-void Application::onMessage
-( const FIX44::ExecutionReport&, const FIX::SessionID& ) {}
-void Application::onMessage
-( const FIX44::OrderCancelReject&, const FIX::SessionID& ) {}
 
-void Application::run()
-{
-  while ( true )
-  {
-    try
-    {
-      char action = queryAction();
-		
-	  /*
-      if ( action == '1' )
-        queryEnterOrder();
-      else if ( action == '2' )
-        queryCancelOrder();
-      else if ( action == '3' )
-        queryReplaceOrder();
-      else if ( action == '4' )
-        queryMarketDataRequest();		
-	  else*/ if ( action == '1' ){
-        fillSnapshot();
-	  }
-      else if ( action == '2' )
-        break;
-    }
-    catch ( std::exception & e )
-    {
-      std::cout << "Message Not Sent: " << e.what();
-    }
-  }
-}
-
-
-void Application::fillSnapshot()
-{
-	if (securities_.size()==0){
-		std::cout << "Empty snapshot, something is wrong when getting the market data from bonds.com! " <<std::endl;
-		return;
+	/*   ----------------------------------------------------------------   */
+	/*   instantiate a callback object - prerequisite for logging in */
+	try
+	{
+		pCallbacks = new MyCallbacks();
 	}
-	std::string file = getHomeFolder()+"\\bonds.com.snapshot.txt";
-	std::ofstream out(file.c_str());	
-	std::map<std::string, SECURITY>::const_iterator it;
-	std::vector<SECURITY> securities;
-	out<<"bonds.com snapshot"<<std::endl;
-	out<<"cusip,entryid, updateaction, bid/ask, price, size, balance, increment, qty, ytm, ytw"<<std::endl;
-	for(it=securities_.begin(); it!=securities_.end(); it++){
-		securities.push_back(it->second);
+	catch (OmneException& oEx)
+	{
+		delete g_pEngine;
+		delete pAdmCallbacks;
+
+		iCode = oEx.getErrorCode();
+		printf("MyCallbacks::MyCallbacks() error : %d\n", iCode);
+		return (BAD);
 	}
-	std::sort(securities.begin(), securities.end());
-	std::vector<SECURITY>::const_iterator itsec;
-	for(itsec=securities.begin(); itsec!=securities.end(); itsec++){
-		out<<itsec->Symbol;
-		out<<","<<itsec->MDEntryID;
-		out<<","<<(itsec->MDUpdateAction=='0'?"New":"Update");
-		out<<","<<(itsec->MDEntryType=='0'?"Bid":"Ask");
-		out<<","<<itsec->MDEntryPx;
-		out<<","<<itsec->MDEntrySize;
-		out<<","<<itsec->MinBR;
-		out<<","<<itsec->MinInc;
-		out<<","<<itsec->MinQty;
-		out<<","<<itsec->YTM;
-		out<<","<<itsec->YTW<<std::endl;
+
+	/*   ----------------------------------------------------------------   */
+	/*   Set up parameters for logging in.  Again, the MdCnnctPt and        */
+	/*   TsCnnctPt have values for Rithmic 01 Test.  Add values for other   */
+	/*   members of LoginParams to log into other subsystems of the         */
+	/*   infrastructure like like pnl and history.                          */
+
+	oLoginParams.pCallbacks = pCallbacks;
+
+	oLoginParams.sMdUser.pData = argv[1];
+	oLoginParams.sMdUser.iDataLen = (int)strlen(oLoginParams.sMdUser.pData);
+
+	oLoginParams.sMdPassword.pData = argv[2];
+	oLoginParams.sMdPassword.iDataLen = (int)strlen(oLoginParams.sMdPassword.pData);
+
+	oLoginParams.sMdCnnctPt.pData = "login_agent_tpc";
+	oLoginParams.sMdCnnctPt.iDataLen = (int)strlen(oLoginParams.sMdCnnctPt.pData);
+
+	oLoginParams.sUser.pData = argv[1];
+	oLoginParams.sUser.iDataLen = (int)strlen(oLoginParams.sUser.pData);
+
+	oLoginParams.sPassword.pData = argv[2];
+	oLoginParams.sPassword.iDataLen = (int)strlen(oLoginParams.sPassword.pData);
+
+	oLoginParams.sTsCnnctPt.pData = "login_agent_opc";
+	oLoginParams.sTsCnnctPt.iDataLen = (int)strlen(oLoginParams.sTsCnnctPt.pData);
+
+	oLoginParams.sPnlCnnctPt.pData = "login_agent_pnlc";
+	oLoginParams.sPnlCnnctPt.iDataLen = (int)strlen(oLoginParams.sPnlCnnctPt.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->login(&oLoginParams, &iCode))
+	{
+		printf("REngine::login() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
 	}
-	std::cout << "The bonds.com snapshot has been filled to " << file.c_str() <<std::endl;
-	return;
+
+	/*   ----------------------------------------------------------------   */
+	/*   After calling REngine::login, RCallbacks::Alert will be called a   */
+	/*   number of times.  Wait for when the login to the TsCnnctPt is      */
+	/*   complete.  (See MyCallbacks::Alert() for details).                 */
+
+	while (!g_bTsLoginComplete)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	sExchange.pData = argv[3];
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	sTicker.pData = argv[4];
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	/*   ----------------------------------------------------------------   */
+	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
+
+	iFlags = (MD_PRINTS | MD_BEST);
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
+	{
+		printf("REngine::subscribe() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+	else
+		printf("Successfully subscribed to data engine");
+
+	/*   ----------------------------------------------------------------   */
+	/*   Once logged in, we request price increment info for the instrument */
+	/*   that we want to trade.  This call will return price increment      */
+	/*   information as well as set up internal instrument-specific data.   */
+
+	sExchange.pData = argv[3];
+	sExchange.iDataLen = (int)strlen(sExchange.pData);
+	sTicker.pData = argv[4];
+	sTicker.iDataLen = (int)strlen(sTicker.pData);
+
+	if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
+	{
+		printf("REngine::getPriceIncrInfo() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Use the global boolean as the signaller of when the callback has   */
+	/*   been fired (and our internal instrument-specific data is ready.)   */
+
+	while (!g_bRcvdPriceIncr)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   Placing an order requires a trade route to be specified.  Based    */
+	/*   on your FCM and/or IB, you may have zero to many trade routes      */
+	/*   for a given exchange.  Store the exchange where the callback can   */
+	/*   see it, and then request the list.                                 */
+
+	memcpy(&g_cExchange,
+		sExchange.pData,
+		sExchange.iDataLen);
+
+	g_sExchange.pData = g_cExchange;
+	g_sExchange.iDataLen = sExchange.iDataLen;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->listTradeRoutes(NULL, &iCode))
+	{
+		printf("REngine::listTradeRoutes() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	while (!g_bRcvdTradeRoutes)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	if (g_sTradeRoute.iDataLen == 0)
+	{
+		printf("No available trade routes for : %*.*s::%*.*s::%*.*s\n",
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.iDataLen,
+			g_oAccount.sFcmId.pData,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.iDataLen,
+			g_oAccount.sIbId.pData,
+			g_sExchange.iDataLen,
+			g_sExchange.iDataLen,
+			g_sExchange.pData);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   send market order */
+
+	oMktOrdParams.sExchange = sExchange;
+	oMktOrdParams.sTicker = sTicker;
+	oMktOrdParams.pAccount = &g_oAccount;
+	oMktOrdParams.iQty = 1;
+	oMktOrdParams.sBuySellType.pData = argv[5];
+	oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+	oMktOrdParams.sDuration = sORDER_DURATION_DAY;
+	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oMktOrdParams.sTradeRoute = g_sTradeRoute;
+
+	
+
+	/*   ----------------------------------------------------------------   */
+	/*   send limit order */
+
+	oLmtOrdParams.sExchange = sExchange;
+	oLmtOrdParams.sTicker = sTicker;
+	oLmtOrdParams.pAccount = &g_oAccount;
+	oLmtOrdParams.iQty = 1;
+	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
+	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
+	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
+
+
+	/*   ----------------------------------------------------------------   */
+
+	oLmtOrdParams.dPrice = 2751 - 3.25;
+	oLmtOrdParams.sBuySellType.pData = "B";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	if(g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		printf("\n\nBuy limit order sent");
+
+	oLmtOrdParams.dPrice = 2768 + 3.25;
+	oLmtOrdParams.sBuySellType.pData = "S";
+	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	if(g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		printf("\n\nSell limit order sent");
+
+
+	/*   ----------------------------------------------------------------   */
+	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
+	/*   Wait for the order to complete (see MyCallbacks::LineUpdate()      */
+	/*   for details.                                                       */
+
+	printf("\n\nProcessed limit orders");
+
+	while (!g_bDone)
+	{
+#ifdef WinOS
+		sleep(1);
+#else
+		Sleep(1000);
+#endif
+	}
+
+	std::cout << "\nValue of type of order is " << _sOrdType << endl;
+
+	
+
+	if (_sOrdType == "L")
+	{
+		int chk = 0;
+		bool lbuy = false, lsell = false;
+		std::cout << "\nBeginning of cycle to cancel order " << endl;
+		while (chk != 2)
+		{
+			if (LBid && !lbuy)
+			{
+				std::cout << "\nBuyLimit identified " << endl;
+				if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					chk = chk + 1;
+					lbuy = true;
+					std::cout << "\nValue of order number is " << std::string(_BOrderNumNQ.pData, _BOrderNumNQ.iDataLen) << endl;
+				}
+			} 
+
+			if (LOff && !lsell)
+			{
+				std::cout << "\nSellLimit identified " << endl;
+				if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+				{
+					chk = chk + 1;
+					lsell = true;
+					std::cout << "\nValue of order number is " << std::string(_SOrderNumNQ.pData, _SOrderNumNQ.iDataLen) << endl;
+				}
+			}
+		}
+	}
+
+	/*   ----------------------------------------------------------------   */
+	/*   The order is complete.  Clean up and exit.                         */
+
+	delete g_pEngine;
+	delete pCallbacks;
+	delete pAdmCallbacks;
+
+	/*   ----------------------------------------------------------------   */
+
+	int iUsecs = ((g_iFromExchSsboe - g_iToExchSsboe) * 1000 * 1000) +
+		(g_iFromExchUsecs - g_iToExchUsecs);
+	printf("\nusecs at exchange : %d\n\n", iUsecs);
+
+	/*   ----------------------------------------------------------------   */
+
+	return (GOOD);
 }
 
-void Application::queryEnterOrder()
-{
-  int version = queryVersion();
-  std::cout << "\nNewOrderSingle\n";
-  FIX::Message order;
-
-  switch ( version ) {
-  case 44:
-    order = queryNewOrderSingle44();
-    break;
-  case 50:
-    order = queryNewOrderSingle50();
-    break;
-  default:
-    std::cerr << "No test for version " << version << std::endl;
-    break;
-  }
-
-  if ( queryConfirm( "Send order" ) )
-    FIX::Session::sendToTarget( order );
-}
-
-void Application::queryCancelOrder()
-{
-  int version = queryVersion();
-  std::cout << "\nOrderCancelRequest\n";
-  FIX::Message cancel;
-
-  switch ( version ) {
-  case 44:
-    cancel = queryOrderCancelRequest44();
-    break;
-  case 50:
-    cancel = queryOrderCancelRequest50();
-    break;
-  default:
-    std::cerr << "No test for version " << version << std::endl;
-    break;
-  }
-
-  if ( queryConfirm( "Send cancel" ) )
-    FIX::Session::sendToTarget( cancel );
-}
-
-void Application::queryReplaceOrder()
-{
-  int version = queryVersion();
-  std::cout << "\nCancelReplaceRequest\n";
-  FIX::Message replace;
-
-  switch ( version ) {
-  case 44:
-    replace = queryCancelReplaceRequest44();
-    break;
-  case 50:
-    replace = queryCancelReplaceRequest50();
-    break;
-  default:
-    std::cerr << "No test for version " << version << std::endl;
-    break;
-  }
-
-  if ( queryConfirm( "Send replace" ) )
-    FIX::Session::sendToTarget( replace );
-}
-
-void Application::queryMarketDataRequest()
-{
-  int version = queryVersion();
-  std::cout << "\nMarketDataRequest\n";
-  FIX::Message md;
-
-  switch (version) {
-  case 44:
-    md = queryMarketDataRequest44();
-    break;
-  case 50:
-    md = queryMarketDataRequest50();
-    break;
-  default:
-    std::cerr << "No test for version " << version << std::endl;
-    break;
-  }
-
-  FIX::Session::sendToTarget( md );
-}
-
-
-FIX44::NewOrderSingle Application::queryNewOrderSingle44()
-{
-  FIX::OrdType ordType;
-
-  FIX44::NewOrderSingle newOrderSingle(
-    queryClOrdID(), querySide(),
-    FIX::TransactTime(), ordType = queryOrdType() );
-
-  newOrderSingle.set( FIX::HandlInst('1') );
-  newOrderSingle.set( querySymbol() );
-  newOrderSingle.set( queryOrderQty() );
-  newOrderSingle.set( queryTimeInForce() );
-  if ( ordType == FIX::OrdType_LIMIT || ordType == FIX::OrdType_STOP_LIMIT )
-    newOrderSingle.set( queryPrice() );
-  if ( ordType == FIX::OrdType_STOP || ordType == FIX::OrdType_STOP_LIMIT )
-    newOrderSingle.set( queryStopPx() );
-
-  queryHeader( newOrderSingle.getHeader() );
-  return newOrderSingle;
-}
-
-FIX50::NewOrderSingle Application::queryNewOrderSingle50()
-{
-  FIX::OrdType ordType;
-
-  FIX50::NewOrderSingle newOrderSingle(
-    queryClOrdID(), querySide(),
-    FIX::TransactTime(), ordType = queryOrdType() );
-
-  newOrderSingle.set( FIX::HandlInst('1') );
-  newOrderSingle.set( querySymbol() );
-  newOrderSingle.set( queryOrderQty() );
-  newOrderSingle.set( queryTimeInForce() );
-  if ( ordType == FIX::OrdType_LIMIT || ordType == FIX::OrdType_STOP_LIMIT )
-    newOrderSingle.set( queryPrice() );
-  if ( ordType == FIX::OrdType_STOP || ordType == FIX::OrdType_STOP_LIMIT )
-    newOrderSingle.set( queryStopPx() );
-
-  queryHeader( newOrderSingle.getHeader() );
-  return newOrderSingle;
-}
-
-
-FIX44::OrderCancelRequest Application::queryOrderCancelRequest44()
-{
-  FIX44::OrderCancelRequest orderCancelRequest( queryOrigClOrdID(),
-      queryClOrdID(), querySide(), FIX::TransactTime() );
-
-  orderCancelRequest.set( querySymbol() );
-  orderCancelRequest.set( queryOrderQty() );
-  queryHeader( orderCancelRequest.getHeader() );
-  return orderCancelRequest;
-}
-
-FIX50::OrderCancelRequest Application::queryOrderCancelRequest50()
-{
-  FIX50::OrderCancelRequest orderCancelRequest( queryOrigClOrdID(),
-      queryClOrdID(), querySide(), FIX::TransactTime() );
-
-  orderCancelRequest.set( querySymbol() );
-  orderCancelRequest.set( queryOrderQty() );
-  queryHeader( orderCancelRequest.getHeader() );
-  return orderCancelRequest;
-}
-
-
-FIX44::OrderCancelReplaceRequest Application::queryCancelReplaceRequest44()
-{
-  FIX44::OrderCancelReplaceRequest cancelReplaceRequest(
-    queryOrigClOrdID(), queryClOrdID(),
-    querySide(), FIX::TransactTime(), queryOrdType() );
-
-  cancelReplaceRequest.set( FIX::HandlInst('1') );
-  cancelReplaceRequest.set( querySymbol() );
-  if ( queryConfirm( "New price" ) )
-    cancelReplaceRequest.set( queryPrice() );
-  if ( queryConfirm( "New quantity" ) )
-    cancelReplaceRequest.set( queryOrderQty() );
-
-  queryHeader( cancelReplaceRequest.getHeader() );
-  return cancelReplaceRequest;
-}
-
-FIX50::OrderCancelReplaceRequest Application::queryCancelReplaceRequest50()
-{
-  FIX50::OrderCancelReplaceRequest cancelReplaceRequest(
-    queryOrigClOrdID(), queryClOrdID(),
-    querySide(), FIX::TransactTime(), queryOrdType() );
-
-  cancelReplaceRequest.set( FIX::HandlInst('1') );
-  cancelReplaceRequest.set( querySymbol() );
-  if ( queryConfirm( "New price" ) )
-    cancelReplaceRequest.set( queryPrice() );
-  if ( queryConfirm( "New quantity" ) )
-    cancelReplaceRequest.set( queryOrderQty() );
-
-  queryHeader( cancelReplaceRequest.getHeader() );
-  return cancelReplaceRequest;
-}
-
-
-FIX44::MarketDataRequest Application::queryMarketDataRequest44()
-{
-  FIX::MDReqID mdReqID( "MARKETDATAID" );
-  FIX::SubscriptionRequestType subType( FIX::SubscriptionRequestType_SNAPSHOT );
-  FIX::MarketDepth marketDepth( 0 );
-
-  FIX44::MarketDataRequest::NoMDEntryTypes marketDataEntryGroup;
-  FIX::MDEntryType mdEntryType( FIX::MDEntryType_BID );
-  marketDataEntryGroup.set( mdEntryType );
-
-  FIX44::MarketDataRequest::NoRelatedSym symbolGroup;
-  FIX::Symbol symbol( "LNUX" );
-  symbolGroup.set( symbol );
-
-  FIX44::MarketDataRequest message( mdReqID, subType, marketDepth );
-  message.addGroup( marketDataEntryGroup );
-  message.addGroup( symbolGroup );
-
-  queryHeader( message.getHeader() );
-
-  std::cout << message.toXML() << std::endl;
-  std::cout << message.toString() << std::endl;
-
-  return message;
-}
-
-FIX50::MarketDataRequest Application::queryMarketDataRequest50()
-{
-  FIX::MDReqID mdReqID( "MARKETDATAID" );
-  FIX::SubscriptionRequestType subType( FIX::SubscriptionRequestType_SNAPSHOT );
-  FIX::MarketDepth marketDepth( 0 );
-
-  FIX50::MarketDataRequest::NoMDEntryTypes marketDataEntryGroup;
-  FIX::MDEntryType mdEntryType( FIX::MDEntryType_BID );
-  marketDataEntryGroup.set( mdEntryType );
-
-  FIX50::MarketDataRequest::NoRelatedSym symbolGroup;
-  FIX::Symbol symbol( "LNUX" );
-  symbolGroup.set( symbol );
-
-  FIX50::MarketDataRequest message( mdReqID, subType, marketDepth );
-  message.addGroup( marketDataEntryGroup );
-  message.addGroup( symbolGroup );
-
-  queryHeader( message.getHeader() );
-
-  std::cout << message.toXML() << std::endl;
-  std::cout << message.toString() << std::endl;
-
-  return message;
-}
-
-void Application::queryHeader( FIX::Header& header )
-{
-  header.setField( querySenderCompID() );
-  header.setField( queryTargetCompID() );
-
-  if ( queryConfirm( "Use a TargetSubID" ) )
-    header.setField( queryTargetSubID() );
-}
-
-char Application::queryAction()
-{
-  char value;
-  std::cout << std::endl
-  //<< "1) Enter Order(Sample)" << std::endl
-  //<< "2) Cancel Order(Sample)" << std::endl
-  //<< "3) Replace Order(Sample)" << std::endl
-  //<< "4) Market data test(Sample)" << std::endl
-  << "1) Fill bonds.com snapshot" << std::endl
-  << "2) Quit" << std::endl
-  << "Action: ";
-  std::cin >> value;
-  switch ( value )
-  {
-    case '1': case '2': case '3': case '4': case '5': case '6': break;
-    default: throw std::exception();
-  }
-  return value;
-}
-
-int Application::queryVersion()
-{
-  char value;
-  std::cout << std::endl
-  << "1) FIX.4.4" << std::endl
-  << "2) FIXT.1.1 (FIX.5.0)" << std::endl
-  << "BeginString: ";
-  std::cin >> value;
-  switch ( value )
-  {
-    case '1': return 44;
-    case '2': return 50;
-    default: throw std::exception();
-  }
-}
-
-bool Application::queryConfirm( const std::string& query )
-{
-  std::string value;
-  std::cout << std::endl << query << "?: ";
-  std::cin >> value;
-  return toupper( *value.c_str() ) == 'Y';
-}
-
-FIX::SenderCompID Application::querySenderCompID()
-{
-  std::string value;
-  std::cout << std::endl << "SenderCompID: ";
-  std::cin >> value;
-  return FIX::SenderCompID( value );
-}
-
-FIX::TargetCompID Application::queryTargetCompID()
-{
-  std::string value;
-  std::cout << std::endl << "TargetCompID: ";
-  std::cin >> value;
-  return FIX::TargetCompID( value );
-}
-
-FIX::TargetSubID Application::queryTargetSubID()
-{
-  std::string value;
-  std::cout << std::endl << "TargetSubID: ";
-  std::cin >> value;
-  return FIX::TargetSubID( value );
-}
-
-FIX::ClOrdID Application::queryClOrdID()
-{
-  std::string value;
-  std::cout << std::endl << "ClOrdID: ";
-  std::cin >> value;
-  return FIX::ClOrdID( value );
-}
-
-FIX::OrigClOrdID Application::queryOrigClOrdID()
-{
-  std::string value;
-  std::cout << std::endl << "OrigClOrdID: ";
-  std::cin >> value;
-  return FIX::OrigClOrdID( value );
-}
-
-FIX::Symbol Application::querySymbol()
-{
-  std::string value;
-  std::cout << std::endl << "Symbol: ";
-  std::cin >> value;
-  return FIX::Symbol( value );
-}
-
-FIX::Side Application::querySide()
-{
-  char value;
-  std::cout << std::endl
-  << "1) Buy" << std::endl
-  << "2) Sell" << std::endl
-  << "3) Sell Short" << std::endl
-  << "4) Sell Short Exempt" << std::endl
-  << "5) Cross" << std::endl
-  << "6) Cross Short" << std::endl
-  << "7) Cross Short Exempt" << std::endl
-  << "Side: ";
-
-  std::cin >> value;
-  switch ( value )
-  {
-    case '1': return FIX::Side( FIX::Side_BUY );
-    case '2': return FIX::Side( FIX::Side_SELL );
-    case '3': return FIX::Side( FIX::Side_SELL_SHORT );
-    case '4': return FIX::Side( FIX::Side_SELL_SHORT_EXEMPT );
-    case '5': return FIX::Side( FIX::Side_CROSS );
-    case '6': return FIX::Side( FIX::Side_CROSS_SHORT );
-    case '7': return FIX::Side( 'A' );
-    default: throw std::exception();
-  }
-}
-
-FIX::OrderQty Application::queryOrderQty()
-{
-  long value;
-  std::cout << std::endl << "OrderQty: ";
-  std::cin >> value;
-  return FIX::OrderQty( value );
-}
-
-FIX::OrdType Application::queryOrdType()
-{
-  char value;
-  std::cout << std::endl
-  << "1) Market" << std::endl
-  << "2) Limit" << std::endl
-  << "3) Stop" << std::endl
-  << "4) Stop Limit" << std::endl
-  << "OrdType: ";
-
-  std::cin >> value;
-  switch ( value )
-  {
-    case '1': return FIX::OrdType( FIX::OrdType_MARKET );
-    case '2': return FIX::OrdType( FIX::OrdType_LIMIT );
-    case '3': return FIX::OrdType( FIX::OrdType_STOP );
-    case '4': return FIX::OrdType( FIX::OrdType_STOP_LIMIT );
-    default: throw std::exception();
-  }
-}
-
-FIX::Price Application::queryPrice()
-{
-  double value;
-  std::cout << std::endl << "Price: ";
-  std::cin >> value;
-  return FIX::Price( value );
-}
-
-FIX::StopPx Application::queryStopPx()
-{
-  double value;
-  std::cout << std::endl << "StopPx: ";
-  std::cin >> value;
-  return FIX::StopPx( value );
-}
-
-FIX::TimeInForce Application::queryTimeInForce()
-{
-  char value;
-  std::cout << std::endl
-  << "1) Day" << std::endl
-  << "2) IOC" << std::endl
-  << "3) OPG" << std::endl
-  << "4) GTC" << std::endl
-  << "5) GTX" << std::endl
-  << "TimeInForce: ";
-
-  std::cin >> value;
-  switch ( value )
-  {
-    case '1': return FIX::TimeInForce( FIX::TimeInForce_DAY );
-    case '2': return FIX::TimeInForce( FIX::TimeInForce_IMMEDIATE_OR_CANCEL );
-    case '3': return FIX::TimeInForce( FIX::TimeInForce_AT_THE_OPENING );
-    case '4': return FIX::TimeInForce( FIX::TimeInForce_GOOD_TILL_CANCEL );
-    case '5': return FIX::TimeInForce( FIX::TimeInForce_GOOD_TILL_CROSSING );
-    default: throw std::exception();
-  }
-}
+/*   =====================================================================   */
