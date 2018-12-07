@@ -557,20 +557,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 
 	EntTyp = pInfo->sEntryType;
 	pcontxt = pInfo->pContext;
-	_sBuySell = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
-
-	if (_sBuySell == "B")
-	{
-		LBid = true;
-		_BOrderNumNQ = pInfo->sOrderNum;
-	}
-
-	if (_sBuySell == "S")
-	{
-		LOff = true;
-		_SOrderNumNQ = pInfo->sOrderNum;
-	}
 
 	/*   ----------------------------------------------------------------   */
 	/*   if there's a completion reason, the order is complete... */
@@ -921,7 +908,21 @@ int MyCallbacks::OtherReport(OrderReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Other Report\n");
-	pReport->dump(&iIgnored);
+	
+	_sBuySell = std::string(pReport->sBuySellType.pData, pReport->sBuySellType.iDataLen);
+
+	if (_sBuySell == "B")
+	{
+		LBid = true;
+		_BOrderNumNQ = pReport->sExchOrdId;
+	}
+
+	if (_sBuySell == "S")
+	{
+		LOff = true;
+		_SOrderNumNQ = pReport->sExchOrdId;
+	}
+
 
 	/*   ----------------------------------------------------------------   */
 
