@@ -8,6 +8,45 @@ treaties.  Unauthorized use, reproduction or distribution of this
 Software Product (including its documentation), or any portion of it,
 may result in severe civil and criminal penalties, and will be
 prosecuted to the maximum extent possible under the law.
+/*   =====================================================================
+
+Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
+
+Warning :
+This Software Product is protected by copyright law and international
+treaties.  Unauthorized use, reproduction or distribution of this
+Software Product (including its documentation), or any portion of it,
+may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
+
+Omnesys Technologies, Inc. will compensate individuals providing
+admissible evidence of any unauthorized use, reproduction, distribution
+or redistribution of this Software Product by any person, company or
+organization.
+
+This Software Product is licensed strictly in accordance with a separate
+Software System License Agreement, granted by Omnesys Technologies, Inc., which
+contains restrictions on use, reverse engineering, disclosure, confidentiality
+and other matters.
+
+=====================================================================   */
+/*   =====================================================================
+Compile/link commands for linux and darwin using R | API+.  These should
+work if your pwd is the ./samples directory.  You may need to change the
+name of the RApi library if you are using one of the library variants,
+like R | API or R | Diamond API.
+
+64-bit linux (2.6.32 kernel) :
+/*   =====================================================================
+
+Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
+
+Warning :
+This Software Product is protected by copyright law and international
+treaties.  Unauthorized use, reproduction or distribution of this
+Software Product (including its documentation), or any portion of it,
+may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
 
 Omnesys Technologies, Inc. will compensate individuals providing
 admissible evidence of any unauthorized use, reproduction, distribution
@@ -472,7 +511,7 @@ bool MyCallbacks::BuyFn()
 		}
 		else
 		{
-			oStpMktOrdParams.dTriggerPrice = (NQLBid1 - (incrNQ*5));
+			oStpMktOrdParams.dTriggerPrice = (NQLBid1 - (incrNQ * 5));
 			if (!g_pEngine->sendOrder(&oStpMktOrdParams, &iCode))
 			{
 				std::cout << "\n\nBuy StopMarketOrder() error : " << iCode << endl;
@@ -513,7 +552,7 @@ bool MyCallbacks::SellFn()
 		}
 		else
 		{
-			oStpMktOrdParams.dTriggerPrice = (NQLAsk1 + (incrNQ*5));
+			oStpMktOrdParams.dTriggerPrice = (NQLAsk1 + (incrNQ * 5));
 			if (!g_pEngine->sendOrder(&oStpMktOrdParams, &iCode))
 			{
 				std::cout << "\n\nSell StopMarketOrder() error : " << iCode << endl;
@@ -524,7 +563,7 @@ bool MyCallbacks::SellFn()
 			OpenOrd = true;
 		}
 	}
-		
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -602,14 +641,14 @@ void MyCallbacks::Process()
 		if (Psh3 >= 0.25 && Bs3 >= 0.25)
 		{
 			track = 2;
-				if (!BuyLimit)
+			if (!BuyLimit)
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					if (g_pEngine->tryLock(&iCode) == 1)
-					{
-						BuyFn();
-						g_pEngine->unlock(&iCode);
-					}
+					BuyFn();
+					g_pEngine->unlock(&iCode);
 				}
+			}
 
 		}
 	}
@@ -618,14 +657,14 @@ void MyCallbacks::Process()
 		if (Psh3 <= -0.25 && Bs3 <= -0.25)
 		{
 			track = 3;
-				if (!SellLimit)
+			if (!SellLimit)
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					if (g_pEngine->tryLock(&iCode) == 1)
-					{
-						SellFn();
-						g_pEngine->unlock(&iCode);
-					}
+					SellFn();
+					g_pEngine->unlock(&iCode);
 				}
+			}
 		}
 	}
 
@@ -808,6 +847,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		(int)strlen("order sent to exch") };
 	int iIgnored;
 	std::string _sBuySell;
+	tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
+	void * pcontxt;
 
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
@@ -849,6 +890,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	_Status = std::string(pInfo->sStatus.pData, pInfo->sStatus.iDataLen);
 	_sTicker = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 	_sExchange = std::string(pInfo->sExchange.pData, pInfo->sExchange.iDataLen);
+
 	if (_sTicker == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
@@ -856,51 +898,72 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
-		oMktOrdParams.sTicker = _TickerNQ;
-		
-			if (_stypeNQ == "B")
+
+		if (_stypeNQ == "B")
+		{
+			if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
 			{
-				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt && _sOrdType == "L")
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					if (g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 					{
 						BuyLimit = false;
 						NQBCl = false;
 					}
+					g_pEngine->unlock(&iCode);
 				}
-				if (_sOrdType == "M" && Vol == 2)
+			}
+			if (_sOrdType == "M" && Vol == 2)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				oMktOrdParams.sTicker.pData = SymbNQ.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					oMktOrdParams.sBuySellType.pData = "S";
-					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 					{
 						BuyLimit = false;
 						NQBCl = false;
 					}
+					g_pEngine->unlock(&iCode);
 				}
 			}
-			
-			if (_stypeNQ == "S")
+		}
+
+		if (_stypeNQ == "S")
+		{
+			if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
 			{
-				if (Psh6 > 0 && Bs3 > 0 && NQLAsk1 >= NQSLmt && _sOrdType == "L")
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &OrdNmb, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+					if (g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
 					{
 						SellLimit = false;
 						NQSCl = false;
 					}
+					g_pEngine->unlock(&iCode);
 				}
-				if (_sOrdType == "M" && Vol == 1)
+			}
+			if (_sOrdType == "M" && Vol == 1)
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
 				{
 					oMktOrdParams.sBuySellType.pData = "B";
 					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = SymbNQ.pData;
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+
 					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 					{
 						SellLimit = false;
 						NQSCl = false;
 					}
+					g_pEngine->unlock(&iCode);
 				}
 			}
+		}
 	}
 
 	if (contract)
@@ -992,26 +1055,27 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
 	_PosnConf = pInfo->ePosition;
 	_Posn = pInfo->lPosition;
-	
-	if(!pInfo->bPossOutOfOrder)
+
+	if (!pInfo->bPossOutOfOrder)
 	{
-		if(pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
+		if (pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
 			_AccBal = pInfo->dAccountBalance;
 		if (pInfo->sTicker.pData == _TickerNQ.pData)
 		{
-			if(pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
 				_OpenNQ = pInfo->dOpenPnl;
 		}
 		else
-			if(pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
 				_OpenPL = pInfo->dOpenPnl;
+	}
 
-		if (contract)
+	if (contract)
+	{
+		if (pInfo->sTicker.pData == _TickerES.pData)
 		{
-			if (pInfo->sTicker.pData == _TickerES.pData)
-			{
-				_OpenES = pInfo->dOpenPnl;
-			}
+			_ClosedES = pInfo->dClosedPnl;
+			_OpenES = pInfo->dOpenPnl;
 		}
 	}
 
@@ -2185,8 +2249,7 @@ int main(int      argc,
 	std::string		  OpenFile;
 	stringstream	  strValue;
 
-	tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
-	void * pcontxt;
+	
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2581,9 +2644,9 @@ int main(int      argc,
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.pAccount = &g_oAccount;
 	oMktOrdParams.iQty = _qty;
-	oMktOrdParams.sDuration = sORDER_DURATION_DAY;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
+	oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 
 	/*   ----------------------------------------------------------------   */
 	/*   send limit order */
@@ -2648,7 +2711,7 @@ int main(int      argc,
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-			
+
 
 		if (lt.wHour > hr_T)
 			curr = (60 + lt.wMinute) - min_T;
