@@ -89,6 +89,8 @@ void * pcontxt;
 std::string _sBuySell, _sOrdType;
 double Bid = 0, Ask = 0;
 bool BidP = false, AskP = false, LBid = false, LOff = false;
+bool Proceed = false;
+double _AccBal, _OpenNQ, _OpenPL;
 
 int main(int      argc,
 	char * * argv,
@@ -640,6 +642,21 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	void *    pContext,
 	int *     aiCode)
 {
+	if (!pInfo->bPossOutOfOrder)
+	{
+		if (pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
+			_AccBal = pInfo->dAccountBalance;
+		if (pInfo->sTicker.pData == _TickerNQ.pData)
+		{
+			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+				_OpenNQ = pInfo->dOpenPnl;
+		}
+		else
+			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+				_OpenPL = pInfo->dOpenPnl;
+		Proceed = true;
+	}
+	
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -655,7 +672,8 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-
+	
+	incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
 
 	g_bRcvdPriceIncr = true;
 
@@ -1398,6 +1416,7 @@ int main(int      argc,
 	LoginParams       oLoginParams;
 	MarketOrderParams oMktOrdParams;
 	LimitOrderParams  oLmtOrdParams;
+	StopMarketOrderParams oStpMktOrdParams;
 	tsNCharcb         sExchange;
 	tsNCharcb         sTicker;
 	char *            fake_envp[11];
@@ -1684,11 +1703,19 @@ int main(int      argc,
 	oMktOrdParams.iQty = 1;
 	oMktOrdParams.sBuySellType.pData = argv[5];
 	oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-	oMktOrdParams.sDuration = sORDER_DURATION_DAY;
+	oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
-
-
+	
+	if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+	{
+		printf("\n\nMarket order sent");
+		oStpMktOrdParams.dTriggerPrice = (Ask - (incrNQ * 5));
+		if (g_pEngine->sendOrder(&oStpMktOrdParams, &iCode))
+		{
+			std::cout << "\nStopMarketOrder() sent" << endl;
+		}
+	}
 
 	/*   ----------------------------------------------------------------   */
 	/*   send limit order */
@@ -1707,14 +1734,10 @@ int main(int      argc,
 	oLmtOrdParams.dPrice = 2629.25 - 3.25;
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-	if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		printf("\n\nBuy limit order sent");
 
 	oLmtOrdParams.dPrice = 2699.5 + 3.25;
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-	if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		printf("\n\nSell limit order sent");
 
 
 	/*   ----------------------------------------------------------------   */
@@ -1735,10 +1758,10 @@ int main(int      argc,
 
 	std::cout << "\nValue of type of order is " << _sOrdType << endl;
 
-	if (_sOrdType == "L")
+	if (_sOrdType == "M")
 	{
 
-		std::cout << "\nBeginning of cycle to cancel order " << endl;
+		std::cout << "\nBeginning of cycle to close order " << endl;
 		while (!LBid && !LOff)
 		{
 
