@@ -8,45 +8,6 @@ treaties.  Unauthorized use, reproduction or distribution of this
 Software Product (including its documentation), or any portion of it,
 may result in severe civil and criminal penalties, and will be
 prosecuted to the maximum extent possible under the law.
-/*   =====================================================================
-
-Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
-
-Warning :
-This Software Product is protected by copyright law and international
-treaties.  Unauthorized use, reproduction or distribution of this
-Software Product (including its documentation), or any portion of it,
-may result in severe civil and criminal penalties, and will be
-prosecuted to the maximum extent possible under the law.
-
-Omnesys Technologies, Inc. will compensate individuals providing
-admissible evidence of any unauthorized use, reproduction, distribution
-or redistribution of this Software Product by any person, company or
-organization.
-
-This Software Product is licensed strictly in accordance with a separate
-Software System License Agreement, granted by Omnesys Technologies, Inc., which
-contains restrictions on use, reverse engineering, disclosure, confidentiality
-and other matters.
-
-=====================================================================   */
-/*   =====================================================================
-Compile/link commands for linux and darwin using R | API+.  These should
-work if your pwd is the ./samples directory.  You may need to change the
-name of the RApi library if you are using one of the library variants,
-like R | API or R | Diamond API.
-
-64-bit linux (2.6.32 kernel) :
-/*   =====================================================================
-
-Copyright (c) 2017 by Omnesys Technologies, Inc.  All rights reserved.
-
-Warning :
-This Software Product is protected by copyright law and international
-treaties.  Unauthorized use, reproduction or distribution of this
-Software Product (including its documentation), or any portion of it,
-may result in severe civil and criminal penalties, and will be
-prosecuted to the maximum extent possible under the law.
 
 Omnesys Technologies, Inc. will compensate individuals providing
 admissible evidence of any unauthorized use, reproduction, distribution
