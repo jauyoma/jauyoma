@@ -1735,8 +1735,6 @@ int main(int      argc,
 
 	std::cout << "\nValue of type of order is " << _sOrdType << endl;
 
-
-
 	if (_sOrdType == "L")
 	{
 
