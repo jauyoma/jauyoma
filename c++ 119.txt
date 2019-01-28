@@ -82,15 +82,17 @@ tsNCharcb   g_sExchange;
 tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 
 REngine *   g_pEngine;
+MarketOrderParams oMktOrdParams;
 
 tsNCharcb _BOrderNumNQ, _SOrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
 std::string Ord1, Ord2, Ord3, Ord4, Ord5, Ord6;
 void * pcontxt;
 std::string _sBuySell, _sOrdType;
-double Bid = 0, Ask = 0;
+double Bid = 0, Ask = 0, incrNQ = 0;
 bool BidP = false, AskP = false, LBid = false, LOff = false;
 bool Proceed = false;
-double _AccBal, _OpenNQ, _OpenPL;
+double _AccBal = 0, _OpenNQ = 0, _OpenPL = 0;
+tsNCharcb _TickerNQ;
 
 int main(int      argc,
 	char * * argv,
@@ -567,26 +569,57 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	Ord3 = std::string(pInfo->sOriginalOrderNum.pData, pInfo->sOriginalOrderNum.iDataLen);
 	Ord4 = std::string(pInfo->sExchOrdId.pData, pInfo->sExchOrdId.iDataLen);
 
-	if (_sBuySell == "B" && !LBid)
+	if (_sOrdType == "L")
 	{
-		_BOrderNumNQ = pInfo->sOrderNum;
-		if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+		if (_sBuySell == "B" && !LBid)
 		{
-			std::cout << "\nBuy Limit order closed" << endl;
-			LBid = true;
+			_BOrderNumNQ = pInfo->sOrderNum;
+			if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+			{
+				std::cout << "\nBuy Limit order closed" << endl;
+				LBid = true;
+			}
+
 		}
-		
+
+		if (_sBuySell == "S" && !LOff)
+		{
+			_SOrderNumNQ = pInfo->sOrderNum;
+			if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+			{
+				std::cout << "\nSell Limit order closed" << endl;
+				LOff = true;
+			}
+
+		}
 	}
 
-	if (_sBuySell == "S" && !LOff)
+	if (_sOrdType == "M")
 	{
-		_SOrderNumNQ = pInfo->sOrderNum;
-		if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTyp, &Algo, &UsrMsg, &pcontxt, &iCode))
+		if (Proceed)
 		{
-			std::cout << "\nSell Limit order closed" << endl;
-			LOff = true;
+			if (_sBuySell == "B" && !LBid)
+			{
+				oMktOrdParams.sBuySellType.pData = "S";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "\nBuy market order closed" << endl;
+					LBid = true;
+				}
+			}
+
+			if (_sBuySell == "S" && !LOff)
+			{
+				oMktOrdParams.sBuySellType.pData = "B";
+				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				{
+					std::cout << "\nSell market order closed" << endl;
+					LOff = true;
+				}
+			}
 		}
-		
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -654,9 +687,17 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		else
 			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
 				_OpenPL = pInfo->dOpenPnl;
+		std::cout << "\nAccount balance is : " << _AccBal << endl;
+		std::cout << "\nNQ P&L is : " << _OpenNQ << endl;
+		std::cout << "\nAccount P&L is : " << _OpenPL << endl;
 		Proceed = true;
 	}
-	
+	else
+	{
+		std::cout << "\nPnL Info may be occuring out of instance : " << endl;
+		Proceed = true;
+	}
+
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -672,7 +713,7 @@ int MyCallbacks::PriceIncrUpdate(PriceIncrInfo * pInfo,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\n");
-	
+
 	incrNQ = pInfo->asPriceIncrArray->dPriceIncr;
 
 	g_bRcvdPriceIncr = true;
@@ -955,7 +996,7 @@ int MyCallbacks::OtherReport(OrderReport * pReport,
 
 	printf("\n\nReceived Other Report\n");
 
-	
+
 
 
 	/*   ----------------------------------------------------------------   */
@@ -1414,7 +1455,6 @@ int main(int      argc,
 	RCallbacks *      pCallbacks;
 	REngineParams     oParams;
 	LoginParams       oLoginParams;
-	MarketOrderParams oMktOrdParams;
 	LimitOrderParams  oLmtOrdParams;
 	StopMarketOrderParams oStpMktOrdParams;
 	tsNCharcb         sExchange;
@@ -1594,7 +1634,7 @@ int main(int      argc,
 
 	if (!g_pEngine->subscribe(&sExchange, &sTicker, iFlags, &iCode))
 	{
-		printf("REngine::subscribe() error : %d\n", iCode);
+		printf("\nREngine::subscribe() error : %d\n", iCode);
 
 		delete g_pEngine;
 		delete pCallbacks;
@@ -1603,7 +1643,20 @@ int main(int      argc,
 		return (BAD);
 	}
 	else
-		printf("Successfully subscribed to data engine");
+		printf("\nSuccessfully subscribed to data engine");
+
+	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
+	{
+		printf("\nREngine::subscribePnL() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+	else
+		printf("\nSuccessfully subscribed to PnL engine");
 
 	/*   ----------------------------------------------------------------   */
 	/*   Once logged in, we request price increment info for the instrument */
@@ -1617,7 +1670,7 @@ int main(int      argc,
 
 	if (!g_pEngine->getPriceIncrInfo(&sExchange, &sTicker, &iCode))
 	{
-		printf("REngine::getPriceIncrInfo() error : %d\n", iCode);
+		printf("\nREngine::getPriceIncrInfo() error : %d\n", iCode);
 
 		delete g_pEngine;
 		delete pCallbacks;
@@ -1656,7 +1709,7 @@ int main(int      argc,
 
 	if (!g_pEngine->listTradeRoutes(NULL, &iCode))
 	{
-		printf("REngine::listTradeRoutes() error : %d\n", iCode);
+		printf("\nREngine::listTradeRoutes() error : %d\n", iCode);
 
 		delete g_pEngine;
 		delete pCallbacks;
@@ -1706,7 +1759,7 @@ int main(int      argc,
 	oMktOrdParams.sDuration = sORDER_DURATION_GTC;
 	oMktOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oMktOrdParams.sTradeRoute = g_sTradeRoute;
-	
+
 	if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 	{
 		printf("\n\nMarket order sent");
@@ -1770,6 +1823,13 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
+
+	if (!g_pEngine->unsubscribePnl(&g_oAccount, &iCode))
+	{
+		printf("\nREngine::unsubscribePnL() error : %d\n", iCode);
+	}
+	else
+		printf("\nSuccessfully unsubscribed from PnL engine");
 
 	delete g_pEngine;
 	delete pCallbacks;
