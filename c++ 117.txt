@@ -111,14 +111,14 @@ double spreadA, spreadB, _RiskBal;
 int _qty = 1, iCode, trade, curr, track = 1;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
 long SpdAsk, SpdBid, SpdTrade, SpdSellFn, SpdBuyFn;
-bool done = false, contract = false;
+bool done = false, contract = false, BalMntr = false;
 double NQLAsk1 = 0, NQLBid1 = 0, ESLAsk1 = 0, ESLBid1 = 0;
 double NQLAsk2 = 0, NQLBid2 = 0, ESLAsk2 = 0, ESLBid2 = 0;
 int NQNAsk1, NQNBid1, ESNAsk1, ESNBid1;
 int NQSAsk1, NQSBid1, ESSAsk1, ESSBid1;
 int NQSAsk2, NQSBid2, ESSAsk2, ESSBid2;
 int BBid_T, Bid_T, BAsk_T, Ask_T;
-double NQ1TP, ES1TP;
+double NQ1TP, ES1TP, _MinBal;
 int NQ1BV = 0, NQ1SV = 0, ES1BV = 0, ES1SV = 0, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
 int NQ4BV, NQ4SV, ES4BV, ES4SV;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
@@ -472,11 +472,6 @@ bool MyCallbacks::BuyFn()
 		}
 		else
 		{
-			oStpMktOrdParams.dTriggerPrice = (NQLBid1 - (incrNQ * 5));
-			if (!g_pEngine->sendOrder(&oStpMktOrdParams, &iCode))
-			{
-				std::cout << "\n\nBuy StopMarketOrder() error : " << iCode << endl;
-			}
 			BuyLimit = true;
 			NQBLmt = oLmtOrdParams.dPrice;
 			std::cout << "\n\nBuyFn() order successfully submitted : " << NQBLmt << endl;
@@ -513,11 +508,6 @@ bool MyCallbacks::SellFn()
 		}
 		else
 		{
-			oStpMktOrdParams.dTriggerPrice = (NQLAsk1 + (incrNQ * 5));
-			if (!g_pEngine->sendOrder(&oStpMktOrdParams, &iCode))
-			{
-				std::cout << "\n\nSell StopMarketOrder() error : " << iCode << endl;
-			}
 			SellLimit = true;
 			NQSLmt = oLmtOrdParams.dPrice;
 			std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
@@ -887,6 +877,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					{
 						BuyLimit = false;
 						NQBCl = false;
+						_OpenNQ = 0;
+						_OpenPL = 0;
 					}
 					g_pEngine->unlock(&iCode);
 				}
@@ -920,6 +912,8 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 					{
 						SellLimit = false;
 						NQSCl = false;
+						_OpenNQ = 0;
+						_OpenPL = 0;
 					}
 					g_pEngine->unlock(&iCode);
 				}
@@ -1019,15 +1013,22 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 	if (!pInfo->bPossOutOfOrder)
 	{
-		if (pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
+		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
+		{
 			_AccBal = pInfo->dAccountBalance;
+			if(!BalMntr)
+			{
+				_MinBal = _AccBal * 0.975;
+				BalMntr = true;
+			}
+		}
 		if (pInfo->sTicker.pData == _TickerNQ.pData)
 		{
-			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenNQ = pInfo->dOpenPnl;
 		}
 		else
-			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
+			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenPL = pInfo->dOpenPnl;
 	}
 
@@ -2019,8 +2020,16 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	}
 
-
-	Process();
+	if(BalMntr)
+	{
+		if(_AccBal > _MinBal)
+			Process();
+	}
+	else
+	{
+		Process();
+		std::cout << "\nBalance monitor is set to false; order processed\n" << endl;
+	}
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -2632,7 +2641,6 @@ int main(int      argc,
 	std::cout << "\nHour Value is : " << hr_T << endl;
 	std::cout << "\nMinute Value is : " << min_T << endl;
 
-	_OpenNQ = incrNQ * 125000;
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
 
