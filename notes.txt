@@ -1,3 +1,2 @@
-send stop market order
-pnl - open p&l. explore possibility of using account balance
-subscribe to p&l engine
+monitor average speed to trading engine and overall code
+Have thresholds for speed
