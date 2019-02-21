@@ -128,7 +128,7 @@ bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = fal
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false;
 double NQBLmt, NQSLmt;
-bool NQBCl, NQSCl;
+bool NQBCl, NQSCl, LiveOrd = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 
 
@@ -477,7 +477,7 @@ void MyCallbacks::CloseBuyFn()
 	else
 		std::cout << "\nFailed to close Buy Limit order due to reason code : " << iCode << endl;
 
-	if (_sOrdType == "M")
+	if (LiveOrdNQ)
 	{
 		oMktOrdParams.sBuySellType.pData = "S";
 		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -491,6 +491,7 @@ void MyCallbacks::CloseBuyFn()
 			NQBCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
+			LiveOrdNQ = false;
 			std::cout << "\nClosed Buy Market Order" << endl;
 		}
 		else
@@ -520,7 +521,7 @@ void MyCallbacks::CloseSellFn()
 	else
 		std::cout << "\nFailed to close Sell Limit order due to reason code : " << iCode << endl;
 
-	if (_sOrdType == "M")
+	if (LiveOrdNQ)
 	{
 		oMktOrdParams.sBuySellType.pData = "B";
 		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -534,6 +535,7 @@ void MyCallbacks::CloseSellFn()
 			NQSCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
+			LiveOrdNQ = false;
 			std::cout << "\nClosed Sell Market Order" << endl;
 		}
 		else
@@ -708,7 +710,7 @@ void MyCallbacks::Process()
 		if (Psh3 >= 0.25 && Bs3 >= 0.25)
 		{
 			track = 2;
-			if (!BuyLimit)
+			if (!OpenOrd)
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -717,21 +719,13 @@ void MyCallbacks::Process()
 				}
 			}
 		}
-		if (SellLimit)
-		{
-			if (g_pEngine->tryLock(&iCode) == 1)
-			{
-				CloseSellFn();
-				g_pEngine->unlock(&iCode);
-			}
-		}
 	}
 	else if (Vol == 2)
 	{
 		if (Psh3 <= -0.25 && Bs3 <= -0.25)
 		{
 			track = 3;
-			if (!SellLimit)
+			if (!OpenOrd)
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -740,7 +734,6 @@ void MyCallbacks::Process()
 				}
 			}
 		}
-		
 	}
 
 	if (NQLAsk1 != NQLAsk2)
@@ -970,6 +963,10 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		if (_sOrdType == "L")
 		{
 			EntTyp = pInfo->sEntryType;
+		}
+		if (_sOrdType == "M")
+		{
+			LiveOrdNQ = true;
 		}
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
