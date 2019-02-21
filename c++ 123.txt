@@ -128,7 +128,7 @@ bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = fal
 int check = 0, Vol = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false;
 double NQBLmt, NQSLmt;
-bool NQBCl, NQSCl, LiveOrd = false;
+bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 
 
@@ -468,14 +468,17 @@ void MyCallbacks::CloseBuyFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+	if (_sOrdType == "L")
 	{
-		BuyLimit = false;
-		NQBCl = false;
-		std::cout << "\nBuy Limit order closed" << endl;
+		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+		{
+			BuyLimit = false;
+			NQBCl = false;
+			std::cout << "\nBuy Limit order closed" << endl;
+		}
+		else
+			std::cout << "\nFailed to close Buy Limit order due to reason code : " << iCode << endl;
 	}
-	else
-		std::cout << "\nFailed to close Buy Limit order due to reason code : " << iCode << endl;
 
 	if (LiveOrdNQ)
 	{
@@ -512,14 +515,17 @@ void MyCallbacks::CloseSellFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+	if (_sOrdType == "L")
 	{
-		SellLimit = false;
-		NQSCl = false;
-		std::cout << "\nSell Limit order closed" << endl;
+		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+		{
+			SellLimit = false;
+			NQSCl = false;
+			std::cout << "\nSell Limit order closed" << endl;
+		}
+		else
+			std::cout << "\nFailed to close Sell Limit order due to reason code : " << iCode << endl;
 	}
-	else
-		std::cout << "\nFailed to close Sell Limit order due to reason code : " << iCode << endl;
 
 	if (LiveOrdNQ)
 	{
@@ -751,7 +757,7 @@ void MyCallbacks::Process()
 	}
 	else
 		BvolTracker = false;
-	
+
 	if (check < 10)
 		check = check + 1;
 
@@ -974,7 +980,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
 
-		
+
 	}
 
 	if (contract)
