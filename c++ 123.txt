@@ -1092,6 +1092,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		else
 			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenPL = pInfo->dOpenPnl;
+		LiveOrdNQ = true;
 	}
 
 	if (contract)
