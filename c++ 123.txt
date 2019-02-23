@@ -126,7 +126,7 @@ double Psh4, Psh5, Psh6;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0;
-bool BuyLimit = false, SellLimit = false, OpenOrd = false;
+bool BuyLimit = false, SellLimit = false, OpenOrd = false, BuyMarket = false, SellMarket = false;
 double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
@@ -468,7 +468,7 @@ void MyCallbacks::CloseBuyFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	if (_sOrdType == "L")
+	if (BuyLimit)
 	{
 		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 		{
@@ -480,7 +480,7 @@ void MyCallbacks::CloseBuyFn()
 			std::cout << "\nFailed to close Buy Limit order due to reason code : " << iCode << endl;
 	}
 
-	if (LiveOrdNQ)
+	if (BuyMarket)
 	{
 		oMktOrdParams.sBuySellType.pData = "S";
 		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -490,7 +490,7 @@ void MyCallbacks::CloseBuyFn()
 
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
-			BuyLimit = false;
+			BuyMarket = false;
 			NQBCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -515,7 +515,7 @@ void MyCallbacks::CloseSellFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	if (_sOrdType == "L")
+	if (SellLimit)
 	{
 		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 		{
@@ -527,7 +527,7 @@ void MyCallbacks::CloseSellFn()
 			std::cout << "\nFailed to close Sell Limit order due to reason code : " << iCode << endl;
 	}
 
-	if (LiveOrdNQ)
+	if (SellMarket)
 	{
 		oMktOrdParams.sBuySellType.pData = "B";
 		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -537,7 +537,7 @@ void MyCallbacks::CloseSellFn()
 
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
-			SellLimit = false;
+			SellMarket = false;
 			NQSCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -645,7 +645,7 @@ void MyCallbacks::Process()
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
 
-	if (!BuyLimit && !SellLimit)
+	if (!BuyLimit && !SellLimit && !BuyMarket && !SellMarket)
 		OpenOrd = false;
 
 	if (Vol == 0)
@@ -697,11 +697,31 @@ void MyCallbacks::Process()
 		{
 			CloseBuyFn();
 			g_pEngine->unlock(&iCode);
-			std::cout << "\nBuy Close signals : Trend is " << Vol << " Price Gap is : " << (NQLBid1 - NQBLmt) << endl;
+			std::cout << "\nBuy Limit Close signals : Trend is " << Vol << " Price Gap is : " << (NQLBid1 - NQBLmt) << endl;
+		}
+	}
+
+	if (BuyMarket && Vol == 2)
+	{
+		if (g_pEngine->tryLock(&iCode) == 1)
+		{
+			CloseBuyFn();
+			g_pEngine->unlock(&iCode);
+			std::cout << "\nBuy Market Close signals : Trend is " << Vol << endl;
 		}
 	}
 
 	if (SellLimit && (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2))))
+	{
+		if (g_pEngine->tryLock(&iCode) == 1)
+		{
+			CloseSellFn();
+			g_pEngine->unlock(&iCode);
+			std::cout << "\nSell Close signals : Trend is " << Vol << " Price Gap is : " << (NQSLmt - NQLAsk1) << endl;
+		}
+	}
+
+	if (SellMarket && Vol == 1)
 	{
 		if (g_pEngine->tryLock(&iCode) == 1)
 		{
@@ -970,17 +990,12 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		{
 			EntTyp = pInfo->sEntryType;
 		}
-		if (_sOrdType == "M")
-		{
-			LiveOrdNQ = true;
-		}
+
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
 		_stypeNQ = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		_AvgFillPriceNQ = pInfo->dAvgFillPrice;
 		_OrderNumNQ = pInfo->sOrderNum;
-
-
 	}
 
 	if (contract)
@@ -1064,8 +1079,6 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_minqty = pInfo->eSellQty;
 	_AccBal = pInfo->dAccountBalance;
 	_Margin = pInfo->dMarginBalance;
-	_BuyQty = pInfo->lBuyQty;
-	_SellQty = pInfo->lSellQty;
 	_ClosedPL = pInfo->dClosedPnl;
 	_OpenPL = pInfo->dOpenPnl;
 	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
@@ -1075,6 +1088,18 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 	if (!pInfo->bPossOutOfOrder)
 	{
+		if (pInfo->eBuyQty == 2)
+		{
+			_BuyQty = pInfo->lBuyQty;
+			BuyMarket = true;
+			BuyLimit = false;
+		}
+		if (pInfo->eSellQty == 2)
+		{
+			_SellQty = pInfo->lSellQty;
+			SellMarket = true;
+			SellLimit = false;
+		}
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
 			_AccBal = pInfo->dAccountBalance;
