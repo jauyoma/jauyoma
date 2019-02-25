@@ -649,16 +649,16 @@ void MyCallbacks::Process()
 
 	if (!BuyLimit && !SellLimit && !BuyMarket && !SellMarket)
 		OpenOrd = false;
-
+	
 	if (Vol == 0)
 	{
-		if (NQ3BV > NQ3SV)
+		if (NQ4BV > NQ4SV)
 		{
 			Vol = 1;
 			NQBVP = NQLAsk1;
 			NQSVP = NQLBid1;
 		}
-		if (NQ3BV < NQ3SV)
+		if (NQ4BV < NQ4SV)
 		{
 			Vol = 2;
 			NQBVP = NQLAsk1;
@@ -666,14 +666,27 @@ void MyCallbacks::Process()
 		}
 		Tracker = true;
 	}
-
+	
+	if (NQLAsk1 != NQLAsk2 || NQLBid1 != NQLBid2)
+	{
+		NQLAsk2 = NQLAsk1;
+		NQLBid2 = NQLBid1;
+		BvolTracker = true;
+		SvolTracker = true;
+		NQ4BV = 0;
+		NQ4SV = 0;
+	}
+	else
+	{
+		SvolTracker = false;
+		BvolTracker = false;
+	}
+	
 	if (Vol == 1)
 	{
-		if (NQ3BV < NQ3SV)
+		if (NQ4BV < NQ4SV)
 		{
 			Vol = 2;
-			NQ3BV = 0;
-			NQ3SV = 0;
 			NQBVP = NQLAsk1;
 			NQSVP = NQLBid1;
 			Tracker = true;
@@ -682,11 +695,9 @@ void MyCallbacks::Process()
 
 	if (Vol == 2)
 	{
-		if (NQ3BV > NQ3SV)
+		if (NQ4BV > NQ4SV)
 		{
 			Vol = 1;
-			NQ3BV = 0;
-			NQ3SV = 0;
 			NQBVP = NQLAsk1;
 			NQSVP = NQLBid1;
 			Tracker = true;
@@ -763,22 +774,6 @@ void MyCallbacks::Process()
 			}
 		}
 	}
-
-	if (NQLAsk1 != NQLAsk2)
-	{
-		NQLAsk2 = NQLAsk1;
-		SvolTracker = true;
-	}
-	else
-		SvolTracker = false;
-
-	if (NQLBid1 != NQLBid2)
-	{
-		NQLBid2 = NQLBid1;
-		BvolTracker = true;
-	}
-	else
-		BvolTracker = false;
 
 	if (check < 10)
 		check = check + 1;
@@ -1095,12 +1090,14 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			_BuyQty = pInfo->lBuyQty;
 			BuyMarket = true;
 			BuyLimit = false;
+			std::cout << "\nLive Buy Market Order\n" << endl;
 		}
 		if (pInfo->eSellQty == 2)
 		{
 			_SellQty = pInfo->lSellQty;
 			SellMarket = true;
 			SellLimit = false;
+			std::cout << "\nLive Sell Market Order\n" << endl;
 		}
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
