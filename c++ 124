@@ -988,14 +988,10 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			EntTyp = pInfo->sEntryType;
 			if (_sBuySell == "B")
 			{
-				BuyMarket = false;
-				BuyLimit = true;
 				std::cout << "\nBuy Limit Order\n" << endl;
 			}
 			if (_sBuySell == "S")
 			{
-				SellMarket = false;
-				SellLimit = true;
 				std::cout << "\nSell Limit Order\n" << endl;
 			}
 		}
@@ -1003,18 +999,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		if (_sOrdType == "M")
 		{
 			EntTyp = pInfo->sEntryType;
-			if (_sBuySell == "B")
-			{
-				BuyMarket = true;
-				BuyLimit = false;
-				std::cout << "\nLive Buy Market Order\n" << endl;
-			}
-			if (_sBuySell == "S")
-			{
-				SellMarket = true;
-				SellLimit = false;
-				std::cout << "\nLive Sell Market Order\n" << endl;
-			}
 		}
 
 		_sTickerNQ = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
@@ -1114,14 +1098,22 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 	if (!pInfo->bPossOutOfOrder)
 	{
-		if (pInfo->eBuyQty == 2)
+		if (pInfo->eOpenPnl == 2)
 		{
-			_BuyQty = pInfo->lBuyQty;
+			if (BuyLimit)
+			{
+				BuyMarket = true;
+				BuyLimit = false;
+				std::cout << "\nLive Buy Market Order\n" << endl;
+			}
+			if (SellLimit)
+			{
+				SellMarket = true;
+				SellLimit = false;
+				std::cout << "\nLive Sell Market Order\n" << endl;
+			}
 		}
-		if (pInfo->eSellQty == 2)
-		{
-			_SellQty = pInfo->lSellQty;
-		}
+
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
 			_AccBal = pInfo->dAccountBalance;
