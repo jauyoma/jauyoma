@@ -476,7 +476,7 @@ void MyCallbacks::CloseBuyFn()
 		}
 	}
 
-	if (BuyMarket)
+	if (BuyMarket && check == 0)
 	{
 		std::cout << "\nTrying to close Buy Market Order\n" << endl;
 
@@ -489,6 +489,7 @@ void MyCallbacks::CloseBuyFn()
 		{
 			BuyMarket = false;
 			BuyLimit = false;
+			check = 1;
 			NQBCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -526,7 +527,7 @@ void MyCallbacks::CloseSellFn()
 		}
 	}
 
-	if (SellMarket)
+	if (SellMarket && check == 0)
 	{
 		std::cout << "\nTrying to close Sell Market Order\n" << endl;
 
@@ -539,6 +540,7 @@ void MyCallbacks::CloseSellFn()
 		{
 			SellMarket = false;
 			SellLimit = false;
+			check = 1;
 			NQSCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -755,6 +757,7 @@ void MyCallbacks::Process()
 			track = 2;
 			if (!OpenOrd)
 			{
+				check = 0;
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
 					BuyFn();
@@ -770,6 +773,7 @@ void MyCallbacks::Process()
 			track = 3;
 			if (!OpenOrd)
 			{
+				check = 0;
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
 					SellFn();
@@ -778,9 +782,6 @@ void MyCallbacks::Process()
 			}
 		}
 	}
-
-	if (check < 10)
-		check = check + 1;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1005,7 +1006,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			_Cancelled == 0;
 		}
 
-		if (_sOrdType == "M")
+		if (_sOrdType == "M" && check == 0)
 		{
 			LiveOrdNQ = true;
 			if (_sBuySell == "B")
