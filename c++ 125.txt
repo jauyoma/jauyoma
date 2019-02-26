@@ -472,29 +472,8 @@ void MyCallbacks::CloseBuyFn()
 	{
 		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 		{
-
-			
-		}
 		
-		if (_Cancelled == 1)
-		{
-			BuyLimit = false;
-			NQBCl = false;
-			_Cancelled == 0;
 		}
-		
-		if (_filled == 1)
-		{
-			if (_Status == "open")
-			{
-				BuyMarket = true;
-			}
-		}
-
-		std::cout << "\nOrder status is : " << _Status << endl;
-		std::cout << "\nNumber of filled orders is : " << _filled << endl;
-		std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
-		std::cout << "\nError Code is : " << iCode << endl;
 	}
 
 	if (BuyMarket)
@@ -509,6 +488,7 @@ void MyCallbacks::CloseBuyFn()
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
 			BuyMarket = false;
+			BuyLimit = false;
 			NQBCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -518,6 +498,11 @@ void MyCallbacks::CloseBuyFn()
 		else
 			std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 	}
+	
+	std::cout << "\nOrder status is : " << _sOrdType << endl;
+	std::cout << "\nNumber of filled orders is : " << _filled << endl;
+	std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
+	std::cout << "\nError Code is : " << iCode << endl;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -539,26 +524,6 @@ void MyCallbacks::CloseSellFn()
 		{
 			
 		}
-		
-		if (_Cancelled == 1)
-		{
-			SellLimit = false;
-			NQSCl = false;
-			_Cancelled == 0;
-		}
-
-		if (_filled == 1)
-		{
-			if (_Status == "open")
-			{
-				SellMarket = true;
-			}
-		}
-
-		std::cout << "\nOrder status is : " << _Status << endl;
-		std::cout << "\nNumber of filled orders is : " << _filled << endl;
-		std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
-		std::cout << "\nError Code is : " << iCode << endl;
 	}
 
 	if (SellMarket)
@@ -573,6 +538,7 @@ void MyCallbacks::CloseSellFn()
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
 			SellMarket = false;
+			SellLimit = false;
 			NQSCl = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -582,6 +548,11 @@ void MyCallbacks::CloseSellFn()
 		else
 			std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
 	}
+	
+	std::cout << "\nOrder status is : " << _sOrdType << endl;
+	std::cout << "\nNumber of filled orders is : " << _filled << endl;
+	std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
+	std::cout << "\nError Code is : " << iCode << endl;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1017,29 +988,33 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 
 	if (_sTicker == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		if (_sOrdType == "L")
+		EntTyp = pInfo->sEntryType;
+		if (_Cancelled == 1)
 		{
-			EntTyp = pInfo->sEntryType;
 			if (_sBuySell == "B")
 			{
-				
+				BuyLimit = false;
+				NQBCl = false;
 			}
+			
 			if (_sBuySell == "S")
 			{
-				
+				SellLimit = false;
+				NQSCl = false;
 			}
+			_Cancelled == 0;
 		}
 
 		if (_sOrdType == "M")
 		{
-			EntTyp = pInfo->sEntryType;
+			LiveOrdNQ = true;
 			if (_sBuySell == "B")
 			{
-				
+				BuyMarket = true;
 			}
 			if (_sBuySell == "S")
 			{
-				
+				SellMarket = true;
 			}
 		}
 
@@ -1169,7 +1144,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		else
 			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenPL = pInfo->dOpenPnl;
-		LiveOrdNQ = true;
+		
 	}
 
 	if (contract)
