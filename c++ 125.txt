@@ -480,9 +480,7 @@ void MyCallbacks::CloseBuyFn()
 
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
-			check = 2;
 			BuyMarket = false;
-			BuyLimit = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
 			_filled == 0;
@@ -492,7 +490,7 @@ void MyCallbacks::CloseBuyFn()
 			std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 	}
 
-	if (BuyLimit && check == 0)
+	if (BuyLimit)
 	{
 		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 		{
@@ -531,7 +529,6 @@ void MyCallbacks::CloseSellFn()
 
 		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 		{
-			check = 1;
 			SellMarket = false;
 			_OpenNQ = 0;
 			_OpenPL = 0;
@@ -542,7 +539,7 @@ void MyCallbacks::CloseSellFn()
 			std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
 	}
 
-	if (SellLimit && check == 0)
+	if (SellLimit)
 	{
 		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 		{
@@ -709,6 +706,14 @@ void MyCallbacks::Process()
 			Tracker = true;
 		}
 	}
+	
+	if (check == 1)
+	{
+		if(BuyLimit || SellLimit)
+		{
+			g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+		}
+	}
 
 	if (BuyLimit && (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2))))
 	{
@@ -720,11 +725,6 @@ void MyCallbacks::Process()
 				g_pEngine->unlock(&iCode);
 
 			}
-		}
-		else if (check == 1)
-		{
-			if(!BuyMarket)
-				g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 		}
 	}
 
@@ -740,11 +740,13 @@ void MyCallbacks::Process()
 
 	if (SellLimit && (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2))))
 	{
-		if (g_pEngine->tryLock(&iCode) == 1)
+		if (check == 0)
 		{
-			CloseSellFn();
-			g_pEngine->unlock(&iCode);
-
+			if (g_pEngine->tryLock(&iCode) == 1)
+			{
+				CloseSellFn();
+				g_pEngine->unlock(&iCode);
+			}
 		}
 	}
 
@@ -1064,7 +1066,22 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-	
+	_sOrdType = std::string(pInfo->asLineInfoArray->sOrderType.pData, pInfo->asLineInfoArray->sOrderType.iDataLen);
+
+	if (_sOrdType == "M")
+	{
+		if (BuyLimit)
+		{
+			BuyMarket = true;
+			BuyLimit = false;
+		}
+		if (SellLimit)
+		{
+			SellMarket = true;
+			SellLimit = false;
+		}
+		check = 2;
+	}
 	
 	*aiCode = API_OK;
 	return(OK);
@@ -1077,15 +1094,6 @@ int MyCallbacks::OrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-	_sOrdType = std::string(pInfo->asLineInfoArray->sOrderType.pData, pInfo->asLineInfoArray->sOrderType.iDataLen);
-
-	if (_sOrdType == "M")
-	{
-		if (BuyLimit)
-			BuyMarket = true;
-		if (SellLimit)
-			SellMarket = true;
-	}
 	
 	*aiCode = API_OK;
 	return(OK);
@@ -1139,11 +1147,11 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			{
 				if (BuyLimit)
 				{
-					BuyMarket = true;
+					
 				}
 				if (SellLimit)
 				{
-					SellMarket = true;
+					
 				}
 			}
 		}
