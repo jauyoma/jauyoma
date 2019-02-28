@@ -642,6 +642,8 @@ void MyCallbacks::Process()
 
 	if (!BuyLimit && !SellLimit && !BuyMarket && !SellMarket)
 		OpenOrd = false;
+	else
+		OpenOrd = true;
 
 	if (Vol == 0)
 	{
@@ -660,28 +662,29 @@ void MyCallbacks::Process()
 		Tracker = true;
 	}
 
-	if (check == 0)
+	if (BuyLimit)
 	{
-		if (BuyLimit && (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2))))
+		if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
 		{
 			if (g_pEngine->tryLock(&iCode) == 1)
 			{
-				std::cout << "\n\nOrder position before close is : " << _Posn << endl;
+				std::cout << "\n\nOrder position before buylimit close is : " << _Posn << endl;
 				CloseBuyFn();
 				g_pEngine->unlock(&iCode);
-				std::cout << "\n\nOrder position after close is : " << _Posn << endl;
-
+				std::cout << "\n\nOrder position after buylimit close is : " << _Posn << endl;
 			}
 		}
-
-		if (SellLimit && (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2))))
+	}
+	else if (SellLimit)
+	{
+		if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
 		{
 			if (g_pEngine->tryLock(&iCode) == 1)
 			{
-				std::cout << "\n\nOrder position before close is : " << _Posn << endl;
+				std::cout << "\n\nOrder position before selllimit close is : " << _Posn << endl;
 				CloseSellFn();
 				g_pEngine->unlock(&iCode);
-				std::cout << "\n\nOrder position after close is : " << _Posn << endl;
+				std::cout << "\n\nOrder position after selllimit close is : " << _Posn << endl;
 			}
 		}
 	}
@@ -727,26 +730,8 @@ void MyCallbacks::Process()
 		}
 	}
 
-	if (!LiveOrdNQ)
+	if (LiveOrdNQ)
 	{
-		if (check == 1)
-		{
-			if (BuyLimit)
-			{
-				BuyMarket = true;
-				BuyLimit = false;
-			}
-			if (SellLimit)
-			{
-				SellMarket = true;
-				SellLimit = false;
-			}
-			std::cout << "\n\nConfirmation if position is live : " << _Posn << endl;
-		}
-	}
-	else
-	{
-		check = 0;
 		LiveOrdNQ = false;
 		std::cout << "\n\nOrder cancellation rejected / failed. Trying to re-cancel" << endl;
 	}
@@ -781,7 +766,6 @@ void MyCallbacks::Process()
 			track = 2;
 			if (!OpenOrd)
 			{
-				check = 0;
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
 					BuyFn();
@@ -798,7 +782,6 @@ void MyCallbacks::Process()
 			track = 3;
 			if (!OpenOrd)
 			{
-				check = 0;
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
 					SellFn();
@@ -1143,6 +1126,22 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_maxqty = pInfo->lBuyQty;
 		_minqty = pInfo->lSellQty;
 		_Posn = pInfo->lPosition;
+		
+		if(_Posn == 1)
+		{
+			if(BuyLimit)
+			{
+				BuyMarket = true;
+				BuyLimit = false;
+				std::cout << "\n\nCurrent Buy Live Order position is : " << _Posn << endl;
+			}
+			if(SellLimit)
+			{
+				SellMarket = true;
+				SellLimit = false;
+				std::cout << "\n\nCurrent Sell Live Order position is : " << _Posn << endl;
+			}
+		}
 
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
@@ -1340,7 +1339,6 @@ int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
 
 	/*   ----------------------------------------------------------------   */
 
-	BuyLimit = true;
 
 	/*   ----------------------------------------------------------------   */
 
