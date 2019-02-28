@@ -655,13 +655,13 @@ void MyCallbacks::Process()
 
 	if (Vol == 0)
 	{
-		if (NQ4BV > NQ4SV)
+		if (NQ3BV > NQ3SV)
 		{
 			Vol = 1;
 			NQBVP = NQLAsk1;
 			NQSVP = NQLBid1;
 		}
-		if (NQ4BV < NQ4SV)
+		if (NQ3BV < NQ3SV)
 		{
 			Vol = 2;
 			NQBVP = NQLAsk1;
@@ -687,7 +687,7 @@ void MyCallbacks::Process()
 
 	if (Vol == 1)
 	{
-		if (NQ4BV < NQ4SV)
+		if (NQ3BV < NQ3SV)
 		{
 			Vol = 2;
 			NQBVP = NQLAsk1;
@@ -698,7 +698,7 @@ void MyCallbacks::Process()
 
 	if (Vol == 2)
 	{
-		if (NQ4BV > NQ4SV)
+		if (NQ3BV > NQ3SV)
 		{
 			Vol = 1;
 			NQBVP = NQLAsk1;
@@ -706,18 +706,29 @@ void MyCallbacks::Process()
 			Tracker = true;
 		}
 	}
-	
-	if (check == 1)
+
+	if (BuyLimit || SellLimit)
 	{
-		if(BuyLimit || SellLimit)
+		if (!LiveOrdNQ)
 		{
-			g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+			if (check == 1)
+			{
+				if (BuyLimit)
+					BuyMarket = true;
+				if (SellLimit)
+					SellMarket = true;
+			}
+		}
+		else
+		{
+			check = 0;
+			LiveOrdNQ = false;
 		}
 	}
 
-	if (BuyLimit && (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2))))
+	if (check == 0)
 	{
-		if (check == 0)
+		if (BuyLimit && (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2))))
 		{
 			if (g_pEngine->tryLock(&iCode) == 1)
 			{
@@ -726,21 +737,8 @@ void MyCallbacks::Process()
 
 			}
 		}
-	}
 
-	if (BuyMarket && Vol == 2)
-	{
-		if (g_pEngine->tryLock(&iCode) == 1)
-		{
-			CloseBuyFn();
-			g_pEngine->unlock(&iCode);
-
-		}
-	}
-
-	if (SellLimit && (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2))))
-	{
-		if (check == 0)
+		if (SellLimit && (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2))))
 		{
 			if (g_pEngine->tryLock(&iCode) == 1)
 			{
@@ -750,7 +748,19 @@ void MyCallbacks::Process()
 		}
 	}
 
-	if (SellMarket && Vol == 1)
+	if (BuyMarket && NQ3BV < NQ3SV)
+	{
+		if (g_pEngine->tryLock(&iCode) == 1)
+		{
+			CloseBuyFn();
+			g_pEngine->unlock(&iCode);
+
+		}
+	}
+
+	
+
+	if (SellMarket && NQ3BV > NQ3SV)
 	{
 		if (g_pEngine->tryLock(&iCode) == 1)
 		{
@@ -1003,26 +1013,26 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		{
 			if (_sBuySell == "B")
 			{
-				
+
 			}
 
 			if (_sBuySell == "S")
 			{
-				
+
 			}
 			_Cancelled == 0;
 		}
 
 		if (_sOrdType == "M" && check == 0)
 		{
-			LiveOrdNQ = true;
+			
 			if (_sBuySell == "B")
 			{
-				
+
 			}
 			if (_sBuySell == "S")
 			{
-				
+
 			}
 		}
 
@@ -1082,7 +1092,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 		}
 		check = 2;
 	}
-	
+
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1094,7 +1104,7 @@ int MyCallbacks::OrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-	
+
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1147,11 +1157,11 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			{
 				if (BuyLimit)
 				{
-					
+
 				}
 				if (SellLimit)
 				{
-					
+
 				}
 			}
 		}
@@ -1298,7 +1308,7 @@ int MyCallbacks::FailureReport(OrderFailureReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
+	LiveOrdNQ = true;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1384,7 +1394,7 @@ int MyCallbacks::RejectReport(OrderRejectReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
+	LiveOrdNQ = true;
 
 	/*   ----------------------------------------------------------------   */
 	/*   record when the order returned from the exchange... */
