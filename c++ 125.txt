@@ -468,7 +468,7 @@ void MyCallbacks::CloseBuyFn()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
+	
 	if (BuyMarket)
 	{
 		std::cout << "\nTrying to close Buy Market Order\n" << endl;
@@ -498,11 +498,7 @@ void MyCallbacks::CloseBuyFn()
 		}
 	}
 
-	std::cout << "\nBuy value is : " << BuyMarket << endl;
-	std::cout << "\nSell value is : " << SellMarket << endl;
-	std::cout << "\nNumber of filled orders is : " << _filled << endl;
-	std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
-	std::cout << "\nError Code is : " << iCode << endl;
+	std::cout << "\nOrder position is : " << _Posn << endl;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -547,11 +543,7 @@ void MyCallbacks::CloseSellFn()
 		}
 	}
 
-	std::cout << "\nBuy quantity is : " << _BuyQty << endl;
-	std::cout << "\nSell quantity is : " << _SellQty << endl;
-	std::cout << "\nNumber of filled orders is : " << _filled << endl;
-	std::cout << "\nNumber of cancelled orders is : " << _Cancelled << endl;
-	std::cout << "\nError Code is : " << iCode << endl;
+	std::cout << "\nOrder position is : " << _Posn << endl;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -669,63 +661,7 @@ void MyCallbacks::Process()
 		}
 		Tracker = true;
 	}
-
-	if (NQLAsk1 != NQLAsk2 || NQLBid1 != NQLBid2)
-	{
-		NQLAsk2 = NQLAsk1;
-		NQLBid2 = NQLBid1;
-		BvolTracker = true;
-		SvolTracker = true;
-		NQ4BV = 0;
-		NQ4SV = 0;
-	}
-	else
-	{
-		SvolTracker = false;
-		BvolTracker = false;
-	}
-
-	if (Vol == 1)
-	{
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-			Tracker = true;
-		}
-	}
-
-	if (Vol == 2)
-	{
-		if (NQ3BV > NQ3SV)
-		{
-			Vol = 1;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-			Tracker = true;
-		}
-	}
-
-	if (BuyLimit || SellLimit)
-	{
-		if (!LiveOrdNQ)
-		{
-			if (check == 1)
-			{
-				if (BuyLimit)
-					BuyMarket = true;
-				if (SellLimit)
-					SellMarket = true;
-			}
-		}
-		else
-		{
-			check = 0;
-			LiveOrdNQ = false;
-		}
-	}
-
+	
 	if (check == 0)
 	{
 		if (BuyLimit && (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2))))
@@ -748,25 +684,90 @@ void MyCallbacks::Process()
 		}
 	}
 
-	if (BuyMarket && NQ3BV < NQ3SV)
+	if (NQLAsk1 != NQLAsk2)
 	{
-		if (g_pEngine->tryLock(&iCode) == 1)
-		{
-			CloseBuyFn();
-			g_pEngine->unlock(&iCode);
-
-		}
+		NQLAsk2 = NQLAsk1;
+		SvolTracker = true;
+	}
+	else
+	{
+		SvolTracker = false;
+	}
+	
+	if (NQLBid1 != NQLBid2)
+	{
+		NQLBid2 = NQLBid1;
+		BvolTracker = true;
+	}
+	else
+	{
+		BvolTracker = false;
 	}
 
-	
-
-	if (SellMarket && NQ3BV > NQ3SV)
+	if (Vol == 1)
 	{
-		if (g_pEngine->tryLock(&iCode) == 1)
+		if (NQ3BV < NQ3SV)
 		{
-			CloseSellFn();
-			g_pEngine->unlock(&iCode);
+			Vol = 2;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+			Tracker = true;
+		}
+	}
+	else if (Vol == 2)
+	{
+		if (NQ3BV > NQ3SV)
+		{
+			Vol = 1;
+			NQBVP = NQLAsk1;
+			NQSVP = NQLBid1;
+			Tracker = true;
+		}
+	}
+	
+	if (!LiveOrdNQ)
+	{
+		if (check == 1)
+		{
+			if (BuyLimit)
+			{
+				BuyMarket = true;
+				BuyLimit = false;
+			}
+			if (SellLimit)
+			{
+				SellMarket = true;
+				SellLimit = false;
+			}
+		}
+	}
+	else
+	{
+		check = 0;
+		LiveOrdNQ = false;
+		std::cout << "\n\nOrder cancellation rejected / failed. Trying to re-cancel" << endl;
+	}
 
+	if (BuyMarket)
+	{
+		if (NQ4BV < NQ4SV)
+		{
+			if (g_pEngine->tryLock(&iCode) == 1)
+			{
+				CloseBuyFn();
+				g_pEngine->unlock(&iCode);
+			}
+		}
+	}
+	else if (SellMarket)
+	{
+		if (NQ4BV > NQ4SV)
+		{
+			if (g_pEngine->tryLock(&iCode) == 1)
+			{
+				CloseSellFn();
+				g_pEngine->unlock(&iCode);
+			}
 		}
 	}
 
@@ -783,6 +784,7 @@ void MyCallbacks::Process()
 					BuyFn();
 					g_pEngine->unlock(&iCode);
 				}
+				std::cout << "\nOrder position is : " << _Posn << endl;
 			}
 		}
 	}
@@ -799,6 +801,7 @@ void MyCallbacks::Process()
 					SellFn();
 					g_pEngine->unlock(&iCode);
 				}
+				std::cout << "\nOrder position is : " << _Posn << endl;
 			}
 		}
 	}
@@ -1076,22 +1079,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-	_sOrdType = std::string(pInfo->asLineInfoArray->sOrderType.pData, pInfo->asLineInfoArray->sOrderType.iDataLen);
-
-	if (_sOrdType == "M")
-	{
-		if (BuyLimit)
-		{
-			BuyMarket = true;
-			BuyLimit = false;
-		}
-		if (SellLimit)
-		{
-			SellMarket = true;
-			SellLimit = false;
-		}
-		check = 2;
-	}
+	
 
 	*aiCode = API_OK;
 	return(OK);
@@ -1145,26 +1133,13 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 	_PnlAvgOpen = pInfo->eAvgOpenFillPrice;
 	_PnlAvgOpenPrice = pInfo->dAvgOpenFillPrice;
 	_PosnConf = pInfo->ePosition;
-	_Posn = pInfo->lPosition;
+	
 
 	if (!pInfo->bPossOutOfOrder)
 	{
 		_maxqty = pInfo->lBuyQty;
 		_minqty = pInfo->lSellQty;
-		if (check == 0)
-		{
-			if (pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0)
-			{
-				if (BuyLimit)
-				{
-
-				}
-				if (SellLimit)
-				{
-
-				}
-			}
-		}
+		_Posn = pInfo->lPosition;
 
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
@@ -1359,8 +1334,8 @@ int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
-
+	
+	BuyLimit = true;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2935,4 +2910,3 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 
 }
-
