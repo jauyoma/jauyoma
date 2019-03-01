@@ -126,7 +126,7 @@ double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
 double Psh4, Psh5, Psh6;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
-int check = 0, Vol = 0;
+int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false, BuyMarket = false, SellMarket = false;
 double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
@@ -468,35 +468,38 @@ void MyCallbacks::CloseBuyFn()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
-	if (BuyMarket)
+	
+	if(buyclose == 1)
 	{
-		std::cout << "\nTrying to close Buy Market Order\n" << endl;
-
-		oMktOrdParams.sBuySellType.pData = "S";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbNQ.pData;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-
-		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+		if (BuyMarket)
 		{
-			BuyMarket = false;
-			_OpenNQ = 0;
-			_OpenPL = 0;
-			_filled == 0;
-			_Posn = 0;
-			std::cout << "\nClosed Buy Market Order" << endl;
-		}
-		else
-			std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
-	}
+			std::cout << "\nTrying to close Buy Market Order\n" << endl;
 
-	if (BuyLimit)
-	{
-		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
-		{
-			check = 1;
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				BuyMarket = false;
+				_OpenNQ = 0;
+				_OpenPL = 0;
+				_filled == 0;
+				std::cout << "\nClosed Buy Market Order" << endl;
+			}
+			else
+				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 		}
+
+		if (BuyLimit)
+		{
+			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+			{
+			
+			}
+		}
+		buyclose = 2;
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -512,35 +515,38 @@ void MyCallbacks::CloseSellFn()
 {
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
-
-	if (SellMarket)
+	
+	if(sellclose == 1)
 	{
-		std::cout << "\nTrying to close Sell Market Order\n" << endl;
-
-		oMktOrdParams.sBuySellType.pData = "B";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		oMktOrdParams.sTicker.pData = SymbNQ.pData;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-
-		if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+		if (SellMarket)
 		{
-			SellMarket = false;
-			_OpenNQ = 0;
-			_OpenPL = 0;
-			_filled == 0;
-			_Posn = 0;
-			std::cout << "\nClosed Sell Market Order" << endl;
-		}
-		else
-			std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
-	}
+			std::cout << "\nTrying to close Sell Market Order\n" << endl;
 
-	if (SellLimit)
-	{
-		if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
-		{
-			check = 1;
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sTicker.pData = SymbNQ.pData;
+			oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				SellMarket = false;
+				_OpenNQ = 0;
+				_OpenPL = 0;
+				_filled == 0;
+				std::cout << "\nClosed Sell Market Order" << endl;
+			}
+			else
+				std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
 		}
+
+		if (SellLimit)
+		{
+			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+			{
+			
+			}
+		}
+		sellclose = 2;
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -564,17 +570,20 @@ bool MyCallbacks::BuyFn()
 
 	if (!BuyLimit)
 	{
-		if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		if(buycheck == 1)
 		{
-			std::cout << "\n\nBuyFn() error : " << iCode << endl;
-			BuyLimit = false;
-		}
-		else
-		{
-			BuyLimit = true;
-			NQBLmt = oLmtOrdParams.dPrice;
-			std::cout << "\n\nBuyFn() order successfully submitted : " << NQBLmt << endl;
-			OpenOrd = true;
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{	
+				std::cout << "\n\nBuyFn() error : " << iCode << endl;
+				BuyLimit = false;
+			}
+			else
+			{
+				BuyLimit = true;
+				NQBLmt = oLmtOrdParams.dPrice;
+				std::cout << "\n\nBuyFn() order successfully submitted : " << NQBLmt << endl;
+			}
+			buycheck = 2;
 		}
 	}
 
@@ -600,17 +609,20 @@ bool MyCallbacks::SellFn()
 
 	if (!SellLimit)
 	{
-		if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		if(sellcheck == 1)
 		{
-			std::cout << "\n\nSellFn() error : " << iCode << endl;
-			SellLimit = false;
-		}
-		else
-		{
-			SellLimit = true;
-			NQSLmt = oLmtOrdParams.dPrice;
-			std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
-			OpenOrd = true;
+			if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				std::cout << "\n\nSellFn() error : " << iCode << endl;
+				SellLimit = false;
+			}
+			else
+			{
+				SellLimit = true;
+				NQSLmt = oLmtOrdParams.dPrice;
+				std::cout << "\n\nSellFn() order successfully submitted : " << NQSLmt << endl;
+			}
+			sellcheck = 2;
 		}
 	}
 
@@ -639,11 +651,21 @@ void MyCallbacks::Process()
 	Bs1 = NQSBid1 - NQSAsk1;
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
-
-	if (!BuyLimit && !SellLimit && !BuyMarket && !SellMarket)
-		OpenOrd = false;
-	else
+	
+	if(buycheck == 2 && !BuyLimit)
+		buycheck = 0;
+	else if(sellcheck == 2 && !SellLimit)
+		sellcheck = 0;
+	if(buycheck == 0 && sellcheck == 0)
 		OpenOrd = true;
+	if(buyclose == 2 && !BuyLimit)
+		buyclose = 0;
+	else if(sellclose == 2 && !SellLimit)
+		sellclose = 0;
+	if(buyclose == 2 && BuyMarket)
+		buyclose = 0;
+	else if(sellclose == 2 && !SellMarket)
+		sellclose = 0;
 
 	if (Vol == 0)
 	{
@@ -664,27 +686,41 @@ void MyCallbacks::Process()
 
 	if (BuyLimit)
 	{
-		if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
+		if(buyclose == 0)
 		{
-			if (g_pEngine->tryLock(&iCode) == 1)
+			if(_Posn == 1)
 			{
-				std::cout << "\n\nOrder position before buylimit close is : " << _Posn << endl;
-				CloseBuyFn();
-				g_pEngine->unlock(&iCode);
-				std::cout << "\n\nOrder position after buylimit close is : " << _Posn << endl;
+				if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
+				{
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						std::cout << "\n\nOrder position before buylimit close is : " << _Posn << endl;
+						buyclose = 1;
+						CloseBuyFn();
+						g_pEngine->unlock(&iCode);
+						std::cout << "\n\nOrder position after buylimit close is : " << _Posn << endl;
+					}
+				}
 			}
 		}
 	}
 	else if (SellLimit)
 	{
-		if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
+		if(sellclose == 0)
 		{
-			if (g_pEngine->tryLock(&iCode) == 1)
+			if(_Posn == -1)
 			{
-				std::cout << "\n\nOrder position before selllimit close is : " << _Posn << endl;
-				CloseSellFn();
-				g_pEngine->unlock(&iCode);
-				std::cout << "\n\nOrder position after selllimit close is : " << _Posn << endl;
+				if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
+				{
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						std::cout << "\n\nOrder position before selllimit close is : " << _Posn << endl;
+						sellclose = 1;
+						CloseSellFn();
+						g_pEngine->unlock(&iCode);
+						std::cout << "\n\nOrder position after selllimit close is : " << _Posn << endl;
+					}
+				}
 			}
 		}
 	}
@@ -733,63 +769,104 @@ void MyCallbacks::Process()
 	if (LiveOrdNQ)
 	{
 		LiveOrdNQ = false;
+		if(BuyLimit)
+		{
+			if(BuyClose == 2)
+			{
+				BuyClose = 0;
+			}
+		}
+		if(SellLimit)
+		{
+			if(SellClose == 2)
+			{
+				SellClose = 0;
+			}
+		}
 		std::cout << "\n\nOrder cancellation rejected / failed. Trying to re-cancel" << endl;
 	}
 
 	if (BuyMarket)
 	{
-		if (NQ4BV < NQ4SV)
+		if(_Posn == 1)
 		{
-			if (g_pEngine->tryLock(&iCode) == 1)
+			if(BuyClose == 0)
 			{
-				CloseBuyFn();
-				g_pEngine->unlock(&iCode);
+				if (NQ4BV < NQ4SV)
+				{
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						BuyClose = 1;
+						CloseBuyFn();
+						g_pEngine->unlock(&iCode);
+					}
+				}
 			}
 		}
 	}
 	else if (SellMarket)
 	{
-		if (NQ4BV > NQ4SV)
+		if(_Posn == -1)
 		{
-			if (g_pEngine->tryLock(&iCode) == 1)
+			if(SellClose == 0)
 			{
-				CloseSellFn();
-				g_pEngine->unlock(&iCode);
+				if (NQ4BV > NQ4SV)
+				{
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						SellClose = 1;
+						CloseSellFn();
+						g_pEngine->unlock(&iCode);
+					}
+				}
 			}
 		}
 	}
-
-	if (Vol == 1)
+	
+	if(OpenOrd)
 	{
-		if (Psh3 >= 0.25 && Bs3 >= 0.25)
+		if(_Posn < 1)
 		{
-			track = 2;
-			if (!OpenOrd)
+			if (Vol == 1)
 			{
-				if (g_pEngine->tryLock(&iCode) == 1)
+				if (sellcheck == 0)
 				{
-					BuyFn();
-					g_pEngine->unlock(&iCode);
+					if (buycheck == 0)
+					{
+						if (Psh3 >= 0.25 && Bs3 >= 0.25)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								buycheck = 1;
+								BuyFn();
+								g_pEngine->unlock(&iCode);
+							}
+							std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+						}
+					}
 				}
-				std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+			}
+			else if (Vol == 2)
+			{
+				if (sellcheck == 0)
+				{
+					if (buycheck == 0)
+					{
+						if (Psh3 <= -0.25 && Bs3 <= -0.25)
+						{			
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								sellcheck = 1;
+								SellFn();
+								g_pEngine->unlock(&iCode);
+							}
+							std::cout << "\n\nOrder position after sell is : " << _Posn << endl;
+						}
+					}
+				}
 			}
 		}
-	}
-	else if (Vol == 2)
-	{
-		if (Psh3 <= -0.25 && Bs3 <= -0.25)
-		{
-			track = 3;
-			if (!OpenOrd)
-			{
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-					SellFn();
-					g_pEngine->unlock(&iCode);
-				}
-				std::cout << "\n\nOrder position after sell is : " << _Posn << endl;
-			}
-		}
+		OpenOrd = false;
 	}
 
 	QueryPerformanceCounter(&EndingTime);
@@ -1127,7 +1204,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_minqty = pInfo->lSellQty;
 		_Posn = pInfo->lPosition;
 		
-		if(_Posn == 1)
+		if(_Posn == 1 || _Posn == -1)
 		{
 			if(BuyLimit)
 			{
