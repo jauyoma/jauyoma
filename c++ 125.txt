@@ -690,41 +690,6 @@ void MyCallbacks::Process()
 		Tracker = true;
 	}
 
-	if (BuyLimit)
-	{
-		if (buyclose == 0)
-		{
-			if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
-			{
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-					std::cout << "\n\nOrder position before buylimit close is : " << _Posn << endl;
-					buyclose = 1;
-					CloseBuyFn();
-					g_pEngine->unlock(&iCode);
-					std::cout << "\n\nOrder position after buylimit close is : " << _Posn << endl;
-				}
-			}
-		}
-	}
-	else if (SellLimit)
-	{
-		if (sellclose == 0)
-		{
-			if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
-			{
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-					std::cout << "\n\nOrder position before selllimit close is : " << _Posn << endl;
-					sellclose = 1;
-					CloseSellFn();
-					g_pEngine->unlock(&iCode);
-					std::cout << "\n\nOrder position after selllimit close is : " << _Posn << endl;
-				}
-			}
-		}
-	}
-
 	if (NQLAsk1 != NQLAsk2)
 	{
 		NQLAsk2 = NQLAsk1;
@@ -765,6 +730,39 @@ void MyCallbacks::Process()
 			Tracker = true;
 		}
 	}
+	
+	if (BuyLimit)
+	{
+		if (buyclose == 0)
+		{
+			if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
+				{
+					std::cout << "\n\nTrying to close buy limit order is" << endl;
+					buyclose = 1;
+					CloseBuyFn();
+					g_pEngine->unlock(&iCode);
+				}
+			}
+		}
+	}
+	else if (SellLimit)
+	{
+		if (sellclose == 0)
+		{
+			if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
+				{
+					std::cout << "\n\nTrying to close sell limit order is" << endl;
+					sellclose = 1;
+					CloseSellFn();
+					g_pEngine->unlock(&iCode);
+				}
+			}
+		}
+	}
 
 	if (LiveOrdNQ)
 	{
@@ -796,6 +794,7 @@ void MyCallbacks::Process()
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
+						std::cout << "\n\nTrying to close buy market order is" << endl;
 						buyclose = 1;
 						CloseBuyFn();
 						g_pEngine->unlock(&iCode);
@@ -814,6 +813,7 @@ void MyCallbacks::Process()
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
+						std::cout << "\n\nTrying to close sell market order is" << endl;
 						sellclose = 1;
 						CloseSellFn();
 						g_pEngine->unlock(&iCode);
@@ -837,6 +837,7 @@ void MyCallbacks::Process()
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
+								std::cout << "\n\nOpening buy market order is" << endl;
 								buycheck = 1;
 								BuyFn();
 								g_pEngine->unlock(&iCode);
@@ -856,6 +857,7 @@ void MyCallbacks::Process()
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
+								std::cout << "\n\nOpening sell market order is" << endl;
 								sellcheck = 1;
 								SellFn();
 								g_pEngine->unlock(&iCode);
@@ -868,6 +870,15 @@ void MyCallbacks::Process()
 		}
 		OpenOrd = false;
 	}
+	
+	std::cout << "\nBuyclose value is : " << buyclose << endl;
+	std::cout << "\nSellclose value is : " << sellclose << endl;
+	std::cout << "\nBuycheck value is : " << buycheck << endl;
+	std::cout << "\nSellcheck value is : " << sellcheck << endl;
+	std::cout << "\nBuyLimit value is : " << BuyLimit << endl;
+	std::cout << "\nSellLimit value is : " << SellLimit << endl;
+	std::cout << "\nBuyMarket value is : " << BuyMarket << endl;
+	std::cout << "\nSellMarket value is : " << SellMarket << endl;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -2943,8 +2954,8 @@ int main(int      argc,
 			std::cout << "\nTracked Market Sell volume is : " << NQ3SV << endl;
 			std::cout << "\nTracked Market Buy pivot price is : " << NQBVP << endl;
 			std::cout << "\nTracked Market Sell pivot price is : " << NQSVP << endl;
-			std::cout << "\nCurrent trend is : " << Vol << endl;
 			std::cout << "\nLast traded Price (Trade Print) for NQ is : " << NQ1TP << endl;
+			std::cout << "\nCurrent trend is : " << Vol << endl;
 			Tracker = false;
 		}
 	}
