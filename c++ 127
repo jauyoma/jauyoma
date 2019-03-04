@@ -132,7 +132,7 @@ double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
-double HighBid = 0, OpenPrice = 0, LowBid, LowAsk = 0;
+double HighBid = 0, Open = 0, LowBid, LowAsk = 0;
 
 
 SYSTEMTIME st, lt;
@@ -229,6 +229,10 @@ public:
 		void *                         pContext,
 		int *                          aiCode);
 
+	virtual int HighBidPrice(HighBidPriceInfo * pInfo,
+		void *          pContext,
+		int *           aiCode);
+
 	virtual int HighPrice(HighPriceInfo * pInfo,
 		void *          pContext,
 		int *           aiCode);
@@ -244,6 +248,10 @@ public:
 	virtual int LimitOrderBook(LimitOrderBookInfo * pInfo,
 		void *               pContext,
 		int *                aiCode);
+
+	virtual int LowAskPrice(LowAskPriceInfo * pInfo,
+		void *         pContext,
+		int *          aiCode);
 
 	virtual int LowPrice(LowPriceInfo * pInfo,
 		void *         pContext,
@@ -662,7 +670,7 @@ void MyCallbacks::Process()
 		buycheck = 0;
 	else if (sellcheck == 2 && !SellLimit)
 		sellcheck = 0;
-	if (buycheck == 0 && sellcheck == 0)
+	if (buycheck == 0 || sellcheck == 0)
 		OpenOrd = true;
 	if (buyclose == 2 && !BuyLimit)
 		buyclose = 0;
@@ -675,15 +683,15 @@ void MyCallbacks::Process()
 
 	if (Vol == 0)
 	{
-		If(OpenPrice > 0)
+		if(Open > 0)
 		{
-			if (NQLBid1 > OpenPrice)
+			if (NQLBid1 > Open)
 			{
 				Vol = 1;
 				NQBVP = NQLAsk1;
 				NQSVP = NQLBid1;
 			}
-			if (NQLBid1 < OpenPrice)
+			if (NQLBid1 < Open)
 			{
 				Vol = 2;
 				NQBVP = NQLAsk1;
@@ -715,7 +723,7 @@ void MyCallbacks::Process()
 
 	if (Vol == 1)
 	{
-		if (NQLBid1 < OpenPrice)
+		if (NQLBid1 > Open)
 		{
 			Vol = 2;
 			NQBVP = NQLAsk1;
@@ -725,7 +733,7 @@ void MyCallbacks::Process()
 	}
 	else if (Vol == 2)
 	{
-		if (NQLBid1 > OpenPrice)
+		if (NQLBid1 < Open)
 		{
 			Vol = 1;
 			NQBVP = NQLAsk1;
@@ -738,7 +746,7 @@ void MyCallbacks::Process()
 	{
 		if (buyclose == 0)
 		{
-			if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
+			if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 1)))
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -754,7 +762,7 @@ void MyCallbacks::Process()
 	{
 		if (sellclose == 0)
 		{
-			if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
+			if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 1)))
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -793,7 +801,7 @@ void MyCallbacks::Process()
 		{
 			if (buyclose == 0)
 			{
-				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt)
+				if (Psh6 < 0 && Bs3 < 0 && ((NQLBid1 <= NQBLmt && Vol == 2) || (Vol == 1 && NQLBid1 <= HighBid)))
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -812,7 +820,7 @@ void MyCallbacks::Process()
 		{
 			if (sellclose == 0)
 			{
-				if (Psh6 > 0 && Bs3 > 0)
+				if (Psh6 > 0 && Bs3 > 0 && ((NQLAsk1 >= NQSLmt && Vol == 1) || (Vol == 2 && NQLAsk1 >= LowAsk)))
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -1242,7 +1250,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			_AccBal = pInfo->dAccountBalance;
 			if (!BalMntr)
 			{
-				if(_AccBal < _RiskBal)
+				if (_AccBal < _RiskBal)
 					_MinBal = _AccBal * 0.999;
 				BalMntr = true;
 			}
@@ -1992,6 +2000,28 @@ int MyCallbacks::EquityOptionStrategyList(EquityOptionStrategyListInfo * pInfo,
 
 /*   =====================================================================   */
 
+int MyCallbacks::HighBidPrice(HighBidPriceInfo * pInfo,
+	void *          pContext,
+	int *           aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (pInfo->bPriceFlag)
+	{
+		HighBid = pInfo->dPrice;
+	}
+
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
 int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
 	void *          pContext,
 	int *           aiCode)
@@ -1999,11 +2029,7 @@ int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	
-	if(pInfo->bPriceFlag)
-	{
-		HighBid = pInfo->dPrice;
-	}
+
 
 
 	/*   ----------------------------------------------------------------   */
@@ -2051,6 +2077,27 @@ int MyCallbacks::LimitOrderBook(LimitOrderBookInfo * pInfo,
 
 /*   =====================================================================   */
 
+int MyCallbacks::LowAskPrice(LowAskPriceInfo * pInfo,
+	void *         pContext,
+	int *          aiCode)
+{
+	int iIgnored;
+
+	/*   ----------------------------------------------------------------   */
+
+	if (pInfo->bPriceFlag)
+	{
+		LowAsk = pInfo->dPrice;
+	}
+
+	/*   ----------------------------------------------------------------   */
+
+	*aiCode = API_OK;
+	return (OK);
+}
+
+/*   =====================================================================   */
+
 int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
 	void *         pContext,
 	int *          aiCode)
@@ -2058,11 +2105,8 @@ int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	
-	if(pInfo->bPriceFlag)
-	{
-		LowAsk = pInfo->dPrice;
-	}
+
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2116,10 +2160,10 @@ int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	
-	if(pInfo->bPriceFlag)
+
+	if (pInfo->bPriceFlag)
 	{
-		OpenPrice = pInfo->dPrice;
+		Open = pInfo->dPrice;
 	}
 
 
@@ -2256,7 +2300,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			}
 			NQ1BV = pInfo->iVolumeBought;
 		}
-			if (pInfo->bVolumeSoldFlag)
+		if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
 			if (NQ1SV > 0)
@@ -2713,7 +2757,7 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-	iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS);
+	iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS | MD_HIGH_BID_LOW_ASK | MD_OPEN);
 
 	/*   ----------------------------------------------------------------   */
 
