@@ -132,7 +132,7 @@ double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
-double HighBid, HighAsk, LowBid, LowAsk;
+double HighBid = 0, OpenPrice = 0, LowBid, LowAsk = 0;
 
 
 SYSTEMTIME st, lt;
@@ -570,7 +570,7 @@ bool MyCallbacks::BuyFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	oLmtOrdParams.dPrice = NQLBid1;
+	oLmtOrdParams.dPrice = HighBid;
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
@@ -675,17 +675,20 @@ void MyCallbacks::Process()
 
 	if (Vol == 0)
 	{
-		if (NQ3BV > NQ3SV)
+		If(OpenPrice > 0)
 		{
-			Vol = 1;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
+			if (NQLBid1 > OpenPrice)
+			{
+				Vol = 1;
+				NQBVP = NQLAsk1;
+				NQSVP = NQLBid1;
+			}
+			if (NQLBid1 < OpenPrice)
+			{
+				Vol = 2;
+				NQBVP = NQLAsk1;
+				NQSVP = NQLBid1;
+			}
 		}
 		Tracker = true;
 	}
@@ -712,7 +715,7 @@ void MyCallbacks::Process()
 
 	if (Vol == 1)
 	{
-		if (NQ3BV < NQ3SV)
+		if (NQLBid1 < OpenPrice)
 		{
 			Vol = 2;
 			NQBVP = NQLAsk1;
@@ -722,7 +725,7 @@ void MyCallbacks::Process()
 	}
 	else if (Vol == 2)
 	{
-		if (NQ3BV > NQ3SV)
+		if (NQLBid1 > OpenPrice)
 		{
 			Vol = 1;
 			NQBVP = NQLAsk1;
@@ -790,7 +793,7 @@ void MyCallbacks::Process()
 		{
 			if (buyclose == 0)
 			{
-				if (Psh6 < 0 && Bs3 < 0)
+				if (Psh6 < 0 && Bs3 < 0 && NQLBid1 <= NQBLmt)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -829,11 +832,11 @@ void MyCallbacks::Process()
 		{
 			if (Vol == 1)
 			{
-				if (sellcheck == 0)
+				if (!BuyLimit)
 				{
 					if (buycheck == 0)
 					{
-						if (Psh6 >= 0.25 && Bs3 >= 0.25)
+						if (HighBid > 0)
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
@@ -851,7 +854,7 @@ void MyCallbacks::Process()
 			{
 				if (sellcheck == 0)
 				{
-					if (buycheck == 0)
+					if (!SellLimit)
 					{
 						if (Psh6 <= -0.25 && Bs3 <= -0.25)
 						{
@@ -2113,7 +2116,11 @@ int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
+	
+	if(pInfo->bPriceFlag)
+	{
+		OpenPrice = pInfo->dPrice;
+	}
 
 
 	/*   ----------------------------------------------------------------   */
@@ -2750,7 +2757,7 @@ int main(int      argc,
 
 		/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
-		iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS);
+		iFlags = (MD_QUOTES | MD_BEST | MD_PRINTS | MD_OPEN);
 
 		/*   ----------------------------------------------------------------   */
 
