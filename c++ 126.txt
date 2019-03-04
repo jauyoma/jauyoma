@@ -495,8 +495,7 @@ void MyCallbacks::CloseBuyFn()
 					std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 			}
 		}
-
-		if (BuyLimit)
+		else if (BuyLimit)
 		{
 			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 			{
@@ -545,8 +544,7 @@ void MyCallbacks::CloseSellFn()
 					std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
 			}
 		}
-
-		if (SellLimit)
+		else if (SellLimit)
 		{
 			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 			{
@@ -791,11 +789,11 @@ void MyCallbacks::Process()
 		{
 			if (buyclose == 0)
 			{
-				if (NQ4BV < NQ4SV)
+				if (Psh6 < 0 && Bs3 < 0)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
-						std::cout << "\n\nTrying to close buy market order is" << endl;
+						std::cout << "\n\nTrying to close buy market order" << endl;
 						buyclose = 1;
 						CloseBuyFn();
 						g_pEngine->unlock(&iCode);
@@ -810,11 +808,11 @@ void MyCallbacks::Process()
 		{
 			if (sellclose == 0)
 			{
-				if (NQ4BV > NQ4SV)
+				if (Psh6 > 0 && Bs3 > 0)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
-						std::cout << "\n\nTrying to close sell market order is" << endl;
+						std::cout << "\n\nTrying to close sell market order" << endl;
 						sellclose = 1;
 						CloseSellFn();
 						g_pEngine->unlock(&iCode);
@@ -834,7 +832,7 @@ void MyCallbacks::Process()
 				{
 					if (buycheck == 0)
 					{
-						if (Psh3 >= 0.25 && Bs3 >= 0.25)
+						if (Psh6 >= 0.25 && Bs3 >= 0.25)
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
@@ -854,7 +852,7 @@ void MyCallbacks::Process()
 				{
 					if (buycheck == 0)
 					{
-						if (Psh3 <= -0.25 && Bs3 <= -0.25)
+						if (Psh6 <= -0.25 && Bs3 <= -0.25)
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
@@ -2243,7 +2241,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			}
 			NQ1BV = pInfo->iVolumeBought;
 		}
-		if (pInfo->bVolumeSoldFlag)
+			if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
 			if (NQ1SV > 0)
