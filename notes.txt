@@ -1,1 +1,300 @@
-Limit orders not closing. Check
+
+Opening buy market order is
+
+
+Level 1 Ask Size is : 2
+
+Level 1 Bid Price is : 2813.25
+
+
+BuyFn() order successfully submitted : 2813.25
+
+
+Order position after buy is : 0
+
+Level 1 Bid Size is : 78
+
+
+Accumulated Market Buy volume is : 8
+
+Accumulated Market Sell volume is : 1
+
+New Market Buy volume is : 2
+
+New Market Sell volume is : 1
+
+Market Buy volume is : 37069
+
+Market Sell volume is : 34826
+
+
+Tracked Market Buy volume is : 285
+
+Tracked Market Sell volume is : 280
+
+Tracked Market Buy pivot price is : 2813.5
+
+Tracked Market Sell pivot price is : 2813.25
+
+Last traded Price (Trade Print) for NQ is : 2813.5
+
+Current trend is : 1
+
+Buyclose value is : 0
+
+Sellclose value is : 0
+
+Buycheck value is : 2
+
+Sellcheck value is : 0
+
+BuyLimit value is : 1
+
+SellLimit value is : 0
+
+BuyMarket value is : 0
+
+SellMarket value is : 0
+
+
+Trying to close buy limit order is
+
+
+Order Book Information...
+
+Level 1 Ask Price is : 2813.5
+
+Level 1 Ask Size is : 41
+
+Level 1 Bid Price is : 2813.25
+
+Level 1 Bid Size is : 73
+
+
+Accumulated Market Buy volume is : 8
+
+Accumulated Market Sell volume is : 7
+
+New Market Buy volume is : 2
+
+New Market Sell volume is : 4
+
+Market Buy volume is : 37069
+
+Market Sell volume is : 34832
+
+
+Tracked Market Buy volume is : 285
+
+Tracked Market Sell volume is : 286
+
+Tracked Market Buy pivot price is : 2813.5
+
+Tracked Market Sell pivot price is : 2813.25
+
+Last traded Price (Trade Print) for NQ is : 2813.25
+
+Current trend is : 2
+
+Buyclose value is : 2
+
+Sellclose value is : 0
+
+Buycheck value is : 2
+
+Sellcheck value is : 0
+
+BuyLimit value is : 1
+
+SellLimit value is : 0
+
+BuyMarket value is : 0
+
+SellMarket value is : 0
+
+Closed Buy Limit Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813.5
+
+
+Order position after sell is : 0
+
+
+Current Sell Live Order position is : -1
+
+
+Trying to close sell market order is
+
+Trying to close Sell Market Order
+
+
+Closed Sell Market Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813.75
+
+
+Order position after sell is : 0
+
+
+Trying to close sell limit order is
+
+Closed Sell Limit Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813
+
+
+Order position after sell is : 0
+
+
+Current Sell Live Order position is : -1
+
+
+Trying to close sell market order is
+
+Trying to close Sell Market Order
+
+
+Closed Sell Market Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813.25
+
+
+Order position after sell is : 0
+
+
+Current Sell Live Order position is : -1
+
+
+Trying to close sell market order is
+
+Trying to close Sell Market Order
+
+
+Closed Sell Market Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813.5
+
+
+Order position after sell is : 0
+
+
+Trying to close sell limit order is
+
+Closed Sell Limit Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813
+
+
+Order position after sell is : 0
+
+
+Trying to close sell limit order is
+
+Closed Sell Limit Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2813
+
+
+Order position after sell is : 0
+
+
+Trying to close sell limit order is
+
+Closed Sell Limit Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2812.5
+
+
+Order position after sell is : 0
+
+
+Current Sell Live Order position is : -1
+
+
+Trying to close sell market order is
+
+Trying to close Sell Market Order
+
+
+Closed Sell Market Order
+
+
+Opening sell market order is
+
+
+SellFn() order successfully submitted : 2812.75
+
+
+Order position after sell is : 0
+
+
+Exiting algobox...
+
+
+Written text file CLS = 1...
+
+
+While loop Processing speed is : 2054
+
+Line update Processing speed is : 3
+
+PnL Processing speed is : 69
+
+Best Ask Processing speed is : 1
+
+Best Bid Processing speed is : 16
+
+Best Ask & Bid Processing speed is : 0
+
+Trade print Processing speed is : 9862
+
+Ask Processing speed is : 2
+
+Bid Processing speed is : 0
+
+Function Processing speed is : 9861
+
+Buy function processing speed is : 13334
+
+Sell Function Processing speed is : 8442
+
+Close Buy function processing speed is : 234
+
+Close Sell Function Processing speed is : 356
+
+
+Closing Black Box...
+
+C:\Users\User\Documents\9.9.0.0\samples\Samples.cpp.vs2015\Release>
