@@ -132,6 +132,7 @@ double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
+double HighBid, HighAsk, LowBid, LowAsk;
 
 
 SYSTEMTIME st, lt;
@@ -1239,7 +1240,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			if (!BalMntr)
 			{
 				if(_AccBal < _RiskBal)
-					_MinBal = _AccBal * 0.99;
+					_MinBal = _AccBal * 0.999;
 				BalMntr = true;
 			}
 		}
@@ -1995,7 +1996,11 @@ int MyCallbacks::HighPrice(HighPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
+	
+	if(pInfo->bPriceFlag)
+	{
+		HighBid = pInfo->dPrice;
+	}
 
 
 	/*   ----------------------------------------------------------------   */
@@ -2050,8 +2055,11 @@ int MyCallbacks::LowPrice(LowPriceInfo * pInfo,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
-
+	
+	if(pInfo->bPriceFlag)
+	{
+		LowAsk = pInfo->dPrice;
+	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2510,7 +2518,7 @@ int main(int      argc,
 	user1 = "42554PPR";
 	user2 = "andrew.kowuoche@gmail.com";
 
-	_MinBal = _RiskBal*0.99;
+	_MinBal = _RiskBal*0.999;
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
