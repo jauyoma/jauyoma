@@ -579,7 +579,7 @@ bool MyCallbacks::BuyFn()
 	QueryPerformanceCounter(&StartingTime);
 	
 	if(Vol == 1)
-		oLmtOrdParams.dPrice = HighBid;
+		oLmtOrdParams.dPrice = HighBid + (incrNQ*1);
 	else if(Vol == 2)
 		oLmtOrdParams.dPrice = NQLBid1 + (incrNQ*1);
 	oLmtOrdParams.sBuySellType.pData = "B";
@@ -621,7 +621,7 @@ bool MyCallbacks::SellFn()
 	QueryPerformanceCounter(&StartingTime);
 
 	if(Vol == 2)
-		oLmtOrdParams.dPrice = LowAsk;
+		oLmtOrdParams.dPrice = LowAsk - (incrNQ*1);
 	if(Vol == 1)
 		oLmtOrdParams.dPrice = NQLAsk1 - (incrNQ*1);
 	oLmtOrdParams.sBuySellType.pData = "S";
@@ -2981,7 +2981,15 @@ int main(int      argc,
 	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 	oLmtOrdParams.sTradeRoute = g_sTradeRoute;
+	
+	/*   ----------------------------------------------------------------   */
+	/*   send modify order */
 
+	oModLmtOrdParams.sExchange = sExchange;
+	oModLmtOrdParams.sTicker = sTicker;
+	oModLmtOrdParams.pAccount = &g_oAccount;
+	oModLmtOrdParams.iQty = _qty;
+	oModLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
