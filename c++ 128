@@ -752,25 +752,33 @@ void MyCallbacks::Process()
 	{
 		if (buyclose == 0)
 		{
-			if ((Vol == 2 && NQBLmt > Open)|| ((NQLBid1 - NQBLmt) >= (incrNQ * 1)))
+			if (Vol == 2 && NQBLmt > Open)
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
-					std::cout << "\n\nTrying to close buy limit order is" << endl;
+					std::cout << "\n\nTrying to close buy limit order" << endl;
 					buyclose = 1;
 					CloseBuyFn();
 					g_pEngine->unlock(&iCode);
 				}
 			}
 			
-			if ((NQLBid1 - NQBLmt) >= (incrNQ * 1))
+			if (((NQLBid1 - NQBLmt) >= (incrNQ * 1)) || ((NQBLmt - NQLBid1) >= (incrNQ * 1) && NQLAsk1 != LowAsk))
 			{
-				if (g_pEngine->tryLock(&iCode) == 1)
+				if(Vol == 2)
+					oModLmtOrdParams.dPrice = NQLBid1;
+				if(Vol == 1)
+					oModLmtOrdParams.dPrice = HighBid + (incrNQ*1);
+				oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+				std::cout << "\n\nTrying to modify buy limit order" << endl;
+				
+				if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 				{
-					std::cout << "\n\nTrying to modify buy limit order is" << endl;
-					buyclose = 1;
-					CloseBuyFn();
-					g_pEngine->unlock(&iCode);
+					std::cout << "\n\nBuy Order modified" << endl;
+				}
+				else
+				{
+					std::cout << "\n\nBuy Order NOT modified" << endl;
 				}
 			}
 		}
@@ -780,7 +788,7 @@ void MyCallbacks::Process()
 	{
 		if (sellclose == 0)
 		{
-			if ((Vol == 1 && NQSLmt < Open) || ((NQSLmt - NQLAsk1) >= (incrNQ * 1)))
+			if (Vol == 1 && NQSLmt < Open)
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -788,6 +796,25 @@ void MyCallbacks::Process()
 					sellclose = 1;
 					CloseSellFn();
 					g_pEngine->unlock(&iCode);
+				}
+			}
+			
+			if (((NQSLmt - NQLAsk1) >= (incrNQ * 1)) || ((NQLAsk1 - NQSLmt) >= (incrNQ * 1) && NQLBid1 != HighBid))
+			{
+				if(Vol == 1)
+					oModLmtOrdParams.dPrice = NQLAsk1;
+				if(Vol == 2)
+					oModLmtOrdParams.dPrice = LowAsk - (incrNQ*1);
+				oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+				std::cout << "\n\nTrying to modify sell limit order" << endl;
+				
+				if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+				{
+					std::cout << "\n\nSell Order modified" << endl;
+				}
+				else
+				{
+					std::cout << "\n\nSell Order NOT modified" << endl;
 				}
 			}
 		}
