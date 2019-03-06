@@ -580,7 +580,7 @@ bool MyCallbacks::BuyFn()
 	
 	if(Vol == 1)
 		oLmtOrdParams.dPrice = HighBid;
-	if(Vol == 2)
+	else if(Vol == 2)
 		oLmtOrdParams.dPrice = NQLBid1 + (incrNQ*1);
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
@@ -662,8 +662,8 @@ void MyCallbacks::Process()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	Psh1 = NQ2BV - NQ2SV;
-	Psh2 = NQ2BV + NQ2SV;
+	Psh1 = NQ3BV - NQ3SV;
+	Psh2 = NQ3BV + NQ3SV;
 	Psh3 = Psh1 / Psh2;
 	Psh4 = NQ4BV - NQ4SV;
 	Psh5 = NQ4BV + NQ4SV;
@@ -764,7 +764,8 @@ void MyCallbacks::Process()
 			}
 		}
 	}
-	else if (SellLimit)
+	
+	if (SellLimit)
 	{
 		if (sellclose == 0)
 		{
@@ -807,7 +808,7 @@ void MyCallbacks::Process()
 		{
 			if (buyclose == 0)
 			{
-				if (Psh6 < 0 && Bs3 < 0 && ((NQLBid1 <= NQBLmt && Vol == 2) || (Vol == 1 && NQLBid1 <= HighBid)))
+				if ((Vol == 2 && Psh1 < 0 && Bs1 < 0 && NQLBid1 <= NQBLmt) || (Vol == 1 && ((NQLBid1 < HighBid && HighBid > NQBLmt) || (Psh1 < 0 && Bs1 < 0 && NQLBid1 <= NQBLmt))))
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -826,7 +827,7 @@ void MyCallbacks::Process()
 		{
 			if (sellclose == 0)
 			{
-				if (Psh6 > 0 && Bs3 > 0 && ((NQLAsk1 >= NQSLmt && Vol == 1) || (Vol == 2 && NQLAsk1 >= LowAsk)))
+				if ((Vol == 1 && Psh1 > 0 && Bs1 > 0 && NQLAsk1 >= NQSLmt) || (Vol == 2 && ((NQLAsk1 > LowAsk && LowAsk < NQSLmt) || (Psh1 > 0 && Bs1 > 0 && NQLAsk1 >= NQSLmt))))
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -852,16 +853,13 @@ void MyCallbacks::Process()
 					{
 						if (buycheck == 0)
 						{
-							if (NQLBid1 != HighBid)
+							if (g_pEngine->tryLock(&iCode) == 1)
 							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									std::cout << "\n\nOpening buy limit order is" << endl;
-									buycheck = 1;
-									BuyFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
+								std::cout << "\n\nVol 1 - Opening buy limit order is" << endl;
+								buycheck = 1;
+								BuyFn();
+								g_pEngine->unlock(&iCode);
+							}							
 						}
 					}
 				}
@@ -876,7 +874,7 @@ void MyCallbacks::Process()
 								NQBcheck = 1;
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\n\nOpening sell limit order is" << endl;
+									std::cout << "\n\nVol 1 - Opening sell limit order is" << endl;
 									sellcheck = 1;
 									SellFn();
 									g_pEngine->unlock(&iCode);
@@ -2346,7 +2344,10 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 					NQ4BV = NQ4BV + NQ2BV;
 				else
 					NQ4BV = NQ2BV;
-				NQ3BV = NQ3BV + NQ2BV;
+				if(BuyMarket)
+					NQ3BV = NQ3BV + NQ2BV;
+				else
+					NQ3BV = NQ4BV;
 			}
 			NQ1BV = pInfo->iVolumeBought;
 		}
@@ -2355,11 +2356,14 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
 			if (NQ1SV > 0)
 			{
-				NQ3SV = NQ3SV + NQ2SV;
 				if (!SvolTracker)
 					NQ4SV = NQ4SV + NQ2SV;
 				else
 					NQ4SV = NQ2SV;
+				if(SellMarket)
+					NQ3SV = NQ3SV + NQ2SV;
+				else
+					NQ3SV = NQ4SV;
 			}
 			NQ1SV = pInfo->iVolumeSold;
 		}
