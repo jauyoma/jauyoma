@@ -857,7 +857,7 @@ void MyCallbacks::Process()
 		{
 			if (buyclose == 0)
 			{
-				if ((Vol == 2 && Psh1 < 0 && Bs1 < 0 && NQLBid1 <= NQBLmt) || (Vol == 1 && ((NQLBid1 < HighBid && HighBid > NQBLmt) || (Psh1 < 0 && Bs1 < 0 && NQLBid1 <= NQBLmt))))
+				if ((NQLBid1 < HighBid && HighBid > NQBLmt && Vol == 1) || (Bs1 < 0 && NQLBid1 <= NQBLmt && NQSBid1 < 10) || NQLBid1 < NQBLmt)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -876,7 +876,7 @@ void MyCallbacks::Process()
 		{
 			if (sellclose == 0)
 			{
-				if ((Vol == 1 && Psh1 > 0 && Bs1 > 0 && NQLAsk1 >= NQSLmt) || (Vol == 2 && ((NQLAsk1 > LowAsk && LowAsk < NQSLmt) || (Psh1 > 0 && Bs1 > 0 && NQLAsk1 >= NQSLmt))))
+				if ((NQLAsk1 > LowAsk && LowAsk < NQSLmt && Vol == 2) || (Bs1 > 0 && NQLAsk1 >= NQSLmt && NQSAsk1 < 10) || NQLAsk1 > NQSLmt)
 				{
 					if (g_pEngine->tryLock(&iCode) == 1)
 					{
@@ -902,13 +902,16 @@ void MyCallbacks::Process()
 					{
 						if (buycheck == 0)
 						{
-							if (g_pEngine->tryLock(&iCode) == 1)
+							if(!SellMarket || (SellMarket && NQSLmt > Open))
 							{
-								std::cout << "\n\nVol 1 - Opening buy limit order" << endl;
-								buycheck = 1;
-								BuyFn();
-								g_pEngine->unlock(&iCode);
-							}							
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									std::cout << "\n\nVol 1 - Opening buy limit order" << endl;
+									buycheck = 1;
+									BuyFn();
+									g_pEngine->unlock(&iCode);
+								}
+							}
 						}
 					}
 				}
@@ -923,7 +926,7 @@ void MyCallbacks::Process()
 								NQBcheck = 1;
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\n\nVol 1 - Opening sell limit order is" << endl;
+									std::cout << "\n\nVol 1 - Opening sell limit order" << endl;
 									sellcheck = 1;
 									SellFn();
 									g_pEngine->unlock(&iCode);
@@ -941,11 +944,11 @@ void MyCallbacks::Process()
 					{
 						if (sellcheck == 0)
 						{
-							if (LowAsk != NQLAsk1)
+							if(!BuyMarket || (BuyMarket && NQBLmt < Open))
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\n\nOpening sell market order is" << endl;
+									std::cout << "\n\nVol 2 - Opening sell market order" << endl;
 									sellcheck = 1;
 									SellFn();
 									g_pEngine->unlock(&iCode);
@@ -965,7 +968,7 @@ void MyCallbacks::Process()
 								NQBcheck = 2;
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\n\nOpening buy limit order is" << endl;
+									std::cout << "\n\nVol 2 - Opening buy limit order" << endl;
 									buycheck = 1;
 									BuyFn();
 									g_pEngine->unlock(&iCode);
@@ -1521,8 +1524,9 @@ int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
-
+	
+	std::cout << "\n\nConfirmed : Order Modified" << endl;
+	
 	/*   ----------------------------------------------------------------   */
 
 	*aiCode = API_OK;
@@ -1555,7 +1559,8 @@ int MyCallbacks::NotModifiedReport(OrderNotModifiedReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-
+	
+	std::cout << "\n\nRejected : Order NOT Modified" << endl;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2268,7 +2273,7 @@ int MyCallbacks::OpenPrice(OpenPriceInfo * pInfo,
 
 	if (pInfo->bPriceFlag)
 	{
-		Open = pInfo->dPrice;
+		
 	}
 
 
