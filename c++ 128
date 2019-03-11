@@ -508,7 +508,7 @@ void MyCallbacks::CloseBuyFn()
 		{
 			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 			{
-
+				std::cout << "\nClosed Buy Limit Order\n" << endl;
 			}
 		}
 		buyclose = 2;
@@ -557,7 +557,7 @@ void MyCallbacks::CloseSellFn()
 		{
 			if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 			{
-
+				std::cout << "\nClosed Sell Limit Order\n" << endl;
 			}
 		}
 		sellclose = 2;
@@ -671,7 +671,18 @@ void MyCallbacks::Process()
 	Bs1 = NQSBid1 - NQSAsk1;
 	Bs2 = NQSBid1 + NQSAsk1;
 	Bs3 = Bs1 / Bs2;
-
+	
+	if(!SubOrd)
+	{
+		if((HighBid-LowAsk) < (4 * incrNQ))
+		{
+			HighBid = HighBid + (2*incrNQ);
+			LowAsk = LowAsk - (2*incrNQ);
+		}
+		Open = HighBid;
+		SubOrd = true;
+	}
+	
 	if (buycheck == 2 && !BuyLimit)
 		buycheck = 0;
 	else if (sellcheck == 2 && !SellLimit)
@@ -763,7 +774,7 @@ void MyCallbacks::Process()
 				}
 			}
 			
-			if (((NQLBid1 - NQBLmt) >= (incrNQ * 1)) || ((NQBLmt - NQLBid1) >= (incrNQ * 1) && NQLAsk1 != LowAsk))
+			if (((NQLBid1 - NQBLmt) >= (incrNQ * 1)) || ((NQBLmt - NQLBid1) >= (incrNQ * 1) && NQLAsk1 != LowAsk && Vol == 2))
 			{
 				if(Vol == 2)
 					oModLmtOrdParams.dPrice = NQLBid1;
@@ -772,7 +783,7 @@ void MyCallbacks::Process()
 				oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 				std::cout << "\n\nTrying to modify buy limit order" << endl;
 				
-				if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+				if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 				{
 					std::cout << "\n\nBuy Order modified" << endl;
 				}
@@ -799,7 +810,7 @@ void MyCallbacks::Process()
 				}
 			}
 			
-			if (((NQSLmt - NQLAsk1) >= (incrNQ * 1)) || ((NQLAsk1 - NQSLmt) >= (incrNQ * 1) && NQLBid1 != HighBid))
+			if (((NQSLmt - NQLAsk1) >= (incrNQ * 1)) || ((NQLAsk1 - NQSLmt) >= (incrNQ * 1) && NQLBid1 != HighBid && Vol == 1))
 			{
 				if(Vol == 1)
 					oModLmtOrdParams.dPrice = NQLAsk1;
@@ -808,7 +819,7 @@ void MyCallbacks::Process()
 				oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 				std::cout << "\n\nTrying to modify sell limit order" << endl;
 				
-				if (!g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+				if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 				{
 					std::cout << "\n\nSell Order modified" << endl;
 				}
@@ -893,7 +904,7 @@ void MyCallbacks::Process()
 						{
 							if (g_pEngine->tryLock(&iCode) == 1)
 							{
-								std::cout << "\n\nVol 1 - Opening buy limit order is" << endl;
+								std::cout << "\n\nVol 1 - Opening buy limit order" << endl;
 								buycheck = 1;
 								BuyFn();
 								g_pEngine->unlock(&iCode);
@@ -907,7 +918,7 @@ void MyCallbacks::Process()
 					{
 						if (sellcheck == 0)
 						{
-							if (NQLBid1 == HighBid || NQBcheck == 1)
+							if (NQLBid1 >= HighBid || NQBcheck == 1)
 							{
 								NQBcheck = 1;
 								if (g_pEngine->tryLock(&iCode) == 1)
@@ -949,7 +960,7 @@ void MyCallbacks::Process()
 					{
 						if (buycheck == 0)
 						{
-							if (LowAsk == NQLAsk1  || NQBcheck == 2)
+							if (NQLAsk1 <= LowAsk || NQBcheck == 2)
 							{
 								NQBcheck = 2;
 								if (g_pEngine->tryLock(&iCode) == 1)
@@ -1784,6 +1795,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQSAsk1 = pInfo->iSize;
 			NQNAsk1 = pInfo->iNumOrders;
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			if(NQLAsk1 < LowAsk || LowAsk == 0)
+				LowAsk = NQLAsk1;
 		}
 	}
 
@@ -1845,6 +1858,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSAsk1 = pAsk->iSize;
 			NQNAsk1 = pAsk->iNumOrders;
 			BAsk_T = pAsk->iSsboe + pAsk->iUsecs;
+			if(NQLAsk1 < LowAsk || LowAsk == 0)
+				LowAsk = NQLAsk1;
 		}
 	}
 
@@ -1856,6 +1871,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
+			if(NQLBid1 > HighBid)
+				HighBid = NQLBid1;
 		}
 	}
 
@@ -1927,6 +1944,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+			if(NQLBid1 > HighBid)
+				HighBid = NQLBid1;
 		}
 	}
 
@@ -2096,7 +2115,7 @@ int MyCallbacks::HighBidPrice(HighBidPriceInfo * pInfo,
 
 	if (pInfo->bPriceFlag)
 	{
-		HighBid = pInfo->dPrice;
+		
 	}
 
 
@@ -2173,7 +2192,7 @@ int MyCallbacks::LowAskPrice(LowAskPriceInfo * pInfo,
 
 	if (pInfo->bPriceFlag)
 	{
-		LowAsk = pInfo->dPrice;
+		
 	}
 
 	/*   ----------------------------------------------------------------   */
