@@ -128,11 +128,11 @@ double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false, BuyMarket = false, SellMarket = false;
-double NQBLmt, NQSLmt;
+double NQBLmt, NQSLmt, SMA[200], n = 200, sum = 0;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
-double HighBid, HighAsk, LowBid, LowAsk;
+double HighBid, HighAsk, LowBid, LowAsk, Ave;
 
 
 SYSTEMTIME st, lt;
@@ -1759,6 +1759,17 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
+			if(n >= 0)
+			{
+        		SMA[n] = NQLBid1;
+        		sum += SMA[n];
+			n = n - 1;
+			}
+			else
+			{
+				sum = (sum - SMA[200]) + NQLBid1;
+				ave = sum / 200;
+			}
 		}
 	}
 
@@ -1830,6 +1841,17 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+			if(n >= 0)
+			{
+        		SMA[n] = NQLBid1;
+        		sum += SMA[n];
+			n = n - 1;
+			}
+			else
+			{
+				sum = (sum - SMA[200]) + NQLBid1;
+				ave = sum / 200;
+			}
 		}
 	}
 
