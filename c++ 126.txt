@@ -128,12 +128,13 @@ double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false, BuyMarket = false, SellMarket = false;
-double NQBLmt, NQSLmt, SMA[200], n = 200, sum = 0;
+double NQBLmt, NQSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
-double HighBid, HighAsk, LowBid, LowAsk, Ave;
-
+double HighBid, HighAsk, LowBid, LowAsk;
+int n = 1, v = 1, trend = 0;
+long double average = 0, sum = 0, SMA[200], PrevAve = 0;
 
 SYSTEMTIME st, lt;
 
@@ -1759,17 +1760,30 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQSBid1 = pBid->iSize;
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
-			if(n >= 0)
+			
+			if(n > 200)
 			{
-        		SMA[n] = NQLBid1;
-        		sum += SMA[n];
-			n = n - 1;
+				sum = (sum - SMA[200 - i]) + NQLBid1;
+				i = i + 1;
+				if(i == 201)
+					i = 1;
+				average = sum / 200;
+				if(PrevAve > 0)
+				{
+					if(average > PrevAve)
+						trend = 1;
+					else if(average < PrevAve)
+						trend = 2;
+				}
+				PrevAve = average;
 			}
-			else
+			else if(n <= 200)
 			{
-				sum = (sum - SMA[200]) + NQLBid1;
-				ave = sum / 200;
+        			SMA[200 - n] = NQLBid1;
+        			sum = sum + SMA[200 - n];
+				n = n + 1;
 			}
+			
 		}
 	}
 
@@ -1841,16 +1855,66 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
-			if(n >= 0)
+			if(n > 200)
 			{
-        		SMA[n] = NQLBid1;
-        		sum += SMA[n];
-			n = n - 1;
+				sum = (sum - SMA[200 - i]) + NQLBid1;
+				i = i + 1;
+				if(i == 201)
+					i = 1;
+				average = sum / 200;
+				if(PrevAve > 0)
+				{
+					if(trend == 1)
+					{
+						if(average < PrevAve)
+						{
+							if (BalMntr)
+							{
+								if (_AccBal > _MinBal)
+									Process();
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
+							else
+							{
+								Process();
+							}
+							trend = 2;
+						}
+					}
+					else if(trend == 2)
+					{
+						if(average > PrevAve)
+						{
+							if (BalMntr)
+							{
+								if (_AccBal > _MinBal)
+									Process();
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
+							else
+							{
+								Process();
+							}
+							trend = 1;
+						}
+					}
+					else if(trend == 0)
+					{
+						if(average > PrevAve)
+							trend = 1;
+						else if(average < PrevAve)
+							trend = 2;
+					}
+				}
+				PrevAve = average;
 			}
-			else
+			else if(n <= 200)
 			{
-				sum = (sum - SMA[200]) + NQLBid1;
-				ave = sum / 200;
+        			SMA[200 - n] = NQLBid1;
+        			sum = sum + SMA[200 - n];
+				n = n + 1;
 			}
 		}
 	}
@@ -2271,7 +2335,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			}
 			NQ1BV = pInfo->iVolumeBought;
 		}
-			if (pInfo->bVolumeSoldFlag)
+		if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
 			if (NQ1SV > 0)
@@ -2285,18 +2349,6 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			NQ1SV = pInfo->iVolumeSold;
 		}
 
-	}
-
-	if (BalMntr)
-	{
-		if (_AccBal > _MinBal)
-			Process();
-		else
-			std::cout << "\nMinimum trading account balance breached" << endl;
-	}
-	else
-	{
-		Process();
 	}
 
 	QueryPerformanceCounter(&EndingTime);
