@@ -649,241 +649,7 @@ void MyCallbacks::Process()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	Psh1 = NQ2BV - NQ2SV;
-	Psh2 = NQ2BV + NQ2SV;
-	Psh3 = Psh1 / Psh2;
-	Psh4 = NQ4BV - NQ4SV;
-	Psh5 = NQ4BV + NQ4SV;
-	Psh6 = Psh4 / Psh5;
-	Bs1 = NQSBid1 - NQSAsk1;
-	Bs2 = NQSBid1 + NQSAsk1;
-	Bs3 = Bs1 / Bs2;
-
-	if (buycheck == 2 && !BuyLimit)
-		buycheck = 0;
-	else if (sellcheck == 2 && !SellLimit)
-		sellcheck = 0;
-	if (buycheck == 0 && sellcheck == 0)
-		OpenOrd = true;
-	if (buyclose == 2 && !BuyLimit)
-		buyclose = 0;
-	else if (sellclose == 2 && !SellLimit)
-		sellclose = 0;
-	if (buyclose == 2 && BuyMarket)
-		buyclose = 0;
-	else if (sellclose == 2 && SellMarket)
-		sellclose = 0;
-
-	if (Vol == 0)
-	{
-		if (NQ3BV > NQ3SV)
-		{
-			Vol = 1;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-		}
-		Tracker = true;
-	}
-
-	if (NQLAsk1 != NQLAsk2)
-	{
-		NQLAsk2 = NQLAsk1;
-		SvolTracker = true;
-	}
-	else
-	{
-		SvolTracker = false;
-	}
-
-	if (NQLBid1 != NQLBid2)
-	{
-		NQLBid2 = NQLBid1;
-		BvolTracker = true;
-	}
-	else
-	{
-		BvolTracker = false;
-	}
-
-	if (Vol == 1)
-	{
-		if (NQ3BV < NQ3SV)
-		{
-			Vol = 2;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-			Tracker = true;
-		}
-	}
-	else if (Vol == 2)
-	{
-		if (NQ3BV > NQ3SV)
-		{
-			Vol = 1;
-			NQBVP = NQLAsk1;
-			NQSVP = NQLBid1;
-			Tracker = true;
-		}
-	}
-
-	if (BuyLimit)
-	{
-		if (buyclose == 0)
-		{
-			if (Vol == 2 || ((NQLBid1 - NQBLmt) >= (incrNQ * 2)))
-			{
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-					std::cout << "\n\nTrying to close buy limit order is" << endl;
-					buyclose = 1;
-					CloseBuyFn();
-					g_pEngine->unlock(&iCode);
-				}
-			}
-		}
-	}
-	else if (SellLimit)
-	{
-		if (sellclose == 0)
-		{
-			if (Vol == 1 || ((NQSLmt - NQLAsk1) >= (incrNQ * 2)))
-			{
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-					std::cout << "\n\nTrying to close sell limit order is" << endl;
-					sellclose = 1;
-					CloseSellFn();
-					g_pEngine->unlock(&iCode);
-				}
-			}
-		}
-	}
-
-	if (LiveOrdNQ)
-	{
-		LiveOrdNQ = false;
-		if (BuyLimit)
-		{
-			if (buyclose == 2)
-			{
-				buyclose = 0;
-			}
-		}
-		if (SellLimit)
-		{
-			if (sellclose == 2)
-			{
-				sellclose = 0;
-			}
-		}
-		std::cout << "\n\nOrder cancellation rejected / failed. Trying to re-cancel" << endl;
-	}
-
-	if (BuyMarket)
-	{
-		if (_Posn == 1)
-		{
-			if (buyclose == 0)
-			{
-				if (Psh6 < 0 && Bs3 < 0)
-				{
-					if (g_pEngine->tryLock(&iCode) == 1)
-					{
-						std::cout << "\n\nTrying to close buy market order" << endl;
-						buyclose = 1;
-						CloseBuyFn();
-						g_pEngine->unlock(&iCode);
-					}
-				}
-			}
-		}
-	}
-	else if (SellMarket)
-	{
-		if (_Posn == -1)
-		{
-			if (sellclose == 0)
-			{
-				if (Psh6 > 0 && Bs3 > 0)
-				{
-					if (g_pEngine->tryLock(&iCode) == 1)
-					{
-						std::cout << "\n\nTrying to close sell market order" << endl;
-						sellclose = 1;
-						CloseSellFn();
-						g_pEngine->unlock(&iCode);
-					}
-				}
-			}
-		}
-	}
-
-	if (OpenOrd)
-	{
-		if (_Posn == 0)
-		{
-			if (Vol == 1)
-			{
-				if (sellcheck == 0)
-				{
-					if (buycheck == 0)
-					{
-						if (Psh6 >= 0.25 && Bs3 >= 0.25)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\n\nOpening buy market order is" << endl;
-								buycheck = 1;
-								BuyFn();
-								g_pEngine->unlock(&iCode);
-							}
-							std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
-						}
-					}
-				}
-			}
-			else if (Vol == 2)
-			{
-				if (sellcheck == 0)
-				{
-					if (buycheck == 0)
-					{
-						if (Psh6 <= -0.25 && Bs3 <= -0.25)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\n\nOpening sell market order is" << endl;
-								sellcheck = 1;
-								SellFn();
-								g_pEngine->unlock(&iCode);
-							}
-							std::cout << "\n\nOrder position after sell is : " << _Posn << endl;
-						}
-					}
-				}
-			}
-		}
-		OpenOrd = false;
-	}
-
-	if (track == 1)
-	{
-		std::cout << "\nBuyclose value is : " << buyclose << endl;
-		std::cout << "\nSellclose value is : " << sellclose << endl;
-		std::cout << "\nBuycheck value is : " << buycheck << endl;
-		std::cout << "\nSellcheck value is : " << sellcheck << endl;
-		std::cout << "\nBuyLimit value is : " << BuyLimit << endl;
-		std::cout << "\nSellLimit value is : " << SellLimit << endl;
-		std::cout << "\nBuyMarket value is : " << BuyMarket << endl;
-		std::cout << "\nSellMarket value is : " << SellMarket << endl;
-		track = 0;
-	}
+	
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1763,6 +1529,16 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (trend == 1)
 					{
+						if (SellMarket)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								std::cout << "\n\nSending close sell market order" << endl;
+								sellclose = 1;
+								CloseSellFn();
+								g_pEngine->unlock(&iCode);
+							}
+						}
 						if (average < PrevAve)
 						{
 							if (!SellLimit)
@@ -1783,22 +1559,26 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										std::cout << "\nMinimum trading account balance breached" << endl;
 								}
 								else
-									std::cout << "\nLive account balance NOT set" << endl;
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											std::cout << "\n\nOpening sell market order" << endl;
+											sellcheck = 1;
+											SellFn();
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
 							}
 							trend = 2;
 						}
 						else if (BuyLimit)
 						{
-							if (SellMarket)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									std::cout << "\n\nTrying to close sell market order" << endl;
-									sellclose = 1;
-									CloseSellFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
+							
 							if (!BuyMarket)
 							{
 								if (abs(NQLBid1 - NQBLmt) >= (incrNQ * 1))
@@ -1813,20 +1593,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								}
 							}
 						}
-						else
+						else if (!BuyMarket)
 						{
-							if (!BuyMarket)
-							{
-								if (SellMarket)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										std::cout << "\n\nTrying to close sell market order" << endl;
-										sellclose = 1;
-										CloseSellFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
 								if (BalMntr)
 								{
 									if (_AccBal > _MinBal)
@@ -1844,12 +1612,35 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										std::cout << "\nMinimum trading account balance breached" << endl;
 								}
 								else
-									std::cout << "\nLive account balance NOT set" << endl;
-							}
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											std::cout << "\n\nOpening buy market order" << endl;
+											buycheck = 1;
+											BuyFn();
+											g_pEngine->unlock(&iCode);
+										}
+										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
 						}
 					}
 					else if (trend == 2)
 					{
+						if (BuyMarket)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								std::cout << "\n\nTrying to close buy market order" << endl;
+								buyclose = 1;
+								CloseBuyFn();
+								g_pEngine->unlock(&iCode);
+							}
+						}
 						if (average > PrevAve)
 						{
 							if (!BuyLimit)
@@ -1881,7 +1672,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										std::cout << "\nMinimum trading account balance breached" << endl;
 								}
 								else
-									std::cout << "\nLive account balance NOT set" << endl;
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											std::cout << "\n\nOpening buy market order" << endl;
+											buycheck = 1;
+											BuyFn();
+											g_pEngine->unlock(&iCode);
+										}
+										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
 								
 							}						
 							trend = 1;
@@ -1890,16 +1695,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							if (!SellMarket)
 							{
-								if (BuyMarket)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										std::cout << "\n\nTrying to close buy market order" << endl;
-										buyclose = 1;
-										CloseBuyFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
 								if (abs(NQLAsk1 - NQSLmt) >= (incrNQ * 1))
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
@@ -1912,20 +1707,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								}
 							}
 						}
-						else
+						else if (!SellMarket)
 						{
-							if (!SellMarket)
-							{
-								if (BuyMarket)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										std::cout << "\n\nTrying to close buy market order" << endl;
-										buyclose = 1;
-										CloseBuyFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
 								if (BalMntr)
 								{
 									if (_AccBal > _MinBal)
@@ -1942,8 +1725,20 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										std::cout << "\nMinimum trading account balance breached" << endl;
 								}
 								else
-									std::cout << "\nLive account balance NOT set" << endl;
-							}
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											std::cout << "\n\nOpening sell market order" << endl;
+											sellcheck = 1;
+											SellFn();
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
 						}
 					}
 					else if (trend == 0)
@@ -2033,6 +1828,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQSBid1 = pInfo->iSize;
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
+
 			if (n > 200)
 			{
 				sum = (sum - SMA[200 - i]) + NQLBid1;
@@ -2044,9 +1840,19 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				{
 					if (trend == 1)
 					{
+						if (SellMarket)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								std::cout << "\n\nSending close sell market order" << endl;
+								sellclose = 1;
+								CloseSellFn();
+								g_pEngine->unlock(&iCode);
+							}
+						}
 						if (average < PrevAve)
 						{
-							if (buycheck == 0)
+							if (!SellLimit)
 							{
 								if (BalMntr)
 								{
@@ -2054,12 +1860,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 									{
 										if (g_pEngine->tryLock(&iCode) == 1)
 										{
-											std::cout << "\n\nOpening buy market order" << endl;
-											buycheck = 1;
-											BuyFn();
+											std::cout << "\n\nOpening sell market order" << endl;
+											sellcheck = 1;
+											SellFn();
 											g_pEngine->unlock(&iCode);
 										}
-										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
 									}
 									else
 										std::cout << "\nMinimum trading account balance breached" << endl;
@@ -2070,36 +1875,109 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 									{
 										if (g_pEngine->tryLock(&iCode) == 1)
 										{
-											std::cout << "\n\nOpening buy market order" << endl;
-											buycheck = 1;
-											BuyFn();
+											std::cout << "\n\nOpening sell market order" << endl;
+											sellcheck = 1;
+											SellFn();
 											g_pEngine->unlock(&iCode);
 										}
-										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
 									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
 								}
 							}
 							trend = 2;
 						}
+						else if (BuyLimit)
+						{
+
+							if (!BuyMarket)
+							{
+								if (abs(NQLBid1 - NQBLmt) >= (incrNQ * 1))
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										oModLmtOrdParams.dPrice = NQLBid1;
+										std::cout << "\n\nTrying to modify buy limit order" << endl;
+										g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode);
+										g_pEngine->unlock(&iCode);
+									}
+								}
+							}
+						}
+						else if (!BuyMarket)
+						{
+							if (BalMntr)
+							{
+								if (_AccBal > _MinBal)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										std::cout << "\n\nOpening buy market order" << endl;
+										buycheck = 1;
+										BuyFn();
+										g_pEngine->unlock(&iCode);
+									}
+									std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+								}
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
+							else
+							{
+								if (_AccBal > _MinBal)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										std::cout << "\n\nOpening buy market order" << endl;
+										buycheck = 1;
+										BuyFn();
+										g_pEngine->unlock(&iCode);
+									}
+									std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+								}
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
+						}
 					}
 					else if (trend == 2)
 					{
+						if (BuyMarket)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								std::cout << "\n\nSending close buy market order" << endl;
+								buyclose = 1;
+								CloseBuyFn();
+								g_pEngine->unlock(&iCode);
+							}
+						}
 						if (average > PrevAve)
 						{
-							if (sellcheck == 0)
+							if (!BuyLimit)
 							{
+								if (SellMarket || SellLimit)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										std::cout << "\n\nSending close sell order" << endl;
+										sellclose = 1;
+										CloseSellFn();
+										g_pEngine->unlock(&iCode);
+									}
+								}
 								if (BalMntr)
 								{
 									if (_AccBal > _MinBal)
 									{
 										if (g_pEngine->tryLock(&iCode) == 1)
 										{
-											std::cout << "\n\nOpening sell market order" << endl;
-											sellcheck = 1;
-											SellFn();
+											std::cout << "\n\nOpening buy market order" << endl;
+											buycheck = 1;
+											BuyFn();
 											g_pEngine->unlock(&iCode);
 										}
-										std::cout << "\n\nOrder position after sell is : " << _Posn << endl;
+										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
 									}
 									else
 										std::cout << "\nMinimum trading account balance breached" << endl;
@@ -2110,16 +1988,68 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 									{
 										if (g_pEngine->tryLock(&iCode) == 1)
 										{
-											std::cout << "\n\nOpening sell market order" << endl;
-											sellcheck = 1;
-											SellFn();
+											std::cout << "\n\nOpening buy market order" << endl;
+											buycheck = 1;
+											BuyFn();
 											g_pEngine->unlock(&iCode);
 										}
-										std::cout << "\n\nOrder position after sell is : " << _Posn << endl;
+										std::cout << "\n\nOrder position after buy is : " << _Posn << endl;
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
+
+							}
+							trend = 1;
+						}
+						else if (SellLimit)
+						{
+							if (!SellMarket)
+							{
+								if (abs(NQLAsk1 - NQSLmt) >= (incrNQ * 1))
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										oModLmtOrdParams.dPrice = NQLAsk1;
+										std::cout << "\n\nTrying to modify sell limit order" << endl;
+										g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode);
+										g_pEngine->unlock(&iCode);
 									}
 								}
 							}
-							trend = 1;
+						}
+						else if (!SellMarket)
+						{
+							if (BalMntr)
+							{
+								if (_AccBal > _MinBal)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										std::cout << "\n\nOpening sell market order" << endl;
+										sellcheck = 1;
+										SellFn();
+										g_pEngine->unlock(&iCode);
+									}
+								}
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
+							else
+							{
+								if (_AccBal > _MinBal)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										std::cout << "\n\nOpening sell market order" << endl;
+										sellcheck = 1;
+										SellFn();
+										g_pEngine->unlock(&iCode);
+									}
+								}
+								else
+									std::cout << "\nMinimum trading account balance breached" << endl;
+							}
 						}
 					}
 					else if (trend == 0)
@@ -2815,6 +2745,7 @@ int main(int      argc,
 	user2 = "andrew.kowuoche@gmail.com";
 
 	_MinBal = _RiskBal*0.999;
+	_AccBal = _RiskBal;
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
