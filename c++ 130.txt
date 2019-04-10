@@ -861,6 +861,9 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 
 		if (_sOrdType == "L")
 		{
+			oModLmtOrdParams.sOrderNum.pData = pInfo->sOrderNum;
+			oModLmtOrdParams.sOrderNum.iDataLen = (int)strlen(oModLmtOrdParams.sOrderNum.pData);
+
 			if (_sBuySell == "B")
 			{
 				_BOrderNumNQ = pInfo->sOrderNum;
