@@ -633,7 +633,8 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 		if (!monitor)
 		{
 			oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
-			oModLmtOrdParams.sOrderNum = pInfo->sOrderNum;
+			oModLmtOrdParams.sOrderNum.pData = pAccount->sOrderNum;
+			oModLmtOrdParams.sOrderNum.iDataLen = (int)strlen(oModLmtOrdParams.sOrderNum.pData);
 			g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode);
 			BidP = oModLmtOrdParams.dPrice;
 			std::cout << "\n\nOrder modify price is : " << BidP << endl;
