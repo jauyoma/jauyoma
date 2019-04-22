@@ -41,6 +41,7 @@ g++ -O3 -DMacOS -D_REENTRANT -Wall -Wno-sign-compare -fno-strict-aliasing -Wpoin
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <sstream>
 
 
 #ifdef WinOS
@@ -84,6 +85,7 @@ tsNCharcb   g_sTradeRoute = { (char *)NULL, 0 };
 REngine *   g_pEngine;
 MarketOrderParams oMktOrdParams;
 ModifyLimitOrderParams	oModLmtOrdParams;
+ModifyOrderParams	oModOrdParams;
 
 tsNCharcb _BOrderNumNQ, _SOrderNumNQ, _OrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
 std::string Ord1, Ord2, Ord3, Ord4, Ord5, Ord6;
@@ -94,7 +96,8 @@ bool BidP = false, AskP = false, LBid = false, LOff = false;
 bool Proceed = false, OpenOrd = false, CloseOrd = false;
 double _AccBal = 0, _OpenNQ = 0, _OpenPL = 0;
 tsNCharcb _TickerNQ;
-bool monitor = false, Buyord = false, Sellord = false;
+bool monitor = false, Buyord = false, Sellord = false, andy = false;
+string modi;
 
 int main(int      argc,
 	char * * argv,
@@ -461,10 +464,6 @@ int MyCallbacks::AccountList(AccountListInfo * pInfo,
 			g_oAccount.sIbId.pData = g_cIbId;
 			g_oAccount.sIbId.iDataLen = pAccount->sIbId.iDataLen;
 
-			if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
-			{
-				printf("REngine::subscribeOrder() error : %d\n", iCode);
-			}
 
 			g_bRcvdAccount = true;
 		}
@@ -570,15 +569,31 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	Ord2 = std::string(pInfo->sInitialSequenceNumber.pData, pInfo->sInitialSequenceNumber.iDataLen);
 	Ord3 = std::string(pInfo->sOriginalOrderNum.pData, pInfo->sOriginalOrderNum.iDataLen);
 	Ord4 = std::string(pInfo->sExchOrdId.pData, pInfo->sExchOrdId.iDataLen);
-	_OrderNumNQ = pInfo->sOrderNum;
- 
+
+
+	printf("\nReading Line Update info");
+
+	modi = string(pInfo->sOrderNum.pData, pInfo->sOrderNum.iDataLen);
+
+	if (modi.empty())
+	{
+		_OrderNumNQ.pData = NULL;
+		_OrderNumNQ.iDataLen = 0;
+	}
+	else
+	{
+		_OrderNumNQ.pData = (char *)modi.data();
+		_OrderNumNQ.iDataLen = modi.length();
+	}
+
 	if (_sOrdType == "L")
 	{
 		
+
 		if (_sBuySell == "B" && !LBid)
 		{
 			_BOrderNumNQ = pInfo->sOrderNum;
-			CloseOrd = true;	
+			CloseOrd = true;
 		}
 
 		if (_sBuySell == "S" && !LOff)
@@ -588,18 +603,24 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		}
 	}
 
+	if (andy)
+	{
+		std::cout << "\n\nLine Info activated by Open Order Replay" << endl;
+		andy = false;
+	}
+
 	if (_sOrdType == "L")
 	{
 		if (Proceed)
 		{
 			if (_sBuySell == "B" && !LBid)
 			{
-				
+
 			}
 
 			if (_sBuySell == "S" && !LOff)
 			{
-				
+
 			}
 		}
 	}
@@ -625,22 +646,39 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-	LineInfo * pAccount;
+	LineInfo * pLine;
+	tsNCharcb OrdNum;
+	
+	int aCode;
+	
+	printf("\nReading order replay info");
+
 
 	if (pInfo->iArrayLen > 0)
 	{
-		pAccount = &pInfo->asLineInfoArray[0];
-		if (!monitor)
+		pLine = &pInfo->asLineInfoArray[0];
+
+		modi = string(pLine->sOrderNum.pData, pLine->sOrderNum.iDataLen);
+
+		if (modi.empty())
 		{
-			oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
-			oModLmtOrdParams.sOrderNum.pData = pAccount->sOrderNum;
-			oModLmtOrdParams.sOrderNum.iDataLen = (int)strlen(oModLmtOrdParams.sOrderNum.pData);
-			g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode);
-			BidP = oModLmtOrdParams.dPrice;
-			std::cout << "\n\nOrder modify price is : " << BidP << endl;
-			std::cout << "\n\nOrder modify limit error code is : " << iCode << endl;
-			monitor = true;
+			OrdNum.pData = NULL;
+			OrdNum.iDataLen = 0;
 		}
+		else
+		{
+			OrdNum.pData = (char *)modi.data();
+			OrdNum.iDataLen = modi.length();
+			if (!monitor)
+			{
+				oModLmtOrdParams.sOrderNum = oModOrdParams.sOrderNum;
+				g_pEngine->modifyOrder(&oModLmtOrdParams, &aCode);
+
+				monitor = true;
+			}
+			std::cout << "\nOrder string number is : " << modi << endl;
+		}
+		
 	}
 
 	*aiCode = API_OK;
@@ -685,7 +723,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		{
 			if (pInfo->eOpenPnl == 2)
 			{
-				_OpenNQ = pInfo->dOpenPnl;
+				_OpenNQ = pInfo->lPosition;
 				Buyord = true;
 			}
 		}
@@ -698,8 +736,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		position = pInfo->lPosition;
 		openPL = pInfo->eOpenPnl;
 
-		std::cout << "\nOpen PnL value is : " << pInfo->eOpenPnl << endl;
-		std::cout << "\nOpen PnL position is : " << _OpenPL << endl;
+		
 		Proceed = true;
 	}
 	else
@@ -765,7 +802,7 @@ int MyCallbacks::BustReport(OrderBustReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Bust Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -784,7 +821,7 @@ int MyCallbacks::CancelReport(OrderCancelReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Cancel Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -803,7 +840,7 @@ int MyCallbacks::FailureReport(OrderFailureReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Failure Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -822,7 +859,7 @@ int MyCallbacks::FillReport(OrderFillReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Fill Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -841,7 +878,7 @@ int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Modify Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -860,7 +897,7 @@ int MyCallbacks::NotCancelledReport(OrderNotCancelledReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived NotCancelled Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -879,7 +916,7 @@ int MyCallbacks::NotModifiedReport(OrderNotModifiedReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived NotModified Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -898,7 +935,7 @@ int MyCallbacks::RejectReport(OrderRejectReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Reject Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   record when the order returned from the exchange... */
@@ -923,7 +960,7 @@ int MyCallbacks::StatusReport(OrderStatusReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Status Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   record when the order returned from the exchange... */
@@ -948,7 +985,7 @@ int MyCallbacks::TradeCorrectReport(OrderTradeCorrectReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Trade Correct Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -967,7 +1004,7 @@ int MyCallbacks::TriggerPulledReport(OrderTriggerPulledReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Trigger Pulled Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -986,7 +1023,7 @@ int MyCallbacks::TriggerReport(OrderTriggerReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Trigger Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1006,8 +1043,16 @@ int MyCallbacks::OtherReport(OrderReport * pReport,
 
 	printf("\n\nReceived Other Report\n");
 
+	_OrderNumNQ = pReport->sOrderNum;
 
-
+	if (!monitor)
+	{
+		oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
+		oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+		g_pEngine->modifyOrder(&oModLmtOrdParams, &iIgnored);
+		BidP = oModLmtOrdParams.dPrice;
+		monitor = true;
+	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1026,7 +1071,7 @@ int MyCallbacks::SodUpdate(SodReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Sod Report\n");
-	
+
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1472,6 +1517,8 @@ int main(int      argc,
 	char *            fake_envp[11];
 	int               iCode;
 	int               iFlags;
+	AccountInfo	  mAccount;
+
 
 
 	/*   ----------------------------------------------------------------   */
@@ -1492,6 +1539,17 @@ int main(int      argc,
 	{
 		iCode = oEx.getErrorCode();
 		printf("MyAdmCallbacks::MyAdmCallbacks() error : %d\n", iCode);
+		return (BAD);
+	}
+
+	try
+	{
+		pCallbacks = new MyCallbacks();
+	}
+	catch (OmneException& oEx)
+	{
+		iCode = oEx.getErrorCode();
+		printf("MyCallbacks::MyCallbacks() error : %d\n", iCode);
 		return (BAD);
 	}
 
@@ -1635,6 +1693,19 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
+	mAccount.sAccountId.pData = g_cAccountId;
+	mAccount.sAccountId.iDataLen = (int)strlen(mAccount.sAccountId.pData);
+
+	/*   ------------------------------------------------------   */
+
+	mAccount.sFcmId.pData = g_cFcmId;
+	mAccount.sFcmId.iDataLen = (int)strlen(mAccount.sFcmId.pData);
+
+	/*   ------------------------------------------------------   */
+
+	mAccount.sIbId.pData = g_cIbId;
+	mAccount.sIbId.iDataLen = (int)strlen(mAccount.sIbId.pData);
+
 	/*   ----------------------------------------------------------------   */
 	/*   Subscription flags are OR'd.  Add more flags to get more data.     */
 
@@ -1655,7 +1726,24 @@ int main(int      argc,
 	else
 		printf("\nSuccessfully subscribed to data engine");
 
-	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
+	/*   ----------------------------------------------------------------   */
+
+	mAccount.sAccountId.pData = g_cAccountId;
+	mAccount.sAccountId.iDataLen = (int)strlen(mAccount.sAccountId.pData);
+
+	/*   ------------------------------------------------------   */
+
+	mAccount.sFcmId.pData = g_cFcmId;
+	mAccount.sFcmId.iDataLen = (int)strlen(mAccount.sFcmId.pData);
+
+	/*   ------------------------------------------------------   */
+
+	mAccount.sIbId.pData = g_cIbId;
+	mAccount.sIbId.iDataLen = (int)strlen(mAccount.sIbId.pData);
+
+	/*   ----------------------------------------------------------------   */
+
+	if (!g_pEngine->subscribePnl(&mAccount, &iCode))
 	{
 		printf("\nREngine::subscribePnL() error : %d\n", iCode);
 
@@ -1757,12 +1845,19 @@ int main(int      argc,
 		return (BAD);
 	}
 
+	if (!g_pEngine->subscribeOrder(&mAccount, &iCode))
+	{
+		printf("REngine::subscribeOrder() error : %d\n", iCode);
+	}
+	else
+		printf("REngine::subscribeOrder() success\n");
+
 	/*   ----------------------------------------------------------------   */
 	/*   send market order */
 
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
-	oMktOrdParams.pAccount = &g_oAccount;
+	oMktOrdParams.pAccount = &mAccount;
 	oMktOrdParams.iQty = 1;
 	oMktOrdParams.sBuySellType.pData = argv[5];
 	oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -1775,7 +1870,7 @@ int main(int      argc,
 
 	oLmtOrdParams.sExchange = sExchange;
 	oLmtOrdParams.sTicker = sTicker;
-	oLmtOrdParams.pAccount = &g_oAccount;
+	oLmtOrdParams.pAccount = &mAccount;
 	oLmtOrdParams.iQty = 1;
 	oLmtOrdParams.sDuration = sORDER_DURATION_GTC;
 	oLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
@@ -1786,17 +1881,18 @@ int main(int      argc,
 
 	oModLmtOrdParams.sExchange = sExchange;
 	oModLmtOrdParams.sTicker = sTicker;
-	oModLmtOrdParams.pAccount = &g_oAccount;
+	oModLmtOrdParams.pAccount = &mAccount;
 	oModLmtOrdParams.iQty = 1;
 	oModLmtOrdParams.sEntryType = sORDER_ENTRY_TYPE_MANUAL;
 
 	/*   ----------------------------------------------------------------   */
 
-	oLmtOrdParams.dPrice = Bid - (incrNQ*10);
+	oLmtOrdParams.dPrice = Bid - (incrNQ * 10);
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 	BidP = oLmtOrdParams.dPrice;
 	std::cout << "\n\nLimit price is : " << Bid - (incrNQ * 10) << endl;
+	
 
 	if (!OpenOrd)
 	{
@@ -1806,6 +1902,8 @@ int main(int      argc,
 			OpenOrd = true;
 		}
 	}
+
+	oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
@@ -1821,25 +1919,41 @@ int main(int      argc,
 #endif
 	}
 
-	while(!monitor)
+	void * contxt;
+
+	Sleep(60000);
+	std::cout << "Account ID is : " << g_cAccountId << endl;
+	std::cout << "FCM ID is : " << g_cFcmId << endl;
+	std::cout << "IB ID is : " << g_cIbId << endl;
+
+	while (!monitor)
 	{
-		g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+		
+		oModLmtOrdParams.sOrderNum = _OrderNumNQ;
+		if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+		{
+			std::cout << "Modify Order success" << endl;
+		}
+		else
+			std::cout << "Modify Order failed" << endl;
+		monitor = true;
+
 		if (Buyord)
 		{
-				std::cout << "\nTrying to close market order " << endl;
-				oMktOrdParams.sBuySellType.pData = "S";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 
 		}
 
 		if (Sellord)
 		{
-			std::cout << "\nTrying to close market order " << endl;
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-			
 		}
 	}
+
+	std::cout << "\nOrder string number is : " << modi << endl;
+	std::cout << "Order position is : " << _OpenNQ << endl;
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
