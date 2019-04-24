@@ -3149,9 +3149,9 @@ int main(int      argc,
 			}
 		}
 		
-		if(!BuyMarket)
+		if(SellMarket)
 		{
-			if(SellMarket)
+			if(!BuyMarket)
 			{
 				if(BuyLimit)
 				{
@@ -3159,10 +3159,41 @@ int main(int      argc,
 					{
 						if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 						{
+							oMktOrdParams.sBuySellType.pData = "B";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = SymbNQ.pData;
+								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 							if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
-								printf("\n\nMarket order sent");
-								BuyLimit = falsee;
+								BuyLimit = false;
+								BuyMarket = true;
+								printf("\n\nBuy Market order sent");
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if(BuyMarket)
+		{
+			if(!SellMarket)
+			{
+				if(SellLimit)
+				{
+					if(_Posn == 1)
+					{
+						if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+						{
+							oMktOrdParams.sBuySellType.pData = "S";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = SymbES.pData;
+								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							{
+								SellLimit = false;
+								SellMarket = true;
+								printf("\n\nSell Market order sent");
 							}
 						}
 					}
