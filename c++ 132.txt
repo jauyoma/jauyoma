@@ -123,7 +123,7 @@ double NQ1TP, ES1TP, _MinBal;
 int NQ1BV = 0, NQ1SV = 0, ES1BV = 0, ES1SV = 0, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
 int NQ4BV, NQ4SV, ES4BV, ES4SV;
 double Psh1, Bs1, Psh2, Bs2, Psh3, Bs3;
-double Psh4, Psh5, Psh6;
+double Psh4, Psh5, Psh6, Cmshn;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool counter = false, BvolTracker = false, SvolTracker = false, VolTracker = false, Tracker = false;
 int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
@@ -133,7 +133,7 @@ bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool SubOrd = false;
 double HighBid, HighAsk, LowBid, LowAsk;
-int n = 1, i = 1, trend = 0, q = 1, r = 1, trendES = 0;
+int n = 1, i = 1, trend = 0, q = 1, r = 1, trendES = 0, AccPL = 0;
 long double average = 0, sum = 0, SMA[200], PrevAve = 0;
 long double averageES = 0, sumES = 0, SMAES[200], PrevAveES = 0;
 tsNCharcb sTicker;
@@ -1114,16 +1114,36 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		else
 			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenPL = pInfo->dOpenPnl;
-
-	}
-
-	if (contract)
-	{
-		if (pInfo->sTicker.pData == _TickerES.pData)
+				
+		if (contract)
 		{
-			_ClosedES = pInfo->dClosedPnl;
-			_OpenES = pInfo->dOpenPnl;
+			if (pInfo->sTicker.pData == _TickerES.pData)
+			{
+				_ClosedES = pInfo->dClosedPnl;
+				_OpenES = pInfo->dOpenPnl;
+			}
 		}
+		
+		AccPL = _OpenPL - Cmshn;
+		
+		if (SellMarket && BuyMarket)
+		{
+			if (AccPL > 5)
+			{
+				if (g_pEngine->tryLock(&iCode) == 1)
+				{
+					sellclose = 1;
+					CloseSellFn();
+					buyclose = 1;
+					CloseBuyFn();
+					g_pEngine->unlock(&iCode);
+				}
+			}
+		}
+		
+		std::cout << "\nOpen Price for all instruments is : " << _OpenPL << endl;
+		std::cout << "\nOpen Price for NQ is : " << _OpenNQ << endl;
+		std::cout << "\nOpen Price for ES is : " << _OpenES << endl;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2598,6 +2618,11 @@ int main(int      argc,
 
 	_MinBal = _RiskBal*0.999;
 	_AccBal = _RiskBal;
+	
+	if(contract)
+		Cmshn = 3.4;
+	else
+		Cmshn = 1.7;
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
