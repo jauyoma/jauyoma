@@ -138,6 +138,7 @@ long double average = 0, sum = 0, SMA[200], PrevAve = 0;
 long double averageES = 0, sumES = 0, SMAES[200], PrevAveES = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES;
+int				ordcnt = 0;
 
 
 SYSTEMTIME st, lt;
@@ -1084,8 +1085,8 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 		if (_Posn == 0)
 		{
-			BuyMarket = false;
-			SellMarket = false;
+			if(_maxqty == 0 && _minqty == 0)
+				ordcnt = 33;
 		}
 
 		if (_Posn == 1)
@@ -2563,7 +2564,7 @@ int main(int      argc,
 	int				  count = 0;
 	std::string		  OpenFile;
 	stringstream	  strValue;
-
+	double		NewOpenPL = 1;
 
 
 	/*   ----------------------------------------------------------------   */
@@ -3006,8 +3007,6 @@ int main(int      argc,
 	std::cout << "\nDay Value is : " << day_T << endl;
 	std::cout << "\nHour Value is : " << hr_T << endl;
 	std::cout << "\nMinute Value is : " << min_T << endl;
-	int ordcnt = 0;
-	double NewOpenPL = 1;
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
 
@@ -3047,16 +3046,6 @@ int main(int      argc,
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
 
-		if (ordcnt >= 2 && _Posn == 0)
-		{
-			if (!BuyMarket && !SellMarket)
-			{
-				if (!BuyLimit && !SellLimit)
-				{
-					ordcnt = 0;
-				}
-			}
-		}
 
 		if (!SellMarket)
 		{
@@ -3135,6 +3124,8 @@ int main(int      argc,
 			std::cout << "\nOpen Price for all instruments is : " << _OpenPL << endl;
 			std::cout << "\nOrder count value is : " << ordcnt << endl;
 			std::cout << "\nLive open position is : " << _Posn << endl;
+			std::cout << "\nBuy quantity is : " << _maxqty << endl;
+			std::cout << "\nSell quantity is : " << _minqty << endl;
 			NewOpenPL = _OpenPL;
 		}
 
@@ -3214,24 +3205,24 @@ int main(int      argc,
 			{
 				if (BuyLimit)
 				{
-						if (ordcnt == 2)
+					if (ordcnt == 2)
+					{
+						if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
 						{
-							if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
+							oMktOrdParams.sBuySellType.pData = "B";
+							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+							oMktOrdParams.sTicker.pData = SymbNQ.pData;
+							oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oMktOrdParams.sExchange = _sExchangeNQ;
+							if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 							{
-								oMktOrdParams.sBuySellType.pData = "B";
-								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-								oMktOrdParams.sTicker.pData = SymbNQ.pData;
-								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-								oMktOrdParams.sExchange = _sExchangeNQ;
-								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-								{
-									BuyLimit = false;
-									BuyMarket = true;
-									printf("\n\nBuy Market order sent");
-								}
+								BuyLimit = false;
+								BuyMarket = true;
+								printf("\n\nBuy Market order sent");
 							}
-							ordcnt = 3;
 						}
+						ordcnt = 3;
+					}
 				}
 			}
 		}
