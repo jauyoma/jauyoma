@@ -103,7 +103,7 @@ tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _OrderNumNQ, _OrderNumES, _BOrderNumNQ, _SOrderNumNQ;
 tsNCharcb _TickerNQ, _TickerES, SymbNQ, SymbES;
 std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
-std::string _sTickerNQ, _sTickerES, _Status;
+std::string _sTickerNQ, _sTickerES, _Status, _sExchangeNQ, _sExchangeES;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds, Frequency;
 std::string trial, test, _sExchange;
 int  hr_T = 19, min_T = 36, day_T;
@@ -613,7 +613,7 @@ void MyCallbacks::SellFn()
 	QueryPerformanceFrequency(&Frequency);
 	QueryPerformanceCounter(&StartingTime);
 
-	oLmtOrdParams.dPrice = NQLAsk1;
+	oLmtOrdParams.dPrice = ESLAsk1;
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 
@@ -2997,6 +2997,7 @@ int main(int      argc,
 	std::cout << "\nHour Value is : " << hr_T << endl;
 	std::cout << "\nMinute Value is : " << min_T << endl;
 	int ordcnt = 0;
+	double NewOpenPL = 1;
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
 
@@ -3046,6 +3047,7 @@ int main(int      argc,
 				}
 			}
 		}
+
 		if (!SellMarket)
 		{
 			if (_Posn >= 0 && _Posn <= 1)
@@ -3062,9 +3064,10 @@ int main(int      argc,
 								{
 									if (sellcheck == 0)
 									{
-										std::cout << "\n\nOpening sell market order" << endl;
+										std::cout << "\n\nOpening sell limit order" << endl;
 										sellcheck = 1;
 										MySellFn();
+										ordcnt = 1;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -3081,9 +3084,10 @@ int main(int      argc,
 
 									if (sellcheck == 0)
 									{
-										std::cout << "\n\nOpening sell market order" << endl;
+										std::cout << "\n\nOpening sell limit order" << endl;
 										sellcheck = 1;
 										MySellFn();
+										ordcnt = 1;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -3091,7 +3095,6 @@ int main(int      argc,
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
 						}
-						ordcnt = 1;
 					}
 				}
 				else if (SellLimit)
@@ -3117,9 +3120,13 @@ int main(int      argc,
 			}
 		}
 
-		std::cout << "\nOpen Price for all instruments is : " << _OpenPL << endl;
-		std::cout << "\nOrder count value is : " << ordcnt << endl;
-		std::cout << "\nLive open position is : " << _Posn << endl;
+		if (_OpenPL != NewOpenPL)
+		{
+			std::cout << "\nOpen Price for all instruments is : " << _OpenPL << endl;
+			std::cout << "\nOrder count value is : " << ordcnt << endl;
+			std::cout << "\nLive open position is : " << _Posn << endl;
+			NewOpenPL = _OpenPL;
+		}
 
 		if (!BuyMarket)
 		{
@@ -3129,6 +3136,7 @@ int main(int      argc,
 				{
 					if (ordcnt == 1)
 					{
+						ordcnt = 2;
 						if (BalMntr)
 						{
 							if (_AccBal > _MinBal)
@@ -3165,7 +3173,6 @@ int main(int      argc,
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
 						}
-						ordcnt = 2;
 					}
 				}
 				else if (BuyLimit)
@@ -3197,8 +3204,6 @@ int main(int      argc,
 			{
 				if (BuyLimit)
 				{
-					if (_Posn == -1)
-					{
 						if (ordcnt == 2)
 						{
 							if (g_pEngine->cancelAllOrders(&g_oAccount, &EntTyp, &Algo, &iCode))
@@ -3216,7 +3221,6 @@ int main(int      argc,
 							}
 							ordcnt = 3;
 						}
-					}
 				}
 			}
 		}
