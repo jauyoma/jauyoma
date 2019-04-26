@@ -101,9 +101,9 @@ int _filled = 0, _unfilled = 0;
 int _PnlAvgOpen, _QtyToFill = 0, _Cancelled;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _OrderNumNQ, _OrderNumES, _BOrderNumNQ, _SOrderNumNQ;
-tsNCharcb _TickerNQ, _TickerES, SymbNQ, SymbES;
+tsNCharcb _TickerNQ, _TickerES, SymbNQ, SymbES, _sExchangeNQ, _sExchangeES;
 std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker;
-std::string _sTickerNQ, _sTickerES, _Status, _sExchangeNQ, _sExchangeES;
+std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds, Frequency;
 std::string trial, test, _sExchange;
 int  hr_T = 19, min_T = 36, day_T;
@@ -488,6 +488,7 @@ void MyCallbacks::CloseBuyFn()
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 				oMktOrdParams.sTicker.pData = SymbNQ.pData;
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeNQ;
 
 				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
@@ -537,6 +538,7 @@ void MyCallbacks::CloseSellFn()
 				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 				oMktOrdParams.sTicker.pData = SymbES.pData;
 				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeES;
 
 				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 				{
@@ -578,6 +580,7 @@ void MyCallbacks::BuyFn()
 	oLmtOrdParams.dPrice = NQLBid1;
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	oLmtOrdParams.sExchange = _sExchangeNQ;
 
 	if (!BuyLimit)
 	{
@@ -616,6 +619,7 @@ void MyCallbacks::SellFn()
 	oLmtOrdParams.dPrice = ESLAsk1;
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	oLmtOrdParams.sExchange = _sExchangeES;
 
 	if (!SellLimit)
 	{
@@ -655,6 +659,7 @@ bool MyBuyFn()
 	oLmtOrdParams.sTicker = _TickerNQ;
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	oLmtOrdParams.sExchange = _sExchangeNQ;
 
 	if (!BuyLimit)
 	{
@@ -693,6 +698,7 @@ bool MySellFn()
 	oLmtOrdParams.sTicker = _TickerES;
 	oLmtOrdParams.sBuySellType.pData = "S";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	oLmtOrdParams.sExchange = _sExchangeES;
 
 	if (!SellLimit)
 	{
@@ -2784,12 +2790,16 @@ int main(int      argc,
 	SymbNQ.iDataLen = (int)strlen(SymbNQ.pData);
 	_TickerNQ.pData = argv[8];
 	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
+	_sExchangeNQ.pData = argv[7];
+	_sExchangeNQ.iDataLen = (int)strlen(_sExchangeNQ.pData);
 	if (contract)
 	{
 		SymbES.pData = argv[10];
 		SymbES.iDataLen = (int)strlen(SymbES.pData);
 		_TickerES.pData = argv[10];
 		_TickerES.iDataLen = (int)strlen(_TickerES.pData);
+		_sExchangeES.pData = argv[9];
+		_sExchangeES.iDataLen = (int)strlen(_sExchangeES.pData);
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -3212,6 +3222,7 @@ int main(int      argc,
 								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 								oMktOrdParams.sTicker.pData = SymbNQ.pData;
 								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+								oMktOrdParams.sExchange = _sExchangeNQ;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
 									BuyLimit = false;
@@ -3241,6 +3252,7 @@ int main(int      argc,
 								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 								oMktOrdParams.sTicker.pData = SymbES.pData;
 								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+								oMktOrdParams.sExchange = _sExchangeES;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
 									SellLimit = false;
