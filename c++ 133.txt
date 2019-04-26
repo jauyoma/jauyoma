@@ -497,6 +497,7 @@ void MyCallbacks::CloseBuyFn()
 					_OpenNQ = 0;
 					_OpenPL = 0;
 					_filled == 0;
+					BuyMarket = false;
 					std::cout << "\nClosed Buy Market Order" << endl;
 				}
 				else
@@ -547,6 +548,7 @@ void MyCallbacks::CloseSellFn()
 					_OpenNQ = 0;
 					_OpenPL = 0;
 					_filled == 0;
+					SellMarket = false;
 					std::cout << "\nClosed Sell Market Order" << endl;
 				}
 				else
@@ -959,7 +961,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 
 		if (_sOrdType == "L")
 		{
-
 			if (_sBuySell == "B")
 			{
 				_BOrderNumNQ = pInfo->sOrderNum;
@@ -997,6 +998,20 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			{
 				_OrderNumES.pData = (char *)modiES.data();
 				_OrderNumES.iDataLen = modiES.length();
+			}
+			
+			if (_sOrdType == "L")
+			{
+				if (_sBuySell == "B")
+				{
+					_BOrderNumES = pInfo->sOrderNum;
+					BuyLimit = true;
+				}
+				if (_sBuySell == "S")
+				{
+					_SOrderNumES = pInfo->sOrderNum;
+					SellLimit = true;
+				}
 			}
 		}
 	}
@@ -1085,8 +1100,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 		if (_Posn == 0)
 		{
-			if(_maxqty == 0 && _minqty == 0)
-				ordcnt = 33;
+		
 		}
 
 		if (_Posn == 1)
@@ -3045,7 +3059,14 @@ int main(int      argc,
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
-
+		
+		if(!BuyMarket && !SellMarket)
+		{
+			if(!BuyLimit && !SellLimit)
+			{
+				ordcnt = 0;
+			}
+		}
 
 		if (!SellMarket)
 		{
@@ -3124,8 +3145,6 @@ int main(int      argc,
 			std::cout << "\nOpen Price for all instruments is : " << _OpenPL << endl;
 			std::cout << "\nOrder count value is : " << ordcnt << endl;
 			std::cout << "\nLive open position is : " << _Posn << endl;
-			std::cout << "\nBuy quantity is : " << _maxqty << endl;
-			std::cout << "\nSell quantity is : " << _minqty << endl;
 			NewOpenPL = _OpenPL;
 		}
 
