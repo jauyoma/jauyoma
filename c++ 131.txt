@@ -137,7 +137,7 @@ long double average = 0, sum = 0, SMA[200], PrevAve = 0;
 long double averageES = 0, sumES = 0, SMAES[200], PrevAveES = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES;
-int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0;
+int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSign;
 
 
 SYSTEMTIME st, lt;
@@ -483,29 +483,68 @@ void MyCallbacks::CloseBuyFn()
 	{
 		if (BuyMarket)
 		{
-			if (ordcnt == 2 || ordcnt == 4)
+			if(!EconTrade)
 			{
-				std::cout << "\nTrying to close Buy Market Order\n" << endl;
-
-				oMktOrdParams.sBuySellType.pData = "S";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = SymbNQ.pData;
-				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-				oMktOrdParams.sExchange = _sExchangeNQ;
-
-				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				if (ordcnt == 2 || ordcnt == 4)
 				{
-					buycheck = 0;
-					if (ordcnt == 4)
-						ordcnt = 0;
+					std::cout << "\nTrying to close Buy Market Order\n" << endl;
+
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = SymbNQ.pData;
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sExchange = _sExchangeNQ;
+
+					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						buycheck = 0;
+						if (ordcnt == 4)
+							ordcnt = 0;
+						else
+							ordcnt = 3;
+						BuyMarket = false;
+						std::cout << "\nClosed Buy Market Order" << endl;
+					}
 					else
-						ordcnt = 3;
-					BuyMarket = false;
-					std::cout << "\nClosed Buy Market Order" << endl;
+						std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 				}
-				else
-					std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 			}
+			else
+			{
+				if (CloseSign != 0)
+				{
+					std::cout << "\nTrying to close Buy Market Order\n" << endl;
+
+					oMktOrdParams.sBuySellType.pData = "S";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					if (CloseSign == 1 && ordcntES == 1)
+					{
+						oMktOrdParams.sTicker.pData = SymbES.pData;
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sExchange = _sExchangeES;
+						ordcntES = 0;
+					}					
+					else if (CloseSign == 2 && ordcntNQ == 1)
+					{
+						oMktOrdParams.sTicker.pData = SymbNQ.pData;
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sExchange = _sExchangeNQ;
+						ordcntNQ = 0;
+					}
+
+
+					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						buycheck = 0;
+						CloseSign = 0;
+						BuyMarket = false;
+						std::cout << "\nClosed Buy Market Order" << endl;
+					}
+					else
+						std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
+				}
+			}
+				
 		}
 		else if (BuyLimit)
 		{
@@ -535,28 +574,65 @@ void MyCallbacks::CloseSellFn()
 	{
 		if (SellMarket)
 		{
-			if (ordcnt == 2 || ordcnt == 3)
+			if(!EconTrade)
 			{
-				std::cout << "\nTrying to close Sell Market Order\n" << endl;
-
-				oMktOrdParams.sBuySellType.pData = "B";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				oMktOrdParams.sTicker.pData = SymbES.pData;
-				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-				oMktOrdParams.sExchange = _sExchangeES;
-
-				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+				if (ordcnt == 2 || ordcnt == 3)
 				{
-					sellcheck = 0;
-					if (ordcnt == 3)
-						ordcnt = 0;
+					std::cout << "\nTrying to close Sell Market Order\n" << endl;
+
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					oMktOrdParams.sTicker.pData = SymbES.pData;
+					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+					oMktOrdParams.sExchange = _sExchangeES;
+
+					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						sellcheck = 0;
+						if (ordcnt == 3)
+							ordcnt = 0;
+						else
+							ordcnt = 4;
+						SellMarket = false;
+						std::cout << "\nClosed Sell Market Order" << endl;
+					}
 					else
-						ordcnt = 4;
-					SellMarket = false;
-					std::cout << "\nClosed Sell Market Order" << endl;
+						std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
 				}
-				else
-					std::cout << "\nFailed to close Sell Market order due to reason code : " << iCode << endl;
+			}
+			else
+			{
+				if (CloseSign != 0)
+				{
+					std::cout << "\nTrying to close Sell Market Order\n" << endl;
+
+					oMktOrdParams.sBuySellType.pData = "B";
+					oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+					if (CloseSign == 1 && ordcntES == 2)
+					{
+						oMktOrdParams.sTicker.pData = SymbES.pData;
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sExchange = _sExchangeES;
+						ordcntES = 0;
+					}					
+					else if (CloseSign == 2 && ordcntNQ == 2)
+					{
+						oMktOrdParams.sTicker.pData = SymbNQ.pData;
+						oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oMktOrdParams.sExchange = _sExchangeNQ;
+						ordcntNQ = 0;
+					}
+
+					if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+					{
+						buycheck = 0;
+						BuyMarket = false;
+						CloseSign = 0;
+						std::cout << "\nClosed Buy Market Order" << endl;
+					}
+					else
+						std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
+				}
 			}
 		}
 		else if (SellLimit)
@@ -1043,7 +1119,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 		if (SellMarket && BuyMarket)
 		{
-			if (AccPL > 5)
+			if (AccPL > 12.5)
 			{
 				if (g_pEngine->tryLock(&iCode) == 1)
 				{
@@ -1518,10 +1594,30 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								trendES = 1;
 							}
-
-							if (trendES == 2)
+							
+							if (ordcntES == 1)
 							{
-								if (ordcntES == 20)
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									buyclose = 1;
+									CloseSign = 1;
+									CloseBuyFn();
+									g_pEngine->unlock(&iCode);
+								}
+							}
+							else if (ordcntES == 2)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									sellclose = 1;
+									CloseSign = 1;
+									CloseSellFn();
+									g_pEngine->unlock(&iCode);
+								}
+							}	
+							else if (trendES == 2)
+							{
+								if (ordcntES == 0)
 								{
 									if (BalMntr)
 									{
@@ -1536,7 +1632,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												oMktOrdParams.sExchange = _sExchangeES;
 												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 												{
-													ordcntES = 1;
+													ordcntES = 2;
 													printf("\n\nSell Market order sent");
 												}
 												g_pEngine->unlock(&iCode);
@@ -1558,7 +1654,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												oMktOrdParams.sExchange = _sExchangeES;
 												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 												{
-													ordcntES = 1;
+													ordcntES = 2;
 													printf("\n\nSell Market order sent");
 												}
 												g_pEngine->unlock(&iCode);
@@ -1569,9 +1665,59 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 									}
 								}
 							}
+							else if (trendES == 1)
+							{
+								if (ordcntES == 0)
+								{
+									if (BalMntr)
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "B";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 1;
+													printf("\n\nBuy Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+									else
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "B";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 1;
+													printf("\n\nBuy Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+								}	
+							}
 						}
-						PrevAveES = averageES;
 					}
+					PrevAveES = averageES;
 				}
 				else if (q <= 200)
 				{
@@ -2541,14 +2687,14 @@ int main(int      argc,
 
 	_MinBal = _RiskBal*0.999;
 	_AccBal = _RiskBal;
+	Econ_HR = int(argv[12]);
+	Econ_Min = int(argv[13]);
 	EconNews = (Econ_HR * 60) + Econ_Min;
 
 	if (contract)
-		Cmshn = 3.4;
+		Cmshn = 6.8;
 	else
-		Cmshn = 1.7;
-
-	std::cout << "\nStage 1" << endl;
+		Cmshn = 3.4;
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
@@ -2697,8 +2843,6 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	std::cout << "\nStage 2" << endl;
-
 	/*   ----------------------------------------------------------------   */
 	/*   After calling REngine::login, RCallbacks::Alert will be called a   */
 	/*   number of times.  Wait for when the login to the TsCnnctPt is      */
@@ -2812,8 +2956,6 @@ int main(int      argc,
 			return (BAD);
 		}
 	}
-	
-	std::cout << "\nStage 3" << endl;
 
 	/*   ----------------------------------------------------------------   */
 	/*   Use the global boolean as the signaller of when the callback has   */
@@ -2935,10 +3077,10 @@ int main(int      argc,
 	std::cout << "\nDay Value is : " << day_T << endl;
 	std::cout << "\nHour Value is : " << hr_T << endl;
 	std::cout << "\nMinute Value is : " << min_T << endl;
+	std::cout << "\nEconomic Hour value is : " << Econ_HR << endl;
+	std::cout << "\nEconomic Min value is : " << Econ_Min << endl;
 	trade = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
-
-	std::cout << "\nStage 4" << endl;
 
 	while ((((trade - curr) > 5) || day_T != lt.wDay) && !done)
 	{
