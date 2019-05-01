@@ -95,9 +95,11 @@ double Bid = 0, Ask = 0, incrNQ = 0;
 bool BidP = false, AskP = false, LBid = false, LOff = false;
 bool Proceed = false, OpenOrd = false, CloseOrd = false;
 double _AccBal = 0, _OpenNQ = 0, _OpenPL = 0;
-tsNCharcb _TickerNQ;
+tsNCharcb _TickerNQ, _TickerES;
 bool monitor = false, Buyord = false, Sellord = false, andy = false;
 string modi;
+int cnt = 0;
+bool NQread = false, ESread = false;
 
 int main(int      argc,
 	char * * argv,
@@ -674,7 +676,6 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 				oModLmtOrdParams.sOrderNum = oModOrdParams.sOrderNum;
 				g_pEngine->modifyOrder(&oModLmtOrdParams, &aCode);
 
-				monitor = true;
 			}
 			std::cout << "\nOrder string number is : " << modi << endl;
 		}
@@ -703,6 +704,81 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 	void *          pContext,
 	int *           aiCode)
 {
+	PnlInfo * pnl;
+	tsNCharcb OrdNum;
+	long NQPosn, ESPosn;
+	double NQPnl, ESPnl;
+	int aCode;
+
+	printf("\nReading replay pnl info");
+
+
+	if (pInfo->iArrayLen > 0)
+	{
+		pnl = &pInfo->asPnlInfoArray[0];
+		modi = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
+
+		if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+			NQPosn = pnl->lPosition;
+			NQPnl = pnl->dOpenPnl;
+			if (modi.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)modi.data();
+				OrdNum.iDataLen = modi.length();
+				std::cout << "\nNQ Replay Order string is : " << modi << endl;
+			}
+			std::cout << "\nNQ Replay Order Position is : " << NQPosn << endl;
+			std::cout << "\nNQ Replay Order PnL is : " << NQPnl << endl;
+			if (!NQread)
+			{
+				if (cnt == 0)
+				{
+					cnt = 1;
+				}
+				else
+					cnt = 2;
+			}
+			NQread = true;
+		}
+
+		if (modi == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			ESPosn = pnl->lPosition;
+			ESPnl = pnl->dOpenPnl;
+			if (modi.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)modi.data();
+				OrdNum.iDataLen = modi.length();
+				std::cout << "\nES Replay Order string is : " << modi << endl;
+			}
+			std::cout << "\nES Replay Order Position is : " << ESPosn << endl;
+			std::cout << "\nES Replay Order PnL is : " << ESPnl << endl;
+			if (!ESread)
+			{
+				if (cnt == 0)
+				{
+					cnt = 1;
+				}
+				else
+					cnt = 2;
+			}
+			ESread = true;
+		}
+		if(cnt == 2)
+			monitor = true;
+	}
+	
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -715,23 +791,41 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 {
 	long position;
 	int openPL;
+	tsNCharcb OrdNum;
+
 	if (!pInfo->bPossOutOfOrder)
 	{
+		printf("\nReading pnl info");
 		if (pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
 			_AccBal = pInfo->dAccountBalance;
 		if (pInfo->sTicker.pData == _TickerNQ.pData)
 		{
+			modi = string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+
+			if (modi.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)modi.data();
+				OrdNum.iDataLen = modi.length();
+				std::cout << "\nPNL Order string is : " << modi << endl;
+			}
 			if (pInfo->eOpenPnl == 2)
 			{
 				_OpenNQ = pInfo->lPosition;
 				Buyord = true;
 			}
+
 		}
 		else
 			if (pInfo->eOpenPnl == 2)
 			{
 				_OpenPL = pInfo->dOpenPnl;
 				Buyord = true;
+				printf("\nDid not read PNL NQ Data");
 			}
 		position = pInfo->lPosition;
 		openPL = pInfo->eOpenPnl;
@@ -745,6 +839,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		Proceed = true;
 	}
 
+	
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1051,7 +1146,6 @@ int MyCallbacks::OtherReport(OrderReport * pReport,
 		oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 		g_pEngine->modifyOrder(&oModLmtOrdParams, &iIgnored);
 		BidP = oModLmtOrdParams.dPrice;
-		monitor = true;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1855,6 +1949,11 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   send market order */
 
+	_TickerNQ.pData = "ESM9";
+	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
+	_TickerES.pData = "NQM9";
+	_TickerES.iDataLen = (int)strlen(_TickerES.pData);
+
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
 	oMktOrdParams.pAccount = &mAccount;
@@ -1892,14 +1991,31 @@ int main(int      argc,
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 	BidP = oLmtOrdParams.dPrice;
 	std::cout << "\n\nLimit price is : " << Bid - (incrNQ * 10) << endl;
-	
+	bool check = false;
 
-	if (!OpenOrd)
+	while (!OpenOrd)
 	{
-		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		oMktOrdParams.sTicker.pData = _TickerNQ.pData;
+		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+		if (!check)
 		{
-			printf("\n\nMarket order sent");
-			OpenOrd = true;
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("\n\nES Market order sent");
+				check = true;
+			}
+		}
+		oMktOrdParams.sTicker.pData = _TickerES.pData;
+		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+		oMktOrdParams.sBuySellType.pData = "S";
+		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+		if (check)
+		{
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				printf("\n\nNQ Market order sent");
+				OpenOrd = true;
+			}
 		}
 	}
 
@@ -1928,28 +2044,8 @@ int main(int      argc,
 
 	while (!monitor)
 	{
+		g_pEngine->replayPnl(&g_oAccount, &iCode);
 		
-		oModLmtOrdParams.sOrderNum = _OrderNumNQ;
-		if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-		{
-			std::cout << "Modify Order success" << endl;
-		}
-		else
-			std::cout << "Modify Order failed" << endl;
-		monitor = true;
-
-		if (Buyord)
-		{
-			oMktOrdParams.sBuySellType.pData = "S";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-
-		}
-
-		if (Sellord)
-		{
-			oMktOrdParams.sBuySellType.pData = "B";
-			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		}
 	}
 
 	std::cout << "\nOrder string number is : " << modi << endl;
