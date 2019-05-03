@@ -78,3 +78,71 @@ Private Sub Text0_AfterUpdate()
 
 End Sub
 
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+Option Compare Database
+Public Reviewer As String
+Private Sub Command7_Click()
+
+Dim user As String
+Dim soeid As String
+
+user = fOSUserName  'API to get network ID
+soeid = Nz(DLookup("[Employees]![Staff SOEID]", "Employees", "[Employees]![Staff Name] ='" & [Forms]![Login]![Text0] & "'"), "")
+
+If Me.Text0 <> "" And user = soeid Then
+Forms!Login.Visible = False
+DoCmd.OpenForm "Lookup"
+ElseIf Me.Text0 <> "" And user <> soeid Then
+MsgBox ("Name Does not match your SOEID")
+Else
+MsgBox ("Select Name from Drop Down List")
+End If
+
+End Sub
+
+Private Sub Form_Load()
+
+Me.Text0.RowSource = "SELECT DISTINCT [Staff Name] FROM Employees ORDER BY [Staff Name];"
+    
+End Sub
+
+Private Sub Sign_In_Click()
+
+Dim user As String
+Dim soeid As String
+
+user = fOSUserName  'API to get network ID
+soeid = Nz(DLookup("[Employees]![Staff SOEID]", "Employees", "[Employees]![Staff Name] ='" & [Forms]![Login]![Text0] & "'"), "")
+
+
+End Sub
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+'******************** Code Start **************************
+' This code was originally written by Dev Ashish.
+' It is not to be altered or distributed,
+' except as part of an application.
+' You are free to use it in any application,
+' provided the copyright notice is left unchanged.
+'
+' Code Courtesy of
+' Dev Ashish
+'
+
+Function fOSUserName() As String
+' Returns the network login name
+Dim lngLen As Long, lngX As Long
+Dim strUserName As String
+    strUserName = String$(254, 0)
+    lngLen = 255
+    lngX = apiGetUserName(strUserName, lngLen)
+    If (lngX > 0) Then
+        fOSUserName = Left$(strUserName, lngLen - 1)
+    Else
+        fOSUserName = vbNullString
+    End If
+End Function
+'******************** Code End **************************
+
