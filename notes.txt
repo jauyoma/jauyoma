@@ -1,7 +1,42 @@
-https://www.microsoftaccessexpert.com/Microsoft-Access-Code-Excel-Automation.aspx
-https://www.fmsinc.com/microsoftaccess/modules/code/Excel/Automation/Excel_class.htm
-https://www.devhut.net/2016/07/07/vba-automating-excel/
-https://docs.microsoft.com/en-us/office/vba/api/excel.application(object)
-http://allenbrowne.com/tips.html
-https://www.everythingaccess.com/tutorials.asp
-https://resources.oreilly.com/examples/9780735659872-files/
+Asset ID 	SAM Analyst 	Trust Officer	Citi PIC (Name)	SARC - June 07, 2019	Exact Property Location	SAM APPROVAL	Current Total Value	New Appraisal in Reporting Period	% Variance (+/-)	ATED Reporting	Insurance Cover Details	Insured Amount	Name Insured	Property Manager	Accountant	Tenancy Status and Rental Income	Income Tax Filing	Property Tax Filing	Proof of Ownership	Gas Safety Certificate
+XXXX	All	XXXX	XXXX	XXXX	488E Ocean Boulevard, Unit 1615 Long Beach, California 90802	N - O/S Appointment of Property Manager	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST947	Crystal Rogers	Zoe Zhou	Bragle Grove Limited LLC	Re-present in 90 days/Create TAR and downgrade existing TAR (Low)	Boulevard, Unit 1615 Long Beach, California 90802	N - O/S Appointment of Property Manager	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST755	Crystal Rogers	Zoe Zhou	Eagle Grove Limited/Alendra LLC	Re-present in 90 days/Create TAR and downgrade existing TAR (Low)	Ocean Boulevard, Unit 1615 Long Beach, California 90802	N - O/S Appointment of Property Manager	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST950	Crystal Rogers	Zoe Zhou	Pagle Grove Alendra LLC	Re-present in 90 days/Create TAR and downgrade existing TAR (Low)	Boulevard, Unit 1615 Long Beach, California 90802	N - O/S Appointment of Property Manager	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST948	Steven Liggat 	Scott Brennan	Ansharnie Limited	Re-present in 90 days 	76 Marathon House, 200 Marylebone Road, London NW1 5PL	N - O/S Insurance Renewal	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST945	Steven Liggat 	Scott Brennan	Proseprous Ansharnie Limited	Re-present in 90 days 	Marathon House, 200 Marylebone Road, London NW1 5PL	N - O/S Insurance Renewal	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST951	Steven Liggat 	Scott Brennan	Sharnie Limited	Re-present in 90 days 	Hyde Park Gate, London 	Y  - Confirm the current tenancy term 	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST946	Steven Liggat 	Scott Brennan	Properties Limited 	Retain	Park Gate, London 	Y  - Confirm the current tenancy term 	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST1206	Steven Liggat 	Scott Brennan	Somerset Properties Limited 	Retain	30A&B Hyde Park Gate, London 	Y  - Confirm the current tenancy term 	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
+AST949	Steven Liggat 	Scott Brennan	Somer Limited 	Retain and Accepted																
+AST856	#N/A	Zoe Zhou	Grove Limited/Alendra LLC	Retain and Accepted	Flat 76 Marathon House, 200 Marylebone Road, London NW1 5PL	N - O/S Insurance Renewal	USD420,000	N/A	N/A	N/A	Master Trust Insurance Policy effective February 1, 2019 - February 1, 2020	USD30,000	Eagle Grove Limited	-	Clarkson Hyde LLP	"Status: Jan 24, 2019 - Jan 23, 2020
+
+Rental Income: USD2,095 pcm"	2017 Tax Return filed.	"2018 Property have been remitted. The next payment  is due by December 10, 2019.
+ Parcel No. 7278-030-082"	Grant Deed and Title Report, both in CTP	N/A
