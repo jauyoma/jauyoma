@@ -2,3 +2,4 @@ https://www.microsoftaccessexpert.com/Microsoft-Access-Code-Excel-Automation.asp
 https://www.fmsinc.com/microsoftaccess/modules/code/Excel/Automation/Excel_class.htm
 https://www.devhut.net/2016/07/07/vba-automating-excel/
 https://docs.microsoft.com/en-us/office/vba/api/excel.application(object)
+http://allenbrowne.com/tips.html
