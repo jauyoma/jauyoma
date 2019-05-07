@@ -3,3 +3,5 @@ https://www.fmsinc.com/microsoftaccess/modules/code/Excel/Automation/Excel_class
 https://www.devhut.net/2016/07/07/vba-automating-excel/
 https://docs.microsoft.com/en-us/office/vba/api/excel.application(object)
 http://allenbrowne.com/tips.html
+https://www.everythingaccess.com/tutorials.asp
+https://resources.oreilly.com/examples/9780735659872-files/
