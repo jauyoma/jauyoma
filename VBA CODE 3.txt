@@ -51,14 +51,22 @@ Dim xlrange As Excel.Range
 Dim SQLstr, strName, conc1 As String
 Dim i, j, k, m, n, p As Integer
     
-    strName = "C:\Users\User\Documents\SAM.xlsx"
+    strName = "X:\EUC\SAM.xlsx"
     
     If FileExists(strName) Then
      
     Set xlapp = CreateObject("Excel.Application")
-    Set xlsheet = xlapp.Workbooks.Open("C:\Users\User\Documents\Asset Details.xlsx").Sheets(3)
+    Set xlsheet = xlapp.Workbooks.Open("X:\EUC\SAM.xlsx").Sheets(5)
     Set xlbook = xlapp.ActiveWorkbook
     Set xlsheet = xlbook.ActiveSheet
+    
+    Else
+    
+    Set xlapp = CreateObject("Excel.Application")
+    Set xlbook = xlapp.Workbooks.Add
+    Set xlsheet = xlbook.ActiveSheet
+    
+    End If
     
     xlapp.Visible = False
     xlapp.Application.ScreenUpdating = False
@@ -176,62 +184,64 @@ Dim i, j, k, m, n, p As Integer
     m = 5
     k = 6
     
-    xlsheet.Cells(2, 2).Value = "Asset ID"
-    xlsheet.Cells(2, 3).Value = "SAM Analyst"
-    xlsheet.Cells(2, 4).Value = "Trust Officer"
-    xlsheet.Cells(2, 5).Value = "Citi PIC Name"
-    xlsheet.Cells(2, 6).Value = "Exact Property Location"
-    xlsheet.Cells(2, 7).Value = "ASSET ATTRIBUTES"
-    xlsheet.Range("G2:M2").Merge
-    xlsheet.Range("G2:M2").HorizontalAlignment = xlHAlignCenter
-    xlsheet.Cells(2, 14).Value = "SARC"
-    xlsheet.Cells(2, 15).Value = "SAM APPROVAL"
-    xlsheet.Range("B2:O2").Interior.ColorIndex = 48
+    xlsheet.Cells(2, 1).Value = "Asset ID"
+    xlsheet.Cells(2, 2).Value = "SAM Analyst"
+    xlsheet.Cells(2, 3).Value = "Trust Officer"
+    xlsheet.Cells(2, 4).Value = "Citi PIC Name"
+    xlsheet.Cells(2, 5).Value = "Exact Property Location"
+    xlsheet.Cells(2, 6).Value = "ASSET ATTRIBUTES"
+    xlsheet.Range("F2:L2").Merge
+    xlsheet.Range("F2:L2").HorizontalAlignment = xlHAlignCenter
+    xlsheet.Cells(2, 13).Value = "SARC"
+    xlsheet.Cells(2, 14).Value = "SAM APPROVAL"
+    xlsheet.Range("A2:N2").Interior.ColorIndex = 48
     
     Do While Not rs.EOF
     
     p = i + 3
     
-    xlsheet.Cells(i, 2).Value = rs![Asset ID]
-    xlsheet.Cells(i, 3).Value = rs![SAM Analyst]
-    xlsheet.Cells(i, 4).Value = rs![Trust Officer]
-    xlsheet.Cells(i, 5).Value = rs![Citi PIC Name]
-    xlsheet.Cells(i, 6).Value = rs![Exact Property Location]
-    xlsheet.Cells(i, 14).Value = rs![SARC]
-    xlsheet.Cells(i, 15).Value = rs![SAM APPROVAL]
+    xlsheet.Cells(i, 1).Value = rs![Asset ID]
+    xlsheet.Cells(i, 2).Value = rs![SAM Analyst]
+    xlsheet.Cells(i, 3).Value = rs![Trust Officer]
+    xlsheet.Cells(i, 4).Value = rs![Citi PIC Name]
+    xlsheet.Cells(i, 5).Value = rs![Exact Property Location]
+    xlsheet.Cells(i, 13).Value = rs![SARC]
+    xlsheet.Cells(i, 14).Value = rs![SAM APPROVAL]
     
-    xlsheet.Cells(i, 7).Value = "Current Total Value"
-    xlsheet.Cells(i, 8).Value = "New Appraisal in Reporting Period"
-    xlsheet.Cells(i, 9).Value = "% Variance (+/-)"
-    xlsheet.Cells(i, 10).Value = "ATED Reporting"
-    xlsheet.Cells(i, 11).Value = "Insurance Cover Details"
-    xlsheet.Cells(i, 12).Value = "Insured Amount"
-    xlsheet.Cells(i, 13).Value = "Name Insured"
+    xlsheet.Cells(i, 6).Value = "Current Total Value"
+    xlsheet.Cells(i, 7).Value = "New Appraisal in Reporting Period"
+    xlsheet.Cells(i, 8).Value = "% Variance (+/-)"
+    xlsheet.Cells(i, 9).Value = "ATED Reporting"
+    xlsheet.Cells(i, 10).Value = "Insurance Cover Details"
+    xlsheet.Cells(i, 11).Value = "Insured Amount"
+    xlsheet.Cells(i, 12).Value = "Name Insured"
     
-    xlsheet.Cells(j, 7).Value = rs![Current Total Value]
-    xlsheet.Cells(j, 8).Value = rs![New Appraisal in Reporting Period]
-    xlsheet.Cells(j, 9).Value = rs![% Variance (+/-)]
-    xlsheet.Cells(j, 10).Value = rs![ATED Reporting]
-    xlsheet.Cells(j, 11).Value = rs![Insurance Cover Details]
-    xlsheet.Cells(j, 12).Value = rs![Insured Amount]
-    xlsheet.Cells(j, 13).Value = rs![Name Insured]
+    xlsheet.Cells(j, 6).Value = rs![Current Total Value]
+    xlsheet.Cells(j, 7).Value = rs![New Appraisal in Reporting Period]
+    xlsheet.Cells(j, 8).Value = rs![% Variance (+/-)]
+    xlsheet.Cells(j, 9).Value = rs![ATED Reporting]
+    xlsheet.Cells(j, 10).Value = rs![Insurance Cover Details]
+    xlsheet.Cells(j, 11).Value = rs![Insured Amount]
+    xlsheet.Cells(j, 12).Value = rs![Name Insured]
     
-    xlsheet.Cells(m, 7).Value = "Property Manager"
-    xlsheet.Cells(m, 8).Value = "Accountant"
-    xlsheet.Cells(m, 9).Value = "Tenancy Status and Rental Income"
-    xlsheet.Cells(m, 10).Value = "Income Tax Filing"
-    xlsheet.Cells(m, 11).Value = "Property Tax Filing"
-    xlsheet.Cells(m, 12).Value = "Proof of Ownership"
-    xlsheet.Cells(m, 13).Value = "Gas Safety Certificate"
+    xlsheet.Cells(m, 6).Value = "Property Manager"
+    xlsheet.Cells(m, 7).Value = "Accountant"
+    xlsheet.Cells(m, 8).Value = "Tenancy Status and Rental Income"
+    xlsheet.Cells(m, 9).Value = "Income Tax Filing"
+    xlsheet.Cells(m, 10).Value = "Property Tax Filing"
+    xlsheet.Cells(m, 11).Value = "Proof of Ownership"
+    xlsheet.Cells(m, 12).Value = "Gas Safety Certificate"
     
-    xlsheet.Cells(k, 7).Value = rs![Property Manager]
-    xlsheet.Cells(k, 8).Value = rs![Accountant]
-    xlsheet.Cells(k, 9).Value = rs![Tenancy Status and Rental Income]
-    xlsheet.Cells(k, 10).Value = rs![Income Tax Filing]
-    xlsheet.Cells(k, 11).Value = rs![Property Tax Filing]
-    xlsheet.Cells(k, 12).Value = rs![Proof of Ownership]
-    xlsheet.Cells(k, 13).Value = rs![Gas Safety Certificate]
+    xlsheet.Cells(k, 6).Value = rs![Property Manager]
+    xlsheet.Cells(k, 7).Value = rs![Accountant]
+    xlsheet.Cells(k, 8).Value = rs![Tenancy Status and Rental Income]
+    xlsheet.Cells(k, 9).Value = rs![Income Tax Filing]
+    xlsheet.Cells(k, 10).Value = rs![Property Tax Filing]
+    xlsheet.Cells(k, 11).Value = rs![Proof of Ownership]
+    xlsheet.Cells(k, 12).Value = rs![Gas Safety Certificate]
     
+    conc1 = "A" & i & ":A" & p
+    xlsheet.Range(conc1).Merge
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).Merge
     conc1 = "C" & i & ":C" & p
@@ -240,13 +250,13 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).Merge
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).Merge
-    conc1 = "F" & i & ":F" & p
+    conc1 = "M" & i & ":M" & p
     xlsheet.Range(conc1).Merge
     conc1 = "N" & i & ":N" & p
     xlsheet.Range(conc1).Merge
-    conc1 = "O" & i & ":O" & p
-    xlsheet.Range(conc1).Merge
     
+    conc1 = "A" & i & ":A" & p
+    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "C" & i & ":C" & p
@@ -255,13 +265,13 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
-    conc1 = "F" & i & ":F" & p
+    conc1 = "M" & i & ":M" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "N" & i & ":N" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
-    conc1 = "O" & i & ":O" & p
-    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     
+    conc1 = "A" & i & ":A" & p
+    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "C" & i & ":C" & p
@@ -270,14 +280,13 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
-    conc1 = "F" & i & ":F" & p
+    conc1 = "M" & i & ":M" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "N" & i & ":N" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
-    conc1 = "O" & i & ":O" & p
-    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     
-    For n = 7 To 13
+    
+    For n = 6 To 12
     
     xlsheet.Cells(i, n).Interior.ColorIndex = 15
     xlsheet.Cells(m, n).Interior.ColorIndex = 15
@@ -294,6 +303,9 @@ Dim i, j, k, m, n, p As Integer
     
     End If
     
+    xlsheet.Columns("B:O").AutoFit
+    Set xlrange = xlsheet.UsedRange
+    xlrange.Rows.AutoFit
     xlapp.Application.ScreenUpdating = True
     xlapp.Application.Calculation = xlCalculationAutomatic
     xlapp.Application.EnableEvents = True
@@ -301,12 +313,6 @@ Dim i, j, k, m, n, p As Integer
     
     Set xlsheet = Nothing
     Set xlapp = Nothing
-    
-    Else
-    
-    MsgBox "Excel File SAM.xlsx not found"
-    
-    End If
     
 End Sub
 
@@ -365,6 +371,12 @@ Me.Text14.RowSource = ""
 Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
                         "ORDER BY [Citi PIC Name];"
 Me.Text14.Requery
+
+End Sub
+
+Private Sub Open_CSG_Click()
+    
+    DoCmd.OpenReport "SAM", acViewReport
 
 End Sub
 
@@ -435,6 +447,8 @@ End If
 Txt14 = 1
 
 End Sub
+
+
 
 
 
