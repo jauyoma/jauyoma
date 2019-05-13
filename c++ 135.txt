@@ -1043,6 +1043,55 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 	void *          pContext,
 	int *           aiCode)
 {
+	PnlInfo * pnl;
+	tsNCharcb OrdNum;
+	long NQPosn, ESPosn;
+	double NQPnl, ESPnl;
+	int aCode;
+
+
+	if (pInfo->iArrayLen > 0)
+	{
+		pnl = &pInfo->asPnlInfoArray[0];
+		modi = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
+
+		if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+			NQPosn = pnl->lPosition;
+			NQPnl = pnl->dOpenPnl;
+			if (modi.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)modi.data();
+				OrdNum.iDataLen = modi.length();
+				std::cout << "\nNQ Replay Order string is : " << modi << endl;
+			}
+
+		}
+
+		if (modi == std::string(_TickerES.pData, _TickerES.iDataLen))
+		{
+			ESPosn = pnl->lPosition;
+			ESPnl = pnl->dOpenPnl;
+			if (modi.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)modi.data();
+				OrdNum.iDataLen = modi.length();
+				std::cout << "\nES Replay Order string is : " << modi << endl;
+			}
+		}
+
+	}
+	
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1111,22 +1160,28 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		if (pInfo->sTicker.pData == _TickerNQ.pData)
 		{
 			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
+			{
 				_OpenNQ = pInfo->dOpenPnl;
+				if(ordcnt == 1)
+					AccPL = _OpenNQ - Cmshn;
+			}
 		}
-		else
-			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
-				_OpenPL = pInfo->dOpenPnl;
-
-		if (contract)
+		else if (pInfo->sTicker.pData == _TickerES.pData)
 		{
-			if (pInfo->sTicker.pData == _TickerES.pData)
+			if (contract)
 			{
 				_ClosedES = pInfo->dClosedPnl;
 				_OpenES = pInfo->dOpenPnl;
+				if(ordcnt == 1)
+					AccPL = _OpenES - Cmshn;
 			}
 		}
-
-		AccPL = _OpenPL - Cmshn;
+		else
+			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
+			{
+				_OpenPL = pInfo->dOpenPnl;
+				AccPL = _OpenPL - Cmshn;
+			}
 
 		if (SellMarket && BuyMarket)
 		{
