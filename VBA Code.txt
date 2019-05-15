@@ -184,10 +184,8 @@ Dim i, j, k, m, n, p As Integer
     m = 5
     k = 6
     
-    xlsheet.Cells(1, 1).Value = "TRUST REAL ESTATE - COMMERCIAL / INVESTMENT PROPERTY REPORT"
-    xlsheet.Cells(1, 1).Font.Size = 12
     xlsheet.Range("A1:N1").Merge
-    xlsheet.Range("A1:N1").Interior.ColorIndex = 48
+    xlsheet.Range("A1:N1").Interior.Color = RGB(128, 128, 128)
     xlsheet.Range("A1:N1").Borders.LineStyle = xlContinuous
     xlsheet.Cells(2, 1).Value = "Asset ID"
     xlsheet.Cells(2, 2).Value = "SAM Analyst"
@@ -199,11 +197,13 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range("F2:L2").HorizontalAlignment = xlHAlignCenter
     xlsheet.Cells(2, 13).Value = "SARC"
     xlsheet.Cells(2, 14).Value = "SAM APPROVAL"
-    xlsheet.Range("A2:N2").Interior.ColorIndex = 24
+    xlsheet.Range("A2:N2").Interior.Color = RGB(191, 191, 191)
     With xlsheet.Range("A2:N2")
     .Borders(xlInsideVertical).LineStyle = xlContinuous
     .Borders(xlInsideHorizontal).LineStyle = xlContinuous
     .BorderAround xlContinuous
+    .Font.Size = 8
+    .Font.Name = "Arial"
     End With
     
     Do While Not rs.EOF
@@ -298,8 +298,8 @@ Dim i, j, k, m, n, p As Integer
     
     For n = 6 To 12
     
-    xlsheet.Cells(i, n).Interior.ColorIndex = 15
-    xlsheet.Cells(m, n).Interior.ColorIndex = 15
+    xlsheet.Cells(i, n).Interior.Color = RGB(242, 242, 242)
+    xlsheet.Cells(m, n).Interior.Color = RGB(242, 242, 242)
     
     Next n
     
@@ -313,9 +313,22 @@ Dim i, j, k, m, n, p As Integer
     
     End If
     
-    xlsheet.Columns("B:O").AutoFit
+    xlsheet.Range("A:N").WrapText = True
+    xlsheet.Range("A:A").ColumnWidth = 6.71
+    xlsheet.Range("B:D").ColumnWidth = 10.14
+    xlsheet.Range("E:I").ColumnWidth = 12.14
+    xlsheet.Range("J:J").ColumnWidth = 18.86
+    xlsheet.Range("K:L").ColumnWidth = 12.14
+    xlsheet.Range("M:N").ColumnWidth = 14.14
     Set xlrange = xlsheet.UsedRange
     xlrange.Rows.AutoFit
+    xlrange.Font.Size = 8
+    xlrange.Font.Name = "Arial"
+    xlsheet.Cells(1, 1).Value = "TRUST REAL ESTATE - COMMERCIAL / INVESTMENT PROPERTY REPORT"
+    xlsheet.Cells(1, 1).Font.Size = 11
+    xlsheet.Cells(1, 1).Font.ColorIndex = 2
+    xlsheet.Cells(1, 1).Font.Bold = True
+    xlsheet.Cells(1, 1).HorizontalAlignment = xlHAlignCenter
     xlapp.Application.ScreenUpdating = True
     xlapp.Application.Calculation = xlCalculationAutomatic
     xlapp.Application.EnableEvents = True
