@@ -1,1 +1,7 @@
-https://www.fontstuff.com/access/acctut19.htm
+Make excel lines (gridlines) visible
+Format US Date
+Align words on cell box to left
+Figures (numbers) include comma
+LTO convert to date format
+Centre column headers
+Move asset type to trust center
