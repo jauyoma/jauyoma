@@ -10,28 +10,68 @@ Private Sub Combo4_AfterUpdate()
 If Txt14 = 0 Then
         
         If Txt0 = 0 Then
-
-        Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
-                    "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        
+        If Me.Combo4.Value = "CRE" Then
+        
+        Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
         Me.Text0.Requery
         
-        Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                    "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [Citi PIC Name] Is Not Null) ORDER BY [Citi PIC Name];"
-        Me.Text14.Requery
-        
-        Else
-        
-        Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [Citi PIC Name] Is Not Null) ORDER BY [Citi PIC Name];"
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
         Me.Text14.Requery
         
         End If
         
-ElseIf Txt0 = 0 Then
-
-        Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
-                    "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        If Me.Combo4.Value = "RRE" Then
+        
+        Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
         Me.Text0.Requery
+        
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        Me.Text14.Requery
+        
+        End If
+        
+        ElseIf Txt0 = 1 Then
+        
+        If Me.Combo4.Value = "CRE" Then
+        
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        Me.Text14.Requery
+        
+        End If
+        
+        If Me.Combo4.Value = "RRE" Then
+        
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        Me.Text14.Requery
+        
+        End If
+        
+        End If
+        
+ElseIf Txt0 = 0 Then
+       
+       If Me.Combo4.Value = "CRE" Then
+       
+       Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
+        Me.Text0.Requery
+        
+       End If
+       
+       If Me.Combo4.Value = "RRE" Then
+       
+       Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
+        Me.Text0.Requery
+       
+       End If
 
 End If
 
@@ -48,10 +88,14 @@ Dim xlapp As Excel.Application
 Dim xlbook As Excel.Workbook
 Dim xlsheet As Excel.Worksheet
 Dim xlrange As Excel.Range
-Dim SQLstr, strName, conc1 As String
+Dim SQLstr, strName, conc1, Table, RptName As String
 Dim i, j, k, m, n, p As Integer
     
+    DoCmd.Hourglass True
+    
     strName = "X:\EUC\SAM.xlsx"
+    
+    If Comb4 = 1 Then
     
     If FileExists(strName) Then
      
@@ -76,102 +120,181 @@ Dim i, j, k, m, n, p As Integer
     Set db = CurrentDb
 
     SQLstr = ""
+    RptName = ""
+    
+    If Me.Combo4.Value = "CRE" Then
+        
+    Table = "CSG_CRE"
+    RptName = "REAL ESTATE REVIEW SPREADSHEET - COMMERCIAL / INVESTMENT PROPERTY ONLY "
     
     If Txt0 = 1 And Txt14 = 1 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 1 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "');")
     
     lRecCount = rs![RecCount]
 
 
     ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 0 And Txt14 = 0 And Comb4 = 1 Then
 
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
 
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "');")
     
     lRecCount = rs![RecCount]
 
     Else
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-               "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [CSG_CRE] " & _
+                "ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
     
-    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details];")
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_CRE];")
     
     lRecCount = rs![RecCount]
+    
+    End If
+    
+    Else
+    
+    Table = "CSG_RRE"
+    RptName = "REAL ESTATE REVIEW SPREADSHEET - RESIDENTIAL PROPERTY ONLY "
+    
+    If Txt0 = 1 And Txt14 = 1 And Comb4 = 1 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    ElseIf Txt0 = 1 And Txt14 = 1 And Comb4 = 0 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 1 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] = '" & [Forms]![Lookup]![Text0] & "');")
+    
+    lRecCount = rs![RecCount]
+
+
+    ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 1 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    ElseIf Txt0 = 0 And Txt14 = 0 And Comb4 = 1 Then
+
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 0 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 0 Then
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE] " & _
+        "WHERE ([Trust Center] = '" & [Forms]![Lookup]![Text0] & "');")
+    
+    lRecCount = rs![RecCount]
+
+    Else
+    
+    SQLstr = "SELECT * FROM [CSG_RRE] " & _
+                "ORDER BY [SAM Analyst], [SARC Recommendation], [Citi PIC Name];"
+    
+    Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [CSG_RRE];")
+    
+    lRecCount = rs![RecCount]
+    
+    End If
     
     End If
 
@@ -179,79 +302,118 @@ Dim i, j, k, m, n, p As Integer
 
     Set rs = db.OpenRecordset(SQLstr)
     
-    i = 3
-    j = 4
-    m = 5
-    k = 6
+    i = 4
+    j = 5
+    m = 6
+    k = 7
     
-    xlsheet.Range("A1:N1").Merge
-    xlsheet.Range("A1:N1").Interior.Color = RGB(128, 128, 128)
-    xlsheet.Range("A1:N1").Borders.LineStyle = xlContinuous
-    xlsheet.Cells(2, 1).Value = "Asset ID"
-    xlsheet.Cells(2, 2).Value = "SAM Analyst"
-    xlsheet.Cells(2, 3).Value = "Trust Officer"
-    xlsheet.Cells(2, 4).Value = "Citi PIC Name"
-    xlsheet.Cells(2, 5).Value = "Exact Property Location"
-    xlsheet.Cells(2, 6).Value = "ASSET ATTRIBUTES"
-    xlsheet.Range("F2:L2").Merge
-    xlsheet.Range("F2:L2").HorizontalAlignment = xlHAlignCenter
-    xlsheet.Cells(2, 13).Value = "SARC"
-    xlsheet.Cells(2, 14).Value = "SAM APPROVAL"
-    xlsheet.Range("A2:N2").Interior.Color = RGB(191, 191, 191)
-    With xlsheet.Range("A2:N2")
+    xlsheet.Cells(3, 2).Value = "Asset ID"
+    xlsheet.Cells(3, 3).Value = "SAM Analyst"
+    xlsheet.Cells(3, 4).Value = "Trust Officer"
+    xlsheet.Cells(3, 5).Value = "Citi PIC Name"
+    xlsheet.Cells(3, 6).Value = "Exact Property Location"
+    xlsheet.Cells(3, 7).Value = "Trust / Entity Investment Discretion"
+    xlsheet.Cells(3, 8).Value = "ASSET ATTRIBUTES"
+    xlsheet.Range("H3:N3").Merge
+    xlsheet.Range("H3:N3").HorizontalAlignment = xlHAlignCenter
+    xlsheet.Cells(3, 15).Value = "Current TAR Level for Risk Criteria #14"
+    xlsheet.Cells(3, 16).Value = "SARC Recommendation"
+    xlsheet.Cells(3, 17).Value = "Action Required / Additional Comments"
+    With xlsheet.Range("B3:Q3")
+    .Interior.Color = RGB(217, 217, 217)
     .Borders(xlInsideVertical).LineStyle = xlContinuous
     .Borders(xlInsideHorizontal).LineStyle = xlContinuous
-    .BorderAround xlContinuous
+    .BorderAround xlContinuous, xlMedium
     .Font.Size = 8
     .Font.Name = "Arial"
+    .Font.Bold = True
     End With
     
     Do While Not rs.EOF
     
     p = i + 3
     
-    xlsheet.Cells(i, 1).Value = rs![Asset ID]
-    xlsheet.Cells(i, 2).Value = rs![SAM Analyst]
-    xlsheet.Cells(i, 3).Value = rs![Trust Officer]
-    xlsheet.Cells(i, 4).Value = rs![Citi PIC Name]
-    xlsheet.Cells(i, 5).Value = rs![Exact Property Location]
-    xlsheet.Cells(i, 13).Value = rs![SARC]
-    xlsheet.Cells(i, 14).Value = rs![SAM APPROVAL]
+
+    xlsheet.Cells(i, 2).Value = rs![Asset ID]
+    xlsheet.Cells(i, 3).Value = rs![SAM Analyst]
+    xlsheet.Cells(i, 4).Value = rs![Trust Officer]
+    xlsheet.Cells(i, 5).Value = rs![Citi PIC Name]
+    xlsheet.Cells(i, 6).Value = rs![Exact Property Location]
+    xlsheet.Cells(i, 7).Value = rs![Trust/Entity Investment Discretion]
+    xlsheet.Cells(i, 15).Value = rs![Current TAR Level for Risk Criteria #14]
+    xlsheet.Cells(i, 16).Value = rs![SARC Recommendation]
+    xlsheet.Cells(i, 17).Value = rs![Action Required/Additional Comments]
     
-    xlsheet.Cells(i, 6).Value = "Current Total Value"
-    xlsheet.Cells(i, 7).Value = "New Appraisal in Reporting Period"
-    xlsheet.Cells(i, 8).Value = "% Variance (+/-)"
-    xlsheet.Cells(i, 9).Value = "ATED Reporting"
-    xlsheet.Cells(i, 10).Value = "Insurance Cover Details"
-    xlsheet.Cells(i, 11).Value = "Insured Amount"
-    xlsheet.Cells(i, 12).Value = "Name Insured"
+    If Table = "CSG_CRE" Then
     
-    xlsheet.Cells(j, 6).Value = rs![Current Total Value]
-    xlsheet.Cells(j, 7).Value = rs![New Appraisal in Reporting Period]
-    xlsheet.Cells(j, 8).Value = rs![% Variance (+/-)]
-    xlsheet.Cells(j, 9).Value = rs![ATED Reporting]
-    xlsheet.Cells(j, 10).Value = rs![Insurance Cover Details]
-    xlsheet.Cells(j, 11).Value = rs![Insured Amount]
-    xlsheet.Cells(j, 12).Value = rs![Name Insured]
+    xlsheet.Cells(i, 8).Value = "Current Total Value"
+    xlsheet.Cells(i, 9).Value = "New Appraisal in Reporting Period"
+    xlsheet.Cells(i, 10).Value = "% Variance (+/-)"
+    xlsheet.Cells(i, 11).Value = "Insurance Details"
+    xlsheet.Cells(i, 12).Value = "Insurance Expiration"
+    xlsheet.Cells(i, 13).Value = "Insured Amount"
+    xlsheet.Cells(i, 14).Value = "Name Insured"
     
-    xlsheet.Cells(m, 6).Value = "Property Manager"
-    xlsheet.Cells(m, 7).Value = "Accountant"
-    xlsheet.Cells(m, 8).Value = "Tenancy Status and Rental Income"
-    xlsheet.Cells(m, 9).Value = "Income Tax Filing"
-    xlsheet.Cells(m, 10).Value = "Property Tax Filing"
-    xlsheet.Cells(m, 11).Value = "Proof of Ownership"
-    xlsheet.Cells(m, 12).Value = "Gas Safety Certificate"
+    xlsheet.Cells(j, 8).Value = rs![Currency] & " " & rs![Current Total Value]
+    xlsheet.Cells(j, 9).Value = rs![New Appraisal in Reporting Period]
+    xlsheet.Cells(j, 10).Value = rs![% Variance (+/-)]
+    xlsheet.Cells(j, 11).Value = rs![Insurance Cover Details]
+    xlsheet.Cells(j, 12).Value = Format(rs![Insurance Cover End Date], "Long Date")
+    xlsheet.Cells(j, 13).Value = rs![Currency Insured Amount] & " " & rs![Insured Amount]
+    xlsheet.Cells(j, 14).Value = rs![Name Insured]
     
-    xlsheet.Cells(k, 6).Value = rs![Property Manager]
-    xlsheet.Cells(k, 7).Value = rs![Accountant]
-    xlsheet.Cells(k, 8).Value = rs![Tenancy Status and Rental Income]
-    xlsheet.Cells(k, 9).Value = rs![Income Tax Filing]
-    xlsheet.Cells(k, 10).Value = rs![Property Tax Filing]
-    xlsheet.Cells(k, 11).Value = rs![Proof of Ownership]
-    xlsheet.Cells(k, 12).Value = rs![Gas Safety Certificate]
+    xlsheet.Cells(m, 8).Value = "Property Manager"
+    xlsheet.Cells(m, 9).Value = "Accountant"
+    xlsheet.Cells(m, 10).Value = "Tenancy Expiration"
+    xlsheet.Cells(m, 11).Value = "Rental Income"
+    xlsheet.Cells(m, 12).Value = "Income Tax Filing"
+    xlsheet.Cells(m, 13).Value = "Property Tax Filing"
+    xlsheet.Cells(m, 14).Value = "ATED Filing"
     
-    conc1 = "A" & i & ":A" & p
-    xlsheet.Range(conc1).Merge
+    xlsheet.Cells(k, 8).Value = rs![Property Manager]
+    xlsheet.Cells(k, 9).Value = rs![Accountant]
+    xlsheet.Cells(k, 10).Value = Format(rs![Tenancy End Date], "Long Date")
+    xlsheet.Cells(k, 11).Value = rs![Currency] & " " & rs![Current Total Value]
+    xlsheet.Cells(k, 12).Value = rs![Income Tax Filing]
+    xlsheet.Cells(k, 13).Value = rs![Property Tax Filing]
+    xlsheet.Cells(k, 14).Value = rs![ATED Reporting]
+    
+    Else
+    
+    xlsheet.Cells(i, 8).Value = "Current Total Value"
+    xlsheet.Cells(i, 9).Value = "New Appraisal in Reporting Period"
+    xlsheet.Cells(i, 10).Value = "% Variance (+/-)"
+    xlsheet.Cells(i, 11).Value = "Insurance Details"
+    xlsheet.Cells(i, 12).Value = "Insurance Expiration"
+    xlsheet.Cells(i, 13).Value = "Insured Amount"
+    xlsheet.Cells(i, 14).Value = "Name Insured"
+    
+    xlsheet.Cells(j, 8).Value = rs![Currency] & " " & rs![Current Total Value]
+    xlsheet.Cells(j, 9).Value = rs![New Appraisal in Reporting Period]
+    xlsheet.Cells(j, 10).Value = rs![% Variance (+/-)]
+    xlsheet.Cells(j, 11).Value = rs![Insurance Cover Details]
+    xlsheet.Cells(j, 12).Value = Format(rs![Insurance Cover End Date], "Long Date")
+    xlsheet.Cells(j, 13).Value = rs![Currency Insured Amount] & " " & rs![Insured Amount]
+    xlsheet.Cells(j, 14).Value = rs![Name Insured]
+    
+    xlsheet.Cells(m, 8).Value = "Licence to Occupy (LTO)"
+    xlsheet.Cells(m, 9).Value = "LTO Dated"
+    xlsheet.Cells(m, 10).Value = "Franchise Tax Filing"
+    xlsheet.Cells(m, 11).Value = "Property Tax Filing"
+    xlsheet.Cells(m, 12).Value = "Proof of Ownership"
+    xlsheet.Cells(m, 13).Value = "Insurance Cover Start Date"
+    xlsheet.Cells(m, 14).Value = "Insurance Cover End Date"
+    
+    xlsheet.Cells(k, 8).Value = rs![Licence to Occupy (LTO)]
+    xlsheet.Cells(k, 9).Value = rs![LTO Dated]
+    xlsheet.Cells(k, 10).Value = rs![Franchise Tax Filing]
+    xlsheet.Cells(k, 11).Value = rs![Property Tax Filing]
+    xlsheet.Cells(k, 12).Value = rs![Proof of Ownership]
+    xlsheet.Cells(k, 13).Value = Format(rs![Insurance Cover Start Date], "Long Date")
+    xlsheet.Cells(k, 14).Value = Format(rs![Insurance Cover End Date], "Long Date")
+    
+    End If
+    
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).Merge
     conc1 = "C" & i & ":C" & p
@@ -260,13 +422,17 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).Merge
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).Merge
-    conc1 = "M" & i & ":M" & p
+    conc1 = "F" & i & ":F" & p
     xlsheet.Range(conc1).Merge
-    conc1 = "N" & i & ":N" & p
+    conc1 = "G" & i & ":G" & p
+    xlsheet.Range(conc1).Merge
+    conc1 = "O" & i & ":O" & p
+    xlsheet.Range(conc1).Merge
+    conc1 = "P" & i & ":P" & p
+    xlsheet.Range(conc1).Merge
+    conc1 = "Q" & i & ":Q" & p
     xlsheet.Range(conc1).Merge
     
-    conc1 = "A" & i & ":A" & p
-    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "C" & i & ":C" & p
@@ -275,13 +441,17 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
-    conc1 = "M" & i & ":M" & p
+    conc1 = "F" & i & ":F" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
-    conc1 = "N" & i & ":N" & p
+    conc1 = "G" & i & ":G" & p
+    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
+    conc1 = "O" & i & ":O" & p
+    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
+    conc1 = "P" & i & ":P" & p
+    xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
+    conc1 = "Q" & i & ":Q" & p
     xlsheet.Range(conc1).VerticalAlignment = xlVAlignCenter
     
-    conc1 = "A" & i & ":A" & p
-    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "B" & i & ":B" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "C" & i & ":C" & p
@@ -290,18 +460,29 @@ Dim i, j, k, m, n, p As Integer
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     conc1 = "E" & i & ":E" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
-    conc1 = "M" & i & ":M" & p
+    conc1 = "F" & i & ":F" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
-    conc1 = "N" & i & ":N" & p
+    conc1 = "G" & i & ":G" & p
+    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
+    conc1 = "O" & i & ":O" & p
+    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
+    conc1 = "P" & i & ":P" & p
+    xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
+    conc1 = "Q" & i & ":Q" & p
     xlsheet.Range(conc1).HorizontalAlignment = xlHAlignCenter
     
     
-    For n = 6 To 12
+    For n = 8 To 14
     
     xlsheet.Cells(i, n).Interior.Color = RGB(242, 242, 242)
+    xlsheet.Cells(i, n).Font.Bold = True
     xlsheet.Cells(m, n).Interior.Color = RGB(242, 242, 242)
+    xlsheet.Cells(m, n).Font.Bold = True
     
     Next n
+    
+    conc1 = "B" & i & ":Q" & p
+    xlsheet.Range(conc1).BorderAround xlContinuous, xlMedium
     
     i = i + 4
     j = j + 4
@@ -313,22 +494,31 @@ Dim i, j, k, m, n, p As Integer
     
     End If
     
-    xlsheet.Range("A:N").WrapText = True
-    xlsheet.Range("A:A").ColumnWidth = 6.71
-    xlsheet.Range("B:D").ColumnWidth = 10.14
-    xlsheet.Range("E:I").ColumnWidth = 12.14
-    xlsheet.Range("J:J").ColumnWidth = 18.86
-    xlsheet.Range("K:L").ColumnWidth = 12.14
-    xlsheet.Range("M:N").ColumnWidth = 14.14
+    xlsheet.Range("B:Q").WrapText = True
+    xlsheet.Range("B:B").ColumnWidth = 6.86
+    xlsheet.Range("C:G").ColumnWidth = 10.14
+    xlsheet.Range("H:O").ColumnWidth = 13.14
+    xlsheet.Range("P:Q").ColumnWidth = 14.14
+    
     Set xlrange = xlsheet.UsedRange
-    xlrange.Rows.AutoFit
+    
     xlrange.Font.Size = 8
     xlrange.Font.Name = "Arial"
-    xlsheet.Cells(1, 1).Value = "TRUST REAL ESTATE - COMMERCIAL / INVESTMENT PROPERTY REPORT"
-    xlsheet.Cells(1, 1).Font.Size = 11
-    xlsheet.Cells(1, 1).Font.ColorIndex = 2
-    xlsheet.Cells(1, 1).Font.Bold = True
-    xlsheet.Cells(1, 1).HorizontalAlignment = xlHAlignCenter
+    xlrange.BorderAround xlContinuous, xlMedium
+    
+    xlsheet.Cells(2, 2).Value = RptName
+    xlsheet.Cells(2, 2).Font.ColorIndex = 2
+    xlsheet.Cells(2, 2).Font.Size = 14
+    xlsheet.Cells(2, 2).Font.Bold = True
+    xlsheet.Cells(2, 2).HorizontalAlignment = xlHAlignCenter
+    
+    xlsheet.Range("B2:Q2").Merge
+    xlsheet.Range("B2:Q2").Interior.Color = RGB(128, 128, 128)
+    xlsheet.Range("B2:Q2").Borders.LineStyle = xlContinuous
+    xlsheet.Range("B2:Q2").BorderAround xlContinuous, xlMedium
+    
+    xlrange.Rows.AutoFit
+    
     xlapp.Application.ScreenUpdating = True
     xlapp.Application.Calculation = xlCalculationAutomatic
     xlapp.Application.EnableEvents = True
@@ -336,6 +526,17 @@ Dim i, j, k, m, n, p As Integer
     
     Set xlsheet = Nothing
     Set xlapp = Nothing
+    
+    DoCmd.Hourglass False
+    
+    Else
+    
+    DoCmd.Hourglass False
+    
+    MsgBox "Select Asset Type"
+    
+    End If
+    
     
 End Sub
 
@@ -352,26 +553,52 @@ Txt0 = 0
 Txt14 = 0
 Comb4 = 0
 
-Me.Text0.RowSource = ""
-Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
+Me.Text14.RowSource = ""
+Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [SAM Analyst] " & _
                         "ORDER BY [SAM Analyst];"
-Me.Text0.Requery
+Me.Text14.Requery
 
 Me.Combo4.RowSource = ""
-Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                        "ORDER BY [SARC];"
+Me.Combo4.RowSource = "SELECT DISTINCT [Asset Type] FROM [SAM Analyst] " & _
+                        "ORDER BY [Asset Type];"
 Me.Combo4.Requery
 
-
-Me.Text14.RowSource = ""
-Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                        "ORDER BY [Citi PIC Name];"
-Me.Text14.Requery
+Me.Text0.RowSource = ""
+Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [SAM Analyst] " & _
+                        "ORDER BY [Trust Center];"
+Me.Text0.Requery
 
 End Sub
 
 
-Private Sub Command41_Click()
+
+Private Sub Form_Load()
+
+Txt0 = 0
+Txt14 = 0
+Comb4 = 0
+
+Forms!Lookup.Controls![Text27] = Forms!Login!Text0.Value
+DoCmd.Close acForm, "Login", acSaveNo
+
+Me.Text14.RowSource = ""
+Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [SAM Analyst] " & _
+                        "ORDER BY [SAM Analyst];"
+Me.Text14.Requery
+
+Me.Combo4.RowSource = ""
+Me.Combo4.RowSource = "SELECT DISTINCT [Asset Type] FROM [SAM Analyst] " & _
+                        "ORDER BY [Asset Type];"
+Me.Combo4.Requery
+
+Me.Text0.RowSource = ""
+Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [SAM Analyst] " & _
+                        "ORDER BY [Trust Center];"
+Me.Text0.Requery
+
+End Sub
+
+Private Sub Open_CSG_Click()
 
 Dim rs As DAO.Recordset
 Dim db As Database
@@ -386,94 +613,78 @@ Dim QryChk As Boolean
     
     If Txt0 = 1 And Txt14 = 1 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+        "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 1 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+        "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "');")
     
     lRecCount = rs![RecCount]
 
 
     ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 1 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "');")
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "' AND [Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 0 And Txt14 = 0 And Comb4 = 1 Then
 
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
 
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SARC] = '" & [Forms]![Lookup]![Combo4] & "');")
+        "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 0 And Txt14 = 1 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                   "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "');")
+        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text14] & "');")
     
     lRecCount = rs![RecCount]
 
     ElseIf Txt0 = 1 And Txt14 = 0 And Comb4 = 0 Then
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-                "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-                    "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
-                "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
+    SQLstr = "SELECT * FROM [Asset Details] " & _
+                "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "') ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details] " & _
-        "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "');")
+        "WHERE ([Primary Trust Centre] = '" & [Forms]![Lookup]![Text0] & "');")
     
     lRecCount = rs![RecCount]
 
     Else
     
-    SQLstr = "SELECT [SAM Analyst], [Asset ID], [Trust Officer], [Citi PIC Name], [SARC], [Exact Property Location], [SAM APPROVAL], [Current Total Value],  [New Appraisal in Reporting Period], " & _
-              "[% Variance (+/-)], [ATED Reporting], [Insurance Cover Details], [Insured Amount], [Name Insured], [Property Manager], [Accountant], [Tenancy Status and Rental Income], " & _
-               "[Income Tax Filing], [Property Tax Filing], [Proof of Ownership], [Gas Safety Certificate] FROM [Asset Details] " & _
+    SQLstr = "SELECT * FROM [Asset Details] " & _
                 "ORDER BY [SAM Analyst], [SARC], [Citi PIC Name];"
     
     Set rs = db.OpenRecordset("SELECT Count([SAM Analyst]) AS RecCount FROM [Asset Details];")
@@ -498,6 +709,7 @@ Dim QryChk As Boolean
     Else
     
     Set qdf = db.CreateQueryDef("SamQry", SQLstr)
+    Reports![Asset Details].RecordSource = "SamQry"
     
     End If
     
@@ -512,66 +724,54 @@ Dim QryChk As Boolean
 
 End Sub
 
-Private Sub Form_Load()
-
-Txt0 = 0
-Txt14 = 0
-Comb4 = 0
-
-Forms!Lookup.Controls![Text27] = Forms!Login!Text0.Value
-DoCmd.Close acForm, "Login", acSaveNo
-
-Me.Text0.RowSource = ""
-Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
-                        "ORDER BY [SAM Analyst];"
-Me.Text0.Requery
-
-Me.Combo4.RowSource = ""
-Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                        "ORDER BY [SARC];"
-Me.Combo4.Requery
-
-Me.Text14.RowSource = ""
-Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                        "ORDER BY [Citi PIC Name];"
-Me.Text14.Requery
-
-End Sub
-
-Private Sub Open_CSG_Click()
-    
-    
-
-End Sub
-
 Private Sub Text0_AfterUpdate()
 
-If Comb4 = 0 Then
+If Comb4 = 1 Then
         
         If Txt14 = 0 Then
         
-        Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [SARC] Is Not Null) ORDER BY [SARC];"
-        Me.Combo4.Requery
+        If Me.Combo4.Value = "CRE" Then
         
-        Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [Citi PIC Name] Is Not Null) ORDER BY [Citi PIC Name];"
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
         Me.Text14.Requery
-        
-        Else
-        
-        Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] Is Not Null) ORDER BY [SARC];"
-        Me.Combo4.Requery
         
         End If
         
-ElseIf Txt14 = 0 Then
-
-        Me.Text14.RowSource = "SELECT DISTINCT [Citi PIC Name] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [Citi PIC Name] Is Not Null) ORDER BY [Citi PIC Name];"
+        If Me.Combo4.Value = "RRE" Then
+        
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
         Me.Text14.Requery
+        
+        End If
+        
+        End If
+        
+Else
+       Me.Combo4.Value = ""
+       Me.Combo4.RowSource = ""
+       Me.Text14.Value = ""
+       Me.Text14.RowSource = ""
+       Me.Text0.Value = ""
+       Me.Text0.RowSource = ""
+       
+       Me.Text14.RowSource = ""
+       Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [SAM Analyst] " & _
+                        "ORDER BY [SAM Analyst];"
+       Me.Text14.Requery
 
+       Me.Combo4.RowSource = ""
+       Me.Combo4.RowSource = "SELECT DISTINCT [Asset Type] FROM [SAM Analyst] " & _
+                        "ORDER BY [Asset Type];"
+       Me.Combo4.Requery
+
+       Me.Text0.RowSource = ""
+       Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [SAM Analyst] " & _
+                        "ORDER BY [Trust Center];"
+       Me.Text0.Requery
+
+       MsgBox "Select Asset Type"
 End If
 
 Txt0 = 1
@@ -580,42 +780,55 @@ End Sub
 
 Private Sub Text14_AfterUpdate()
 
-If Comb4 = 0 Then
+If Comb4 = 1 Then
         
         If Txt0 = 0 Then
         
-        Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                    "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] Is Not Null) ORDER BY [SARC];"
-        Me.Combo4.Requery
+        If Me.Combo4.Value = "CRE" Then
         
-        Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
-                    "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_CRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
         Me.Text0.Requery
-        
-        Else
-        
-        Me.Combo4.RowSource = "SELECT DISTINCT [SARC] FROM [Asset Details] " & _
-                    "WHERE ([SAM Analyst] = '" & [Forms]![Lookup]![Text0] & "' AND [Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] Is Not Null) ORDER BY [SARC];"
-        Me.Combo4.Requery
         
         End If
         
-ElseIf Txt0 = 0 Then
-
-        Me.Text0.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [Asset Details] " & _
-                    "WHERE ([Citi PIC Name] = '" & [Forms]![Lookup]![Text14] & "' AND [SARC] = '" & [Forms]![Lookup]![Combo4] & "' AND [SAM Analyst] Is Not Null) ORDER BY [SAM Analyst];"
+        If Me.Combo4.Value = "RRE" Then
+        
+        Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [CSG_RRE] " & _
+                    "WHERE ([Asset Type] = '" & [Forms]![Lookup]![Combo4] & "' AND [Trust Center] Is Not Null) ORDER BY [Trust Center];"
         Me.Text0.Requery
+        
+        End If
+        
+        End If
+        
+Else
+        Me.Combo4.Value = ""
+        Me.Combo4.RowSource = ""
+        Me.Text14.Value = ""
+        Me.Text14.RowSource = ""
+        Me.Text0.Value = ""
+        Me.Text0.RowSource = ""
+       
+        Me.Text14.RowSource = ""
+        Me.Text14.RowSource = "SELECT DISTINCT [SAM Analyst] FROM [SAM Analyst] " & _
+                        "ORDER BY [SAM Analyst];"
+        Me.Text14.Requery
+
+        Me.Combo4.RowSource = ""
+        Me.Combo4.RowSource = "SELECT DISTINCT [Asset Type] FROM [SAM Analyst] " & _
+                        "ORDER BY [Asset Type];"
+        Me.Combo4.Requery
+
+        Me.Text0.RowSource = ""
+        Me.Text0.RowSource = "SELECT DISTINCT [Trust Center] FROM [SAM Analyst] " & _
+                        "ORDER BY [Trust Center];"
+        Me.Text0.Requery
+
+        MsgBox "Select Asset Type"
 
 End If
 
 Txt14 = 1
 
 End Sub
-
-
-
-
-
-
-
-
