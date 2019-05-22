@@ -162,6 +162,451 @@ BOOL ctrl_handler(DWORD event)
 	return FALSE;
 }
 
+
+VOID Ave_NQ()
+{
+
+	if (n > 1000)
+			{
+				sum = (sum - SMA[1000 - i]) + NQLBid1;
+				i = i + 1;
+				if (i == 1001)
+					i = 1;
+				average = sum / 1000;
+				if (PrevAve > 0)
+				{
+					if (EconTrade)
+					{
+						if (average < PrevAve)
+						{
+							trend = 2;
+						}
+						else
+						{
+							trend = 1;
+						}
+
+						if (ordcntNQ == 1)
+						{
+							if (trend == 2)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									buyclose = 1;
+									CloseSignNQ = 1;
+									CloseBuyFn();
+									g_pEngine->unlock(&iCode);
+								}
+							}
+						}
+						else if (ordcntNQ == 2)
+						{
+							if (trend == 1)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									sellclose = 1;
+									CloseSignNQ = 2;
+									CloseSellFn();
+									g_pEngine->unlock(&iCode);
+								}
+							}
+						}
+						else if (trend == 2)
+						{
+							if (ordcntNQ == 0)
+							{
+								if (BalMntr)
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											oMktOrdParams.sBuySellType.pData = "S";
+											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+											oMktOrdParams.sTicker.pData = SymbNQ.pData;
+											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+											oMktOrdParams.sExchange = _sExchangeNQ;
+											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+											{
+												ordcntNQ = 2;
+												printf("\n\nNQ Sell Market order sent");
+											}
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
+								else
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											oMktOrdParams.sBuySellType.pData = "S";
+											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+											oMktOrdParams.sTicker.pData = SymbNQ.pData;
+											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+											oMktOrdParams.sExchange = _sExchangeNQ;
+											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+											{
+												ordcntNQ = 2;
+												printf("\n\nNQ Sell Market order sent");
+											}
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
+							}
+						}
+						else
+						{
+							if (ordcntNQ == 0)
+							{
+								if (BalMntr)
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											oMktOrdParams.sBuySellType.pData = "B";
+											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+											oMktOrdParams.sTicker.pData = SymbNQ.pData;
+											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+											oMktOrdParams.sExchange = _sExchangeNQ;
+											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+											{
+												ordcntNQ = 1;
+												printf("\n\nNQ Buy Market order sent");
+											}
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
+								else
+								{
+									if (_AccBal > _MinBal)
+									{
+										if (g_pEngine->tryLock(&iCode) == 1)
+										{
+											oMktOrdParams.sBuySellType.pData = "B";
+											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+											oMktOrdParams.sTicker.pData = SymbNQ.pData;
+											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+											oMktOrdParams.sExchange = _sExchangeNQ;
+											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+											{
+												ordcntNQ = 1;
+												printf("\n\nNQ Buy Market order sent");
+											}
+											g_pEngine->unlock(&iCode);
+										}
+									}
+									else
+										std::cout << "\nMinimum trading account balance breached" << endl;
+								}
+							}
+						}
+					}
+				}
+				PrevAve = average;
+			}
+			else if (n <= 1000)
+			{
+				SMA[1000 - n] = NQLBid1;
+				sum = sum + SMA[1000 - n];
+				n = n + 1;
+			}
+
+}
+
+VOID Ave_ES()
+{
+
+	if (q > 1000)
+				{
+					sumES = (sumES - SMAES[1000 - r]) + ESLAsk1;
+					r = r + 1;
+					if (r == 1001)
+						r = 1;
+					averageES = sumES / 1000;
+
+					if (PrevAveES > 0)
+					{
+						if (EconTrade)
+						{
+							if (averageES < PrevAveES)
+							{
+								trendES = 2;
+							}
+							else
+							{
+								trendES = 1;
+							}
+
+							if (ordcntES == 1)
+							{
+								if (trendES == 2)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										buyclose = 1;
+										CloseSignES = 1;
+										CloseBuyFn();
+										g_pEngine->unlock(&iCode);
+									}
+								}
+							}
+							else if (ordcntES == 2)
+							{
+								if (trendES == 1)
+								{
+									if (g_pEngine->tryLock(&iCode) == 1)
+									{
+										sellclose = 1;
+										CloseSignES = 2;
+										CloseSellFn();
+										g_pEngine->unlock(&iCode);
+									}
+								}
+							}
+							else if (trendES == 2)
+							{
+								if (ordcntES == 0)
+								{
+									if (BalMntr)
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "S";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 2;
+													printf("\n\nES Sell Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+									else
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "S";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 2;
+													printf("\n\nES Sell Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+								}
+							}
+							else
+							{
+								if (ordcntES == 0)
+								{
+									if (BalMntr)
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "B";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 1;
+													printf("\n\nES Buy Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+									else
+									{
+										if (_AccBal > _MinBal)
+										{
+											if (g_pEngine->tryLock(&iCode) == 1)
+											{
+												oMktOrdParams.sBuySellType.pData = "B";
+												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+												oMktOrdParams.sTicker.pData = SymbES.pData;
+												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+												oMktOrdParams.sExchange = _sExchangeES;
+												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+												{
+													ordcntES = 1;
+													printf("\n\nES Buy Market order sent");
+												}
+												g_pEngine->unlock(&iCode);
+											}
+										}
+										else
+											std::cout << "\nMinimum trading account balance breached" << endl;
+									}
+								}
+							}
+						}
+					}
+					PrevAveES = averageES;
+				}
+				else if (q <= 1000)
+				{
+					SMAES[1000 - q] = ESLAsk1;
+					sumES = sumES + SMAES[1000 - q];
+					q = q + 1;
+				}
+
+
+}
+
+VOID Hedge_Buy()
+{
+
+	if (!BuyMarket)
+			{
+				if (_Posn <= 0 && _Posn >= -1)
+				{
+					if (ordcnt == 1)
+					{
+						ordcnt = 2;
+						if (BalMntr)
+						{
+							if (_AccBal > _MinBal)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									oMktOrdParams.sBuySellType.pData = "B";
+									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+									oMktOrdParams.sTicker.pData = SymbNQ.pData;
+									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oMktOrdParams.sExchange = _sExchangeNQ;
+									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+									{
+										printf("\n\nBuy Market order sent");
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+							else
+								std::cout << "\nMinimum trading account balance breached" << endl;
+						}
+						else
+						{
+							if (_AccBal > _MinBal)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									oMktOrdParams.sBuySellType.pData = "B";
+									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+									oMktOrdParams.sTicker.pData = SymbNQ.pData;
+									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oMktOrdParams.sExchange = _sExchangeNQ;
+									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+									{
+										printf("\n\nBuy Market order sent");
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+							else
+								std::cout << "\nMinimum trading account balance breached" << endl;
+						}
+					}
+				}
+			}
+
+}
+
+VOID Hedge_Sell()
+{
+
+	if (!SellMarket)
+			{
+				if (_Posn >= 0 && _Posn <= 1)
+				{
+					if (ordcnt == 0)
+					{
+						ordcnt = 1;
+						if (BalMntr)
+						{
+							if (_AccBal > _MinBal)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									oMktOrdParams.sBuySellType.pData = "S";
+									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+									oMktOrdParams.sTicker.pData = SymbES.pData;
+									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oMktOrdParams.sExchange = _sExchangeES;
+									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+									{
+										printf("\n\nSell Market order sent");
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+							else
+								std::cout << "\nMinimum trading account balance breached" << endl;
+						}
+						else
+						{
+							if (_AccBal > _MinBal)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+
+									oMktOrdParams.sBuySellType.pData = "S";
+									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+									oMktOrdParams.sTicker.pData = SymbES.pData;
+									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oMktOrdParams.sExchange = _sExchangeES;
+									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+									{
+										printf("\n\nSell Market order sent");
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+							else
+								std::cout << "\nMinimum trading account balance breached" << endl;
+						}
+					}
+				}
+			}
+
+
+}
+
 int main(int      argc,
 	char * * argv,
 	char * * envp);
@@ -502,6 +947,10 @@ void MyCallbacks::CloseBuyFn()
 						else
 							ordcnt = 3;
 						BuyMarket = false;
+						if (verify == 1)
+							verify = 2;
+						elseif (verify == 2)
+							verify = 0;
 						std::cout << "\nClosed Buy Market Order" << endl;
 					}
 					else
@@ -599,6 +1048,10 @@ void MyCallbacks::CloseSellFn()
 						else
 							ordcnt = 4;
 						SellMarket = false;
+						if (verify == 1)
+							verify = 2;
+						elseif (verify == 2)
+							verify = 0;
 						std::cout << "\nClosed Sell Market Order" << endl;
 					}
 					else
@@ -1640,167 +2093,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				ESNAsk1 = pInfo->iNumOrders;
 				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 				
-				if (g_pEngine->tryLock(&iCode) == 1)
-				{
-				if (q > 1000)
-				{
-					sumES = (sumES - SMAES[1000 - r]) + ESLAsk1;
-					r = r + 1;
-					if (r == 1001)
-						r = 1;
-					averageES = sumES / 1000;
-
-					if (PrevAveES > 0)
-					{
-						if (EconTrade)
-						{
-							if (averageES < PrevAveES)
-							{
-								trendES = 2;
-							}
-							else
-							{
-								trendES = 1;
-							}
-
-							if (ordcntES == 1)
-							{
-								if (trendES == 2)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										buyclose = 1;
-										CloseSignES = 1;
-										CloseBuyFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-							else if (ordcntES == 2)
-							{
-								if (trendES == 1)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										sellclose = 1;
-										CloseSignES = 2;
-										CloseSellFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-							else if (trendES == 2)
-							{
-								if (ordcntES == 0)
-								{
-									if (BalMntr)
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "S";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 2;
-													printf("\n\nES Sell Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-									else
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "S";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 2;
-													printf("\n\nES Sell Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-								}
-							}
-							else
-							{
-								if (ordcntES == 0)
-								{
-									if (BalMntr)
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "B";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 1;
-													printf("\n\nES Buy Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-									else
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "B";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 1;
-													printf("\n\nES Buy Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-								}
-							}
-						}
-					}
-					PrevAveES = averageES;
-				}
-				else if (q <= 1000)
-				{
-					SMAES[1000 - q] = ESLAsk1;
-					sumES = sumES + SMAES[1000 - q];
-					q = q + 1;
-				}
-				}
-				g_pEngine->unlock(&iCode);
+				
 			}
 		}
 	}
@@ -1861,162 +2154,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
 
-			if (n > 1000)
-			{
-				sum = (sum - SMA[1000 - i]) + NQLBid1;
-				i = i + 1;
-				if (i == 1001)
-					i = 1;
-				average = sum / 1000;
-				if (PrevAve > 0)
-				{
-					if (EconTrade)
-					{
-						if (average < PrevAve)
-						{
-							trend = 2;
-						}
-						else
-						{
-							trend = 1;
-						}
-
-						if (ordcntNQ == 1)
-						{
-							if (trend == 2)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									buyclose = 1;
-									CloseSignNQ = 1;
-									CloseBuyFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-						else if (ordcntNQ == 2)
-						{
-							if (trend == 1)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									sellclose = 1;
-									CloseSignNQ = 2;
-									CloseSellFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-						else if (trend == 2)
-						{
-							if (ordcntNQ == 0)
-							{
-								if (BalMntr)
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "S";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 2;
-												printf("\n\nNQ Sell Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-								else
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "S";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 2;
-												printf("\n\nNQ Sell Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-							}
-						}
-						else
-						{
-							if (ordcntNQ == 0)
-							{
-								if (BalMntr)
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "B";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 1;
-												printf("\n\nNQ Buy Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-								else
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "B";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 1;
-												printf("\n\nNQ Buy Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-							}
-						}
-					}
-				}
-				PrevAve = average;
-			}
-			else if (n <= 1000)
-			{
-				SMA[1000 - n] = NQLBid1;
-				sum = sum + SMA[1000 - n];
-				n = n + 1;
-			}
+			
 		}
 	}
 
@@ -2031,163 +2169,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESNAsk1 = pAsk->iNumOrders;
 				BAsk_T = pBid->iSsboe + pBid->iUsecs;
 
-				if (q > 1000)
-				{
-					sumES = (sumES - SMAES[1000 - r]) + ESLAsk1;
-					r = r + 1;
-					if (r == 1001)
-						r = 1;
-					averageES = sumES / 1000;
-
-					if (PrevAveES > 0)
-					{
-						if (EconTrade)
-						{
-							if (averageES < PrevAveES)
-							{
-								trendES = 2;
-							}
-							else if (averageES > PrevAveES)
-							{
-								trendES = 1;
-							}
-
-							if (ordcntES == 1)
-							{
-								if (trendES == 2)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										buyclose = 1;
-										CloseSignES = 1;
-										CloseBuyFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-							else if (ordcntES == 2)
-							{
-								if (trendES == 1)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										sellclose = 1;
-										CloseSignES = 2;
-										CloseSellFn();
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-							else if (trendES == 2)
-							{
-								if (ordcntES == 0)
-								{
-									if (BalMntr)
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "S";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 2;
-													printf("\n\nES Sell Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-									else
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "S";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 2;
-													printf("\n\nES Sell Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-								}
-							}
-							else if (trendES == 1)
-							{
-								if (ordcntES == 0)
-								{
-									if (BalMntr)
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "B";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 1;
-													printf("\n\nES Buy Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-									else
-									{
-										if (_AccBal > _MinBal)
-										{
-											if (g_pEngine->tryLock(&iCode) == 1)
-											{
-												oMktOrdParams.sBuySellType.pData = "B";
-												oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-												oMktOrdParams.sTicker.pData = SymbES.pData;
-												oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-												oMktOrdParams.sExchange = _sExchangeES;
-												if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-												{
-													ordcntES = 1;
-													printf("\n\nES Buy Market order sent");
-												}
-												g_pEngine->unlock(&iCode);
-											}
-										}
-										else
-											std::cout << "\nMinimum trading account balance breached" << endl;
-									}
-								}
-							}
-						}
-					}
-					PrevAveES = averageES;
-				}
-				else if (q <= 1000)
-				{
-					SMAES[1000 - q] = ESLAsk1;
-					sumES = sumES + SMAES[1000 - q];
-					q = q + 1;
-				}
+				
 			}
 		}
 
@@ -2247,162 +2229,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 
-			if (n > 1000)
-			{
-				sum = (sum - SMA[1000 - i]) + NQLBid1;
-				i = i + 1;
-				if (i == 1001)
-					i = 1;
-				average = sum / 1000;
-				if (PrevAve > 0)
-				{
-					if (EconTrade)
-					{
-						if (average < PrevAve)
-						{
-							trend = 2;
-						}
-						else
-						{
-							trend = 1;
-						}
-
-						if (ordcntNQ == 1)
-						{
-							if (trend == 2)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									buyclose = 1;
-									CloseSignNQ = 1;
-									CloseBuyFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-						else if (ordcntNQ == 2)
-						{
-							if (trend == 1)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									sellclose = 1;
-									CloseSignNQ = 2;
-									CloseSellFn();
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-						else if (trend == 2)
-						{
-							if (ordcntNQ == 0)
-							{
-								if (BalMntr)
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "S";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 2;
-												printf("\n\nNQ Sell Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-								else
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "S";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntES = 2;
-												printf("\n\nNQ Sell Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-							}
-						}
-						else
-						{
-							if (ordcntNQ == 0)
-							{
-								if (BalMntr)
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "B";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 1;
-												printf("\n\nNQ Buy Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-								else
-								{
-									if (_AccBal > _MinBal)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oMktOrdParams.sBuySellType.pData = "B";
-											oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-											oMktOrdParams.sTicker.pData = SymbNQ.pData;
-											oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-											oMktOrdParams.sExchange = _sExchangeNQ;
-											if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-											{
-												ordcntNQ = 1;
-												printf("\n\nNQ Buy Market order sent");
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-									else
-										std::cout << "\nMinimum trading account balance breached" << endl;
-								}
-							}
-						}
-					}
-				}
-				PrevAve = average;
-			}
-			else if (n <= 1000)
-			{
-				SMA[1000 - n] = NQLBid1;
-				sum = sum + SMA[1000 - n];
-				n = n + 1;
-			}
+			
 		}
 	}
 
@@ -3472,7 +3299,8 @@ int main(int      argc,
 
 	EconNews = (hr_T * 60) + min_T;
 	curr = (lt.wHour * 60) + lt.wMinute;
-
+	int verify = 0;
+	
 	while (!done)
 	{
 		QueryPerformanceFrequency(&Frequency);
@@ -3498,112 +3326,18 @@ int main(int      argc,
 
 		if (!EconTrade)
 		{
-			if (!SellMarket)
+			if(Verify == 0)
 			{
-				if (_Posn >= 0 && _Posn <= 1)
-				{
-					if (ordcnt == 0)
-					{
-						ordcnt = 1;
-						if (BalMntr)
-						{
-							if (_AccBal > _MinBal)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "S";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										printf("\n\nSell Market order sent");
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-							else
-								std::cout << "\nMinimum trading account balance breached" << endl;
-						}
-						else
-						{
-							if (_AccBal > _MinBal)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-
-									oMktOrdParams.sBuySellType.pData = "S";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										printf("\n\nSell Market order sent");
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-							else
-								std::cout << "\nMinimum trading account balance breached" << endl;
-						}
-					}
-				}
+				Hedge_Buy();
+				Hedge_Sell();
+				Verify = 1;
 			}
-
-			if (!BuyMarket)
-			{
-				if (_Posn <= 0 && _Posn >= -1)
-				{
-					if (ordcnt == 1)
-					{
-						ordcnt = 2;
-						if (BalMntr)
-						{
-							if (_AccBal > _MinBal)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "B";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbNQ.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeNQ;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										printf("\n\nBuy Market order sent");
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-							else
-								std::cout << "\nMinimum trading account balance breached" << endl;
-						}
-						else
-						{
-							if (_AccBal > _MinBal)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "B";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbNQ.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeNQ;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										printf("\n\nBuy Market order sent");
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-							else
-								std::cout << "\nMinimum trading account balance breached" << endl;
-						}
-					}
-				}
-			}
+		}
+		else
+		{
+			Ave_NQ;
+			if(contract)
+				Ave_ES;
 		}
 
 		curr = (lt.wHour * 60) + lt.wMinute;
