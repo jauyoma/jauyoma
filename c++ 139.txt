@@ -130,8 +130,8 @@ bool BuyLimit = false, SellLimit = false, OpenOrd = false, BuyMarket = false, Se
 double NQBLmt, NQSLmt, ESBLmt, ESSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
-bool EconTrade = false;
-double HighBid, HighAsk, LowBid, LowAsk;
+bool EconTrade = false, TradeMtr = false;
+double HighBid = 0, HighAsk = 0, LowBid = 0, LowAsk = 0;
 long NQPosn, ESPosn;
 double NQPnl, ESPnl;
 int n = 1, i = 1, trend = 0, q = 1, r = 1, trendES = 0, AccPL = 0;
@@ -1762,7 +1762,9 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		}		
 
 		AccPL = ((NQPnl + ESPnl) - Cmshn);
-
+		
+		if(!EconTrade)
+		{
 		if (SellMarket && BuyMarket)
 		{
 			if (AccPL > 17.5)
@@ -1777,6 +1779,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					g_pEngine->unlock(&iCode);
 				}
 			}
+		}
 		}
 
 		std::cout << "\nPnL less commission is : " << AccPL << endl;
@@ -2299,6 +2302,24 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			NQSAsk1 = pInfo->iSize;
 			NQNAsk1 = pInfo->iNumOrders;
 			BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
+			
+			if(EconTrade)
+			{	
+				if(NQLAsk1 > HighBid)
+				{
+					if(TradeMtr)
+					{
+						if (g_pEngine->tryLock(&iCode) == 1)
+						{
+							buyclose = 1;
+							CloseBuyFn();
+							g_pEngine->unlock(&iCode);
+						}
+					}
+					HighBid = NQLAsk1;
+				}
+				
+			}
 		}
 	}
 
@@ -3526,7 +3547,11 @@ int main(int      argc,
 				if (lt.wHour == hr_T)
 				{
 					if(lt.wMinute == min_T)
-						EconTrade = true;
+					{
+						TradeMtr = true;
+						if(lt.wSecond == 59)
+							EconTrade = true;
+					}
 				}
 			}
 			else
@@ -3534,6 +3559,7 @@ int main(int      argc,
 				if(lt.wMinute != min_T)
 				{
 					EconTrade = false;
+					TradeMtr = false;
 				}
 			}
 		}
