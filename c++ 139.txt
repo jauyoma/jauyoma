@@ -695,6 +695,7 @@ VOID Hedge_Buy()
 			if (ordcnt == 1)
 			{
 				ordcnt = 2;
+				verify = 1;
 				if (BalMntr)
 				{
 					if (_AccBal > _MinBal)
@@ -3541,8 +3542,11 @@ int main(int      argc,
 
 		if (!EconTrade)
 		{
-			Hedge_Sell();
-			Hedge_Buy();
+			if(ordcnt < 2 && verify < 1)
+			{
+				Hedge_Sell();
+				Hedge_Buy();
+			}
 
 				if (PnlMntr < 2)
 				{
