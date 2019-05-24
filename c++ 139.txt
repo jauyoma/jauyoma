@@ -3523,14 +3523,15 @@ int main(int      argc,
 		{
 			if (!EconTrade)
 			{
-				if ((EconNews - curr) <= 1 && (curr - EconNews) <= 1)
+				if (lt.wHour == hr_T)
 				{
-					EconTrade = true;
+					if(lt.wMinute == min_T)
+						EconTrade = true;
 				}
 			}
 			else
 			{
-				if ((curr - EconNews) > 1)
+				if(lt.wMinute != min_T)
 				{
 					EconTrade = false;
 				}
