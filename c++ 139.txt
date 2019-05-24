@@ -1731,42 +1731,32 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		tick1 = string(jk->sTicker.pData, jk->sTicker.iDataLen);
 		tick2 = string(wr->sTicker.pData, wr->sTicker.iDataLen);
 
-
-		if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		NQPosn = pnl->lPosition;
+		NQPnl = pnl->dOpenPnl;
+		if (modi.empty())
 		{
-			NQPosn = pnl->lPosition;
-			NQPnl = pnl->dOpenPnl;
-			if (modi.empty())
-			{
-				OrdNum.pData = NULL;
-				OrdNum.iDataLen = 0;
-			}
-			else
-			{
-				OrdNum.pData = (char *)modi.data();
-				OrdNum.iDataLen = modi.length();
-
-			}
-
+			OrdNum.pData = NULL;
+			OrdNum.iDataLen = 0;
+		}
+		else
+		{
+			OrdNum.pData = (char *)modi.data();
+			OrdNum.iDataLen = modi.length();
 			std::cout << "NQ PnL is : " << NQPnl << endl;
 			std::cout << "NQ ticker is : " << modi << endl;
 		}
-
-		if (tick1 == std::string(_TickerES.pData, _TickerES.iDataLen))
+	
+		ESPosn = jk->lPosition;
+		ESPnl = jk->dOpenPnl;
+		if (tick.empty())
 		{
-			ESPosn = jk->lPosition;
-			ESPnl = jk->dOpenPnl;
-			if (tick.empty())
-			{
-				OrdNum.pData = NULL;
-				OrdNum.iDataLen = 0;
-			}
-			else
-			{
-				OrdNum.pData = (char *)tick.data();
-				OrdNum.iDataLen = tick.length();
-			}
-
+			OrdNum.pData = NULL;
+			OrdNum.iDataLen = 0;
+		}
+		else
+		{
+			OrdNum.pData = (char *)tick.data();
+			OrdNum.iDataLen = tick.length();
 			std::cout << "ES PnL is : " << ESPnl << endl;
 			std::cout << "ES ticker is : " << tick1 << endl;
 		}		
@@ -1790,8 +1780,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		}
 
 		std::cout << "\nPnL less commission is : " << AccPL << endl;
-		std::cout << "NQ ticker is : " << modi << endl;
-		std::cout << "ES ticker is : " << tick1 << endl;
 
 		PnlMntr = 1;
 	}
