@@ -132,6 +132,8 @@ bool NQBCl, NQSCl, LiveOrdNQ = false;
 tsNCharcb EntTyp, OrdNmb, Algo, UsrMsg;
 bool EconTrade = false;
 double HighBid, HighAsk, LowBid, LowAsk;
+long NQPosn, ESPosn;
+double NQPnl, ESPnl;
 int n = 1, i = 1, trend = 0, q = 1, r = 1, trendES = 0, AccPL = 0;
 long double average = 0, sum = 0, SMA[200], PrevAve = 0;
 long double averageES = 0, sumES = 0, SMAES[200], PrevAveES = 0;
@@ -1148,7 +1150,15 @@ void MyCallbacks::CloseBuyFn()
 						if (verify == 1)
 							verify = 2;
 						else if (verify == 2)
+						{
 							verify = 0;
+							if (!g_pEngine->unsubscribePnl(&g_oAccount, &iCode))
+							{
+								printf("\nREngine::unsubscribePnL() error : %d\n", iCode);
+							}
+							else
+								printf("\nSuccessfully unsubscribed from PnL engine");
+						}
 						std::cout << "\nClosed Buy Market Order" << endl;
 					}
 					else
@@ -1249,7 +1259,15 @@ void MyCallbacks::CloseSellFn()
 						if (verify == 1)
 							verify = 2;
 						else if (verify == 2)
+						{
 							verify = 0;
+							if (!g_pEngine->unsubscribePnl(&g_oAccount, &iCode))
+							{
+								printf("\nREngine::unsubscribePnL() error : %d\n", iCode);
+							}
+							else
+								printf("\nSuccessfully unsubscribed from PnL engine");
+						}
 						std::cout << "\nClosed Sell Market Order" << endl;
 					}
 					else
@@ -1697,8 +1715,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 {
 	PnlInfo * pnl, *pl, *jk, *wr;
 	tsNCharcb OrdNum;
-	long NQPosn, ESPosn;
-	double NQPnl, ESPnl;
 	int aCode, Arr;
 	string tick, tick1, tick2;
 
@@ -1715,7 +1731,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		tick1 = string(jk->sTicker.pData, jk->sTicker.iDataLen);
 		tick2 = string(wr->sTicker.pData, wr->sTicker.iDataLen);
 
-		
+
 		if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		{
 			NQPosn = pnl->lPosition;
@@ -1732,7 +1748,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 
 			}
 
-			std::cout << "NQ position is : " << NQPosn << endl;
 			std::cout << "NQ PnL is : " << NQPnl << endl;
 			std::cout << "NQ ticker is : " << modi << endl;
 		}
@@ -1752,10 +1767,9 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 				OrdNum.iDataLen = tick.length();
 			}
 
-			std::cout << "ES position is : " << ESPosn << endl;
 			std::cout << "ES PnL is : " << ESPnl << endl;
 			std::cout << "ES ticker is : " << tick1 << endl;
-		}
+		}		
 
 		AccPL = ((NQPnl + ESPnl) - Cmshn);
 
@@ -1774,6 +1788,10 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 				}
 			}
 		}
+
+		std::cout << "\nPnL less commission is : " << AccPL << endl;
+		std::cout << "NQ ticker is : " << modi << endl;
+		std::cout << "ES ticker is : " << tick1 << endl;
 
 		PnlMntr = 1;
 	}
@@ -1846,7 +1864,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		{
 			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
 				_OpenNQ = pInfo->dOpenPnl;
-			
+
 		}
 		else
 		{
@@ -1863,7 +1881,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			}
 		}
 
-		
+
 
 	}
 
@@ -2307,7 +2325,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				ESNAsk1 = pInfo->iNumOrders;
 				BAsk_T = pInfo->iSsboe + pInfo->iUsecs;
 
-				
+
 			}
 		}
 	}
@@ -2368,7 +2386,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			NQNBid1 = pBid->iNumOrders;
 			BBid_T = pBid->iSsboe + pBid->iUsecs;
 
-			
+
 		}
 	}
 
@@ -2383,7 +2401,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				ESNAsk1 = pAsk->iNumOrders;
 				BAsk_T = pBid->iSsboe + pBid->iUsecs;
 
-				
+
 			}
 		}
 
@@ -2443,7 +2461,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			NQNBid1 = pInfo->iNumOrders;
 			BBid_T = pInfo->iSsboe + pInfo->iUsecs;
 
-			
+
 		}
 	}
 
@@ -3458,17 +3476,8 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
-	{
-		std::cout << "REngine::subscribePnL() error : %d\n" << iCode << endl;
-
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
-
-		return (BAD);
-	}
 	
+
 
 	/*   ----------------------------------------------------------------   */
 	/*   send market order */
@@ -3542,17 +3551,27 @@ int main(int      argc,
 
 		if (!EconTrade)
 		{
-			if(ordcnt < 2 && verify < 1)
+			if (ordcnt < 2 && verify < 1)
 			{
 				Hedge_Sell();
 				Hedge_Buy();
+				if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
+				{
+					std::cout << "REngine::subscribePnL() error : %d\n" << iCode << endl;
+
+					delete g_pEngine;
+					delete pCallbacks;
+					delete pAdmCallbacks;
+
+					return (BAD);
+				}
 			}
 
-				if (PnlMntr < 2)
-				{
-					g_pEngine->replayPnl(&g_oAccount, &iCode);
-					PnlMntr = 2;
-				}
+			if (PnlMntr < 2)
+			{
+				g_pEngine->replayPnl(&g_oAccount, &iCode);
+				PnlMntr = 2;
+			}
 
 		}
 		else
@@ -3563,15 +3582,6 @@ int main(int      argc,
 		}
 
 		curr = (lt.wHour * 60) + lt.wMinute;
-
-		if (_OpenPL != NewOpenPL)
-		{
-			std::cout << "\nOpen PnL for all instruments is : " << _OpenPL << endl;
-			std::cout << "\nPnL less commission is : " << AccPL << endl;
-			std::cout << "\nOrder count value is : " << ordcnt << endl;
-			std::cout << "\nApplied commission is : " << Cmshn << endl;
-			NewOpenPL = _OpenPL;
-		}
 
 		QueryPerformanceCounter(&EndingTime);
 		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
