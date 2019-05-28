@@ -135,7 +135,7 @@ double NQHighBid = 0, NQHighAsk = 0, NQLowBid = 0, NQLowAsk = 0;
 double ESHighBid = 0, ESHighAsk = 0, ESLowBid = 0, ESLowAsk = 0;
 long NQPosn, ESPosn;
 double NQPnl, ESPnl, NQPvt = 0, ESPvt = 0;
-int AccPL = 0;
+int AccPL = 0, cut = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES, modi;
 int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
@@ -1508,12 +1508,10 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				if (!NQGoLive)
 				{
 					
-					if (lt.wMinute == (min_T - 1))
+					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
 						
 					}
 					else if (lt.wMinute > (min_T - 1))
@@ -1558,7 +1556,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1597,7 +1595,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1662,9 +1660,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (!ESGoLive)
 					{
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
-						if (lt.wMinute == (min_T - 1))
+						if (lt.wMinute == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLAsk1;
@@ -1710,7 +1706,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (_AccBal > _MinBal)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
@@ -1751,7 +1747,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
+										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -1854,15 +1850,13 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				if (!NQGoLive)
 				{
 					
-					if (lt.wMinute == (min_T - 1))
+					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
 
 					}
-					else if (lt.wMinute > (min_T - 1))
+					else if (lt.wMinute > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
@@ -1904,7 +1898,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1943,7 +1937,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2011,8 +2005,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
 
 					}
 					else if (lt.wMinute > (min_T - 1))
@@ -2057,7 +2049,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2096,7 +2088,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
+									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2161,8 +2153,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
 						if (lt.wMinute == (min_T - 1))
 						{
 							if (lt.wSecond <= 59)
@@ -2210,7 +2200,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
+										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2249,7 +2239,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
+										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2312,9 +2302,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
-						if (lt.wMinute == (min_T - 1))
+
+						if (lt.wMinute == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLBid1;
@@ -2361,7 +2350,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2400,7 +2388,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2502,15 +2489,13 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				if (!NQGoLive)
 				{
 					
-					if (lt.wMinute == (min_T - 1))
+					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
 
 					}
-					else if (lt.wMinute > (min_T - 1))
+					else if (lt.wMinute > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
@@ -2552,7 +2537,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2591,7 +2575,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									std::cout << "\nSending Market Order" << endl;
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2656,9 +2639,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				{
 					if (!ESGoLive)
 					{
-						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
-						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
-						if (lt.wMinute == (min_T - 1))
+						if (lt.wMinute == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLBid1;
@@ -2705,7 +2686,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2744,7 +2724,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										std::cout << "\nSending Market Order" << endl;
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -3454,7 +3433,7 @@ int main(int      argc,
 
 	_MinBal = _RiskBal*0.999;
 	_AccBal = _RiskBal;
-
+	cut = min_T - 1;
 	if (contract)
 		Cmshn = 6.8;
 	else
