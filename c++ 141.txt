@@ -477,47 +477,47 @@ void MyCallbacks::CloseBuyFn()
 	{
 		if (NQBuyMkt || ESBuyMkt)
 		{
-				std::cout << "\nTrying to close Buy Market Order\n" << endl;
+			std::cout << "\nTrying to close Buy Market Order\n" << endl;
 
-				oMktOrdParams.sBuySellType.pData = "S";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				if (CloseSignES == 1 && ordcntES == 1)
+			oMktOrdParams.sBuySellType.pData = "S";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			if (CloseSignES == 1 && ordcntES == 1)
+			{
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeES;
+			}
+			else if (CloseSignNQ == 1 && ordcntNQ == 1)
+			{
+				oMktOrdParams.sTicker.pData = SymbNQ.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeNQ;
+
+			}
+
+
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				buycheck = 0;
+				if (ordcntNQ == 1)
 				{
-					oMktOrdParams.sTicker.pData = SymbES.pData;
-					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oMktOrdParams.sExchange = _sExchangeES;
+					CloseSignNQ = 0;
+					ordcntNQ = 0;
+					NQPnlMntr = 2;
+					NQBuyMkt = false;
 				}
-				else if (CloseSignNQ == 1 && ordcntNQ == 1)
+				if (ordcntES == 1)
 				{
-					oMktOrdParams.sTicker.pData = SymbNQ.pData;
-					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oMktOrdParams.sExchange = _sExchangeNQ;
-
+					CloseSignES = 0;
+					ordcntES = 0;
+					ESPnlMntr = 2;
+					ESBuyMkt = false;
 				}
 
-
-				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-				{
-					buycheck = 0;
-					if (ordcntNQ == 1)
-					{
-						CloseSignNQ = 0;
-						ordcntNQ = 0;
-						NQPnlMntr = 2;
-						NQBuyMkt = false;
-					}
-					if (ordcntES == 1)
-					{
-						CloseSignES = 0;
-						ordcntES = 0;
-						ESPnlMntr = 2;
-						ESBuyMkt = false;
-					}
-					
-					std::cout << "\nClosed Buy Market Order" << endl;
-				}
-				else
-					std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
+				std::cout << "\nClosed Buy Market Order" << endl;
+			}
+			else
+				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 
 		}
 		else if (BuyLimit)
@@ -548,45 +548,45 @@ void MyCallbacks::CloseSellFn()
 	{
 		if (NQSellMkt || ESSellMkt)
 		{
-				std::cout << "\nTrying to close Sell Market Order\n" << endl;
+			std::cout << "\nTrying to close Sell Market Order\n" << endl;
 
-				oMktOrdParams.sBuySellType.pData = "B";
-				oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-				if (CloseSignES == 2 && ordcntES == 2)
-				{
-					oMktOrdParams.sTicker.pData = SymbES.pData;
-					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oMktOrdParams.sExchange = _sExchangeES;
-				}
-				else if (CloseSignNQ == 2 && ordcntNQ == 2)
-				{
-					oMktOrdParams.sTicker.pData = SymbNQ.pData;
-					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oMktOrdParams.sExchange = _sExchangeNQ;
-				}
+			oMktOrdParams.sBuySellType.pData = "B";
+			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+			if (CloseSignES == 2 && ordcntES == 2)
+			{
+				oMktOrdParams.sTicker.pData = SymbES.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeES;
+			}
+			else if (CloseSignNQ == 2 && ordcntNQ == 2)
+			{
+				oMktOrdParams.sTicker.pData = SymbNQ.pData;
+				oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+				oMktOrdParams.sExchange = _sExchangeNQ;
+			}
 
-				if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+			{
+				buycheck = 0;
+
+				if (ordcntNQ == 2)
 				{
-					buycheck = 0;
-					
-					if (ordcntNQ == 2)
-					{
-						CloseSignNQ = 0;
-						ordcntNQ = 0;
-						NQSellMkt = false;
-						NQPnlMntr = 2;
-					}
-					if (ordcntES == 2)
-					{
-						CloseSignES = 0;
-						ordcntES = 0;
-						ESSellMkt = false;
-						ESPnlMntr = 2;
-					}
-					std::cout << "\nClosed Buy Market Order" << endl;
+					CloseSignNQ = 0;
+					ordcntNQ = 0;
+					NQSellMkt = false;
+					NQPnlMntr = 2;
 				}
-				else
-					std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
+				if (ordcntES == 2)
+				{
+					CloseSignES = 0;
+					ordcntES = 0;
+					ESSellMkt = false;
+					ESPnlMntr = 2;
+				}
+				std::cout << "\nClosed Buy Market Order" << endl;
+			}
+			else
+				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
 		}
 		else if (SellLimit)
 		{
@@ -944,7 +944,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 
 			}
 
-			
+
 			if (NQPosn > 0)
 				NQBuyMkt = true;
 			if (NQPosn < 0)
@@ -976,7 +976,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			ESPnlMntr = 1;
 			std::cout << "ES PnL is : " << ESPnl << endl;
 			std::cout << "ES ticker is : " << tick1 << endl;
-		}		
+		}
 
 		AccPL = ((NQPnl + ESPnl) - Cmshn);
 
@@ -1024,7 +1024,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		{
 			if (ordcnt == 2)
 			{
-				
+
 			}
 		}
 
@@ -1507,15 +1507,19 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
+					
 					if (lt.wMinute == (min_T - 1))
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
-						else
-						{
-							NQGoLive = true;
-							std::cout << "\nNQGoLive set to True" << endl;
-						}
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
+						
+					}
+					else if (lt.wMinute > (min_T - 1))
+					{
+						NQGoLive = true;
+						std::cout << "\nNQGoLive set to True" << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -1634,7 +1638,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				NQHighAsk = NQLAsk1;
 			if (NQLowAsk != 0)
 			{
-				if(NQLAsk1 < NQLowAsk)
+				if (NQLAsk1 < NQLowAsk)
 					NQLowAsk = NQLAsk1;
 			}
 			else
@@ -1658,6 +1662,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (!ESGoLive)
 					{
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
 						if (lt.wMinute == (min_T - 1))
 						{
 							if (lt.wSecond <= 59)
@@ -1668,7 +1674,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								std::cout << "\nNQGoLive set to True" << endl;
 							}
 						}
-						
+
 					}
 					else if (ordcntES == 1)
 					{
@@ -1847,15 +1853,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (!NQGoLive)
 				{
+					
 					if (lt.wMinute == (min_T - 1))
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
-						else
-						{
-							NQGoLive = true;
-							std::cout << "\nNQGoLive set to True" << endl;
-						}
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
+
+					}
+					else if (lt.wMinute > (min_T - 1))
+					{
+						NQGoLive = true;
+						std::cout << "\nNQGoLive set to True" << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -1996,15 +2006,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (!NQGoLive)
 				{
+
 					if (lt.wMinute == (min_T - 1))
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
-						else
-						{
-							NQGoLive = true;
-							std::cout << "\nNQGoLive set to True" << endl;
-						}
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
+
+					}
+					else if (lt.wMinute > (min_T - 1))
+					{
+						NQGoLive = true;
+						std::cout << "\nNQGoLive set to True" << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -2147,6 +2161,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
 						if (lt.wMinute == (min_T - 1))
 						{
 							if (lt.wSecond <= 59)
@@ -2296,7 +2312,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
 						if (lt.wMinute == (min_T - 1))
 						{
 							if (lt.wSecond <= 59)
@@ -2484,16 +2501,19 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
-				
+					
 					if (lt.wMinute == (min_T - 1))
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
-						else
-						{
-							NQGoLive = true;
-							std::cout << "\nNQGoLive set to True" << endl;
-						}
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nLocal Second info : " << lt.wSecond << endl;
+
+					}
+					else if (lt.wMinute > (min_T - 1))
+					{
+						NQGoLive = true;
+						std::cout << "\nNQGoLive set to True" << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -2635,7 +2655,9 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				if (EconTrade)
 				{
 					if (!ESGoLive)
-					{			
+					{
+						std::cout << "\nLocal Minute info : " << lt.wMinute << endl;
+						std::cout << "\nEcon Minute info : " << (min_T - 1) << endl;
 						if (lt.wMinute == (min_T - 1))
 						{
 							if (lt.wSecond <= 59)
@@ -3769,7 +3791,7 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	
+
 
 
 	/*   ----------------------------------------------------------------   */
@@ -3845,7 +3867,7 @@ int main(int      argc,
 					NQPnlMntr = 2;
 					ESPnlMntr = 2;
 				}
-			
+
 				//Close application if greater than 1 minute
 				if ((curr - EconNews) > 2)
 				{
@@ -3859,7 +3881,7 @@ int main(int      argc,
 				}
 			}
 
-			
+
 		}
 
 		QueryPerformanceCounter(&EndingTime);
