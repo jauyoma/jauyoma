@@ -135,11 +135,11 @@ double NQHighBid = 0, NQHighAsk = 0, NQLowBid = 0, NQLowAsk = 0;
 double ESHighBid = 0, ESHighAsk = 0, ESLowBid = 0, ESLowAsk = 0;
 long NQPosn, ESPosn;
 double NQPnl, ESPnl, NQPvt = 0, ESPvt = 0;
-int AccPL = 0, cut = 0;
+int AccPL = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES, modi;
 int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
-int NQPnlMntr = 2, ESPnlMntr = 2;
+int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
 
 SYSTEMTIME st, lt;
 
@@ -1514,7 +1514,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							NQPvt = NQLAsk1;
 						
 					}
-					else if (lt.wMinute > (min_T - 1))
+					else if (lt.wMinute > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
@@ -1556,7 +1556,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1595,7 +1594,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1664,11 +1662,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLAsk1;
-							else
-							{
-								ESGoLive = true;
-								std::cout << "\nNQGoLive set to True" << endl;
-							}
+						}
+						else if (lt.wMinute > cut)
+						{
+							ESGoLive = true;
+							std::cout << "\nESGoLive set to True" << endl;
 						}
 
 					}
@@ -1706,7 +1704,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							{
 								if (_AccBal > _MinBal)
 								{
-									
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
@@ -1747,7 +1744,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -1898,7 +1894,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -1937,7 +1932,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2001,13 +1995,13 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				if (!NQGoLive)
 				{
 
-					if (lt.wMinute == (min_T - 1))
+					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
 
 					}
-					else if (lt.wMinute > (min_T - 1))
+					else if (lt.wMinute > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
@@ -2049,7 +2043,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2088,7 +2081,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									
 									if (NQLAsk1 > NQPvt && NQLBid1 > NQPvt)
 										Typ = "B";
 									else
@@ -2153,15 +2145,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						if (lt.wMinute == (min_T - 1))
+						if (lt.wMinute == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLAsk1;
-							else
-							{
-								ESGoLive = true;
-								std::cout << "\nNQGoLive set to True" << endl;
-							}
+						}
+						else if (lt.wMinute > cut)
+						{
+							ESGoLive = true;
+							std::cout << "\nESGoLive set to True" << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2200,7 +2192,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2239,7 +2230,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									if (g_pEngine->tryLock(&iCode) == 1)
 									{
-										
 										if (ESLAsk1 > ESPvt && ESLBid1 > ESPvt)
 											Typ = "B";
 										else
@@ -2302,16 +2292,15 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-
 						if (lt.wMinute == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLBid1;
-							else
-							{
-								ESGoLive = true;
-								std::cout << "\nNQGoLive set to True" << endl;
-							}
+						}
+						else if (lt.wMinute > cut)
+						{
+							ESGoLive = true;
+							std::cout << "\nESGoLive set to True" << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2643,11 +2632,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLBid1;
-							else
-							{
-								ESGoLive = true;
-								std::cout << "\nNQGoLive set to True" << endl;
-							}
+						}
+						else if (lt.wMinute > cut)
+						{
+							ESGoLive = true;
+							std::cout << "\nESGoLive set to True" << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -3434,6 +3423,7 @@ int main(int      argc,
 	_MinBal = _RiskBal*0.999;
 	_AccBal = _RiskBal;
 	cut = min_T - 1;
+
 	if (contract)
 		Cmshn = 6.8;
 	else
