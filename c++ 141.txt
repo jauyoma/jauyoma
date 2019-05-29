@@ -1008,28 +1008,28 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_maxqty = pInfo->lBuyQty;
 		_minqty = pInfo->lSellQty;
 		_Posn = pInfo->lPosition;
-		
-		if(!contract)
-		{
-				
-		if (_Posn > 0)
-			NQBuyMkt = true;
-		if (_Posn < 0)
-			NQSellMkt = true;
 
-		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
+		if (!contract)
 		{
-			_AccBal = pInfo->dAccountBalance;
-			if (!BalMntr)
+
+			if (_Posn > 0)
+				NQBuyMkt = true;
+			if (_Posn < 0)
+				NQSellMkt = true;
+
+			if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 			{
-				if (_AccBal < _RiskBal)
-					_MinBal = _AccBal * 0.999;
-				BalMntr = true;
+				_AccBal = pInfo->dAccountBalance;
+				if (!BalMntr)
+				{
+					if (_AccBal < _RiskBal)
+						_MinBal = _AccBal * 0.999;
+					BalMntr = true;
+				}
 			}
-		}
-		
-		AccPL = (_OpenPL - Cmshn);
-		
+
+			AccPL = (_OpenPL - Cmshn);
+
 		}
 
 	}
@@ -1468,17 +1468,18 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
-					
+
 					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
-						
+
 					}
 					else if (lt.wMinute > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\n1st Pivot is : " << NQPvt << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -1540,7 +1541,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1578,7 +1579,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1690,7 +1691,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -1728,7 +1729,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -1755,10 +1756,18 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	}
 
 	trial = "";
-	
+
 	if (contract)
 	{
-		g_pEngine->replayPnl(&g_oAccount, &iCode);
+		if (ordcntNQ > 0 || ordcntES > 0)
+		{
+			if (NQPnlMntr < 2 || ESPnlMntr < 2)
+			{
+				g_pEngine->replayPnl(&g_oAccount, &iCode);
+				NQPnlMntr = 2;
+				ESPnlMntr = 2;
+			}
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1811,7 +1820,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (!NQGoLive)
 				{
-					
+
 					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
@@ -1883,7 +1892,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1921,7 +1930,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2032,7 +2041,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2070,7 +2079,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2181,7 +2190,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2219,7 +2228,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2267,6 +2276,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\n1st Pivot is : " << ESPvt << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2322,13 +2332,14 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												{
 													ESPvt = ESLBid1;
 													ESSet = true;
+													std::cout << "\n2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2366,7 +2377,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2394,10 +2405,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 	trial = "";
 	test = "";
-	
+
 	if (contract)
 	{
-		g_pEngine->replayPnl(&g_oAccount, &iCode);
+		if (ordcntNQ > 0 || ordcntES > 0)
+		{
+			if (NQPnlMntr < 2 || ESPnlMntr < 2)
+			{
+				g_pEngine->replayPnl(&g_oAccount, &iCode);
+				NQPnlMntr = 2;
+				ESPnlMntr = 2;
+			}
+		}
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -2447,7 +2466,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
-					
+
 					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
@@ -2519,7 +2538,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2557,7 +2576,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2668,7 +2687,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2706,7 +2725,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2733,12 +2752,20 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	}
 
 	trial = "";
-	
+
 	if (contract)
 	{
-		g_pEngine->replayPnl(&g_oAccount, &iCode);
+		if (ordcntNQ > 0 || ordcntES > 0)
+		{
+			if (NQPnlMntr < 2 || ESPnlMntr < 2)
+			{
+				g_pEngine->replayPnl(&g_oAccount, &iCode);
+				NQPnlMntr = 2;
+				ESPnlMntr = 2;
+			}
+		}
 	}
-	
+
 	/*   ----------------------------------------------------------------   */
 
 	QueryPerformanceCounter(&EndingTime);
