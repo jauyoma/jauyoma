@@ -477,7 +477,6 @@ void MyCallbacks::CloseBuyFn()
 	{
 		if (NQBuyMkt || ESBuyMkt)
 		{
-			std::cout << "\nTrying to close Buy Market Order\n" << endl;
 
 			oMktOrdParams.sBuySellType.pData = "S";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -514,7 +513,6 @@ void MyCallbacks::CloseBuyFn()
 					ESBuyMkt = false;
 				}
 
-				std::cout << "\nClosed Buy Market Order" << endl;
 			}
 			else
 				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
@@ -548,7 +546,6 @@ void MyCallbacks::CloseSellFn()
 	{
 		if (NQSellMkt || ESSellMkt)
 		{
-			std::cout << "\nTrying to close Sell Market Order\n" << endl;
 
 			oMktOrdParams.sBuySellType.pData = "B";
 			oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
@@ -583,7 +580,6 @@ void MyCallbacks::CloseSellFn()
 					ESSellMkt = false;
 					ESPnlMntr = 2;
 				}
-				std::cout << "\nClosed Buy Market Order" << endl;
 			}
 			else
 				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
@@ -950,8 +946,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			if (NQPosn < 0)
 				NQSellMkt = true;
 			NQPnlMntr = 1;
-			std::cout << "NQ PnL is : " << NQPnl << endl;
-			std::cout << "NQ ticker is : " << modi << endl;
 		}
 
 		if (tick1 == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -974,14 +968,9 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			if (ESPosn < 0)
 				ESSellMkt = true;
 			ESPnlMntr = 1;
-			std::cout << "ES PnL is : " << ESPnl << endl;
-			std::cout << "ES ticker is : " << tick1 << endl;
 		}
 
 		AccPL = ((NQPnl + ESPnl) - Cmshn);
-
-
-		std::cout << "\nPnL less commission is : " << AccPL << endl;
 
 	}
 	*aiCode = API_OK;
@@ -1019,24 +1008,14 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_maxqty = pInfo->lBuyQty;
 		_minqty = pInfo->lSellQty;
 		_Posn = pInfo->lPosition;
-
-		if (_Posn == 0)
+		
+		if(!contract)
 		{
-			if (ordcnt == 2)
-			{
-
-			}
-		}
-
-		if (_Posn == 1)
-		{
-
-		}
-		if (_Posn == -1)
-		{
-
-		}
-
+				
+		if (_Posn > 0)
+			NQBuyMkt = true;
+		if (_Posn < 0)
+			NQSellMkt = true;
 
 		if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 		{
@@ -1048,28 +1027,10 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 				BalMntr = true;
 			}
 		}
-		if (pInfo->sTicker.pData == _TickerNQ.pData)
-		{
-			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
-				_OpenNQ = pInfo->dOpenPnl;
-
+		
+		AccPL = (_OpenPL - Cmshn);
+		
 		}
-		else
-		{
-			if ((pInfo->eOpenPnl == 2 || pInfo->eOpenPnl == 0) && pInfo->dOpenPnl > 0)
-				_OpenPL = pInfo->dOpenPnl;
-
-		}
-		if (contract)
-		{
-			if (pInfo->sTicker.pData == _TickerES.pData)
-			{
-				_ClosedES = pInfo->dClosedPnl;
-				_OpenES = pInfo->dOpenPnl;
-			}
-		}
-
-
 
 	}
 
@@ -1579,7 +1540,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											std::cout << "\n\nNQ Sell Market order sent" << endl;
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1617,7 +1578,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											printf("\n\nNQ Sell Market order sent");
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1729,7 +1690,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												std::cout << "\n\nES Sell Market order sent" << endl;
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -1767,7 +1728,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												printf("\n\nES Sell Market order sent");
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -1794,6 +1755,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 	}
 
 	trial = "";
+	
+	if (contract)
+	{
+		g_pEngine->replayPnl(&g_oAccount, &iCode);
+	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1917,7 +1883,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											std::cout << "\n\nNQ Sell Market order sent" << endl;
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1955,7 +1921,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											printf("\n\nNQ Sell Market order sent");
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2066,7 +2032,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											std::cout << "\n\nNQ Sell Market order sent" << endl;
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2104,7 +2070,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											printf("\n\nNQ Sell Market order sent");
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2215,7 +2181,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												std::cout << "\n\nES Sell Market order sent" << endl;
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2253,7 +2219,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												printf("\n\nES Sell Market order sent");
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2362,7 +2328,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												std::cout << "\n\nES Sell Market order sent" << endl;
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2400,7 +2366,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												printf("\n\nES Sell Market order sent");
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2428,7 +2394,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 	trial = "";
 	test = "";
-
+	
+	if (contract)
+	{
+		g_pEngine->replayPnl(&g_oAccount, &iCode);
+	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -2549,7 +2519,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											std::cout << "\n\nNQ Sell Market order sent" << endl;
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2587,7 +2557,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											else
 												ordcntNQ = 2;
 											NQPnlMntr = 1;
-											printf("\n\nNQ Sell Market order sent");
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2698,7 +2668,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												std::cout << "\n\nES Sell Market order sent" << endl;
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2736,7 +2706,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												else
 													ordcntES = 2;
 												ESPnlMntr = 1;
-												printf("\n\nES Sell Market order sent");
+												
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2763,7 +2733,12 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 	}
 
 	trial = "";
-
+	
+	if (contract)
+	{
+		g_pEngine->replayPnl(&g_oAccount, &iCode);
+	}
+	
 	/*   ----------------------------------------------------------------   */
 
 	QueryPerformanceCounter(&EndingTime);
@@ -3830,23 +3805,11 @@ int main(int      argc,
 			}
 			else
 			{
-				if (NQPnlMntr < 2 || ESPnlMntr < 2)
-				{
-					g_pEngine->replayPnl(&g_oAccount, &iCode);
-					NQPnlMntr = 2;
-					ESPnlMntr = 2;
-				}
-
 				//Close application if greater than 1 minute
 				if ((curr - EconNews) > 2)
 				{
 					EconTrade = false;
 					done = true;
-					delete g_pEngine;
-					delete pCallbacks;
-					delete pAdmCallbacks;
-
-					return (BAD);
 				}
 			}
 
@@ -3892,6 +3855,7 @@ int main(int      argc,
 	std::cout << "\n\Sell Function Processing speed is : " << SpdSellFn << endl;
 	std::cout << "\n\Close Buy function processing speed is : " << SpdCloseBuyFn << endl;
 	std::cout << "\n\Close Sell Function Processing speed is : " << SpdCloseSellFn << endl;
+	std::cout << "\nPnL less commission is : " << AccPL << endl;
 	std::cout << "\n\nClosing Black Box..." << endl;
 
 	delete g_pEngine;
