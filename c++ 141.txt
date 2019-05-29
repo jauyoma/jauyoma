@@ -1479,7 +1479,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
-						std::cout << "\n1st Pivot is : " << NQPvt << endl;
+						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -1535,6 +1535,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											{
 												NQPvt = NQLAsk1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -1573,6 +1574,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											{
 												NQPvt = NQLAsk1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -1629,6 +1631,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 
 					}
@@ -1685,6 +1688,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												{
 													ESPvt = ESLAsk1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -1723,6 +1727,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												{
 													ESPvt = ESLAsk1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -1831,6 +1836,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -1886,6 +1892,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												NQPvt = NQLAsk1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -1924,6 +1931,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												NQPvt = NQLAsk1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -1980,6 +1988,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -2035,6 +2044,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												NQPvt = NQLBid1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -2073,6 +2083,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												NQPvt = NQLBid1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -2129,6 +2140,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2184,6 +2196,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												{
 													ESPvt = ESLAsk1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -2222,6 +2235,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												{
 													ESPvt = ESLAsk1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -2276,7 +2290,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
-							std::cout << "\n1st Pivot is : " << ESPvt << endl;
+							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2332,7 +2346,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												{
 													ESPvt = ESLBid1;
 													ESSet = true;
-													std::cout << "\n2nd Pivot is : " << ESPvt << endl;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -2371,6 +2385,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												{
 													ESPvt = ESLBid1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -2477,6 +2492,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
 				else if (ordcntNQ == 1)
@@ -2532,6 +2548,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											{
 												NQPvt = NQLBid1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -2570,6 +2587,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											{
 												NQPvt = NQLBid1;
 												NQSet = true;
+												std::cout << "\nNQ 2nd Pivot is : " << NQPvt << endl;
 											}
 											if (Typ == "B")
 												ordcntNQ = 1;
@@ -2626,6 +2644,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
 					else if (ordcntES == 1)
@@ -2681,6 +2700,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												{
 													ESPvt = ESLBid1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
@@ -2719,6 +2739,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												{
 													ESPvt = ESLBid1;
 													ESSet = true;
+													std::cout << "\nES 2nd Pivot is : " << ESPvt << endl;
 												}
 												if (Typ == "B")
 													ordcntES = 1;
