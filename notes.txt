@@ -1,1 +1,1 @@
-print market order price
+track actual entry price and exit price - Line info
