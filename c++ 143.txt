@@ -143,6 +143,7 @@ int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
 int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
+int  hr_2 = 0, min_2 = 0;
 
 SYSTEMTIME st, lt;
 
@@ -3460,7 +3461,7 @@ int main(int      argc,
 	char * * argv,
 	char * * envp)
 {
-	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2 | Ticker2\n";
+	char * USAGE = (char *)"App Name | User | Password | Balance | Hour | Minute | Hour2 | Exchange | Ticker | Exchange2 | Ticker2 | Minute2\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
 	MyCallbacks		  pMyCallbacks;
@@ -3484,13 +3485,13 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	if (argc < 9)
+	if (argc < 9 || argc == 11)
 	{
 		std::cout << USAGE << endl;
 		return (BAD);
 	}
 
-	if (argc == 11)
+	if (argc >= 11)
 		contract = true;
 
 	GetSystemTime(&st);
@@ -3519,16 +3520,19 @@ int main(int      argc,
 	/*   document in your download directory.                               */
 
 	strValue << argv[4];
-	strValue >> day_T;
-	strValue.clear();
-	strValue << argv[5];
 	strValue >> hr_T;
 	strValue.clear();
-	strValue << argv[6];
+	strValue << argv[5];
 	strValue >> min_T;
+	strValue.clear();
+	strValue << argv[6];
+	strValue >> hr_2;
 	strValue.clear();
 	strValue << argv[3];
 	strValue >> _RiskBal;
+	strValue.clear();
+	strValue << argv[12];
+	strValue >> min_2;
 	strValue.clear();
 	user1 = "42554PPR";
 	user2 = "andrew.kowuoche@gmail.com";
