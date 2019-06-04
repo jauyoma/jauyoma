@@ -96,9 +96,9 @@ double _AvgFillPrice = 0, _AccBal = 0, _ClosedPL = 0, _Margin = 0, _OpenPL = 0, 
 double _ClosedNQ, _ClosedES, _OpenNQ, _OpenES, incrNQ = 0, incrES = 0, _PnlAvgOpenPrice;
 double _AvgFillPriceNQ = 0, _AvgFillPriceES = 0, _PriceToFillNQ = 0, _PriceToFillES = 0;
 long _BuyQty = 0, _SellQty = 0, _Posn = 0;
-int _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
-int _filled = 0, _unfilled = 0;
-int _PnlAvgOpen, _QtyToFill = 0, _Cancelled;
+short int _AccBalConf = 0, _MarginConf = 0, _PosnConf = 0;
+short int _filled = 0, _unfilled = 0;
+short int _PnlAvgOpen, _QtyToFill = 0, _Cancelled;
 tsNCharcb _type, _CompReason, _OrdDuration, _OrdType, _Ticker;
 tsNCharcb _OrderNumNQ, _OrderNumES, _BOrderNumNQ, _SOrderNumNQ;
 tsNCharcb _TickerNQ, _TickerES, SymbNQ, SymbES, _sExchangeNQ, _sExchangeES;
@@ -106,7 +106,7 @@ std::string _stypeNQ, _stypeES, _sCompReason, _sOrdDuration, _sOrdType, _sTicker
 std::string _sTickerNQ, _sTickerES, _Status;
 LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds, Frequency;
 std::string trial, test, _sExchange;
-int  hr_T = 19, min_T = 36, day_T, Econ_HR = 0, Econ_Min = 0, EconNews;
+short int  hr_T = 19, min_T = 36, day_T, Econ_HR = 0, Econ_Min = 0, EconNews;
 double _RiskBal;
 int _qty = 1, iCode, curr;
 long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
@@ -115,17 +115,17 @@ long _minqty = 0, _maxqty = 0;
 bool done = false, contract = false, BalMntr = false;
 double NQLAsk1 = 0, NQLBid1 = 0, ESLAsk1 = 0, ESLBid1 = 0;
 double NQLAsk2 = 0, NQLBid2 = 0, ESLAsk2 = 0, ESLBid2 = 0;
-int NQNAsk1, NQNBid1, ESNAsk1, ESNBid1;
-int NQSAsk1, NQSBid1, ESSAsk1, ESSBid1;
-int NQSAsk2, NQSBid2, ESSAsk2, ESSBid2;
-int BBid_T, Bid_T, BAsk_T, Ask_T;
+short int NQNAsk1, NQNBid1, ESNAsk1, ESNBid1;
+short int NQSAsk1, NQSBid1, ESSAsk1, ESSBid1;
+short int NQSAsk2, NQSBid2, ESSAsk2, ESSBid2;
+short int BBid_T, Bid_T, BAsk_T, Ask_T;
 double NQ1TP, ES1TP, _MinBal;
-int NQ1BV = 0, NQ1SV = 0, ES1BV = 0, ES1SV = 0, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
-int NQ4BV, NQ4SV, ES4BV, ES4SV;
+short int NQ1BV = 0, NQ1SV = 0, ES1BV = 0, ES1SV = 0, NQ2BV, NQ2SV, ES2BV, ES2SV, NQ3BV, NQ3SV, ES3BV, ES3SV;
+short int NQ4BV, NQ4SV, ES4BV, ES4SV;
 double Cmshn, AccNQ, AccES, NQspread, ESspread;
 double LastPrice, NQBVP, NQSVP, ESBVP, ESSVP;
 bool BvolTracker = false, SvolTracker = false, NQChk = false, ESChk = false;
-int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
+short int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false, NQBuyMkt = false, NQSellMkt = false;
 double NQBLmt, NQSLmt, ESBLmt, ESSLmt;
 bool NQBCl, NQSCl, LiveOrdNQ = false, ESBuyMkt = false, ESSellMkt = false;
@@ -136,14 +136,15 @@ double ESHighBid = 0, ESHighAsk = 0, ESLowBid = 0, ESLowAsk = 0;
 long NQPosn, ESPosn;
 double NQPnl, ESPnl, NQPvt = 0, ESPvt = 0;
 double NQopn, NQcls, ESopn, EScls;
-int AccPL = 0;
+double AccPL = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES, modi;
-int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
-int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
+short int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
+short int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
 bool NQlook = false, ESlook = false;
+short int NQlk = 0, ESlk = 0;
 
 SYSTEMTIME st, lt;
 
@@ -1614,18 +1615,48 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				if (NQGoLive)
 				{
 					if (NQLAsk1 > NQMPvt)
-					{
-						if (NQLAsk1 < NQPvt)
+					{				
+						if (!NQlook)
 						{
-							NQPvt = NQLAsk1;
+							NQlk = 1;
+							NQlook = true;
 						}
+						
+
+						if (NQlk == 1)
+						{
+							if (NQPvt > NQMPvt)
+							{
+								if (NQLAsk1 < NQPvt)
+								{
+									NQPvt = NQLAsk1;
+								}
+							}
+							else
+								NQlk = 3;
+						}
+						else if (NQlk == 3)
+						{
+							if (NQLAsk1 > NQPvt)
+							{
+								NQPvt = NQLAsk1;
+							}
+						}
+						
 					}
 					else if (NQLAsk1 < NQMPvt)
 					{
+						if (!NQlook)
+						{
+							NQlk = 2;
+							NQlook = true;
+						}
+						
 						if (NQLAsk1 > NQPvt)
 						{
 							NQPvt = NQLAsk1;
 						}
+						
 					}
 				}
 			}
