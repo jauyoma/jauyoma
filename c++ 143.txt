@@ -143,7 +143,7 @@ int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
 int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
-int  hr_2 = 0, min_2 = 0;
+bool NQlook = false, ESlook = false;
 
 SYSTEMTIME st, lt;
 
@@ -1487,7 +1487,10 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					if (lt.wMinute == cut)
 					{
 						if (lt.wSecond <= 59)
+						{
 							NQPvt = NQLAsk1;
+							NQMPvt = NQLAsk1;
+						}
 							
 					}
 					else if (lt.wMinute > cut)
@@ -1604,6 +1607,24 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							}
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
+						}
+					}
+				}
+
+				if (NQGoLive)
+				{
+					if (NQLAsk1 > NQMPvt)
+					{
+						if (NQLAsk1 < NQPvt)
+						{
+							NQPvt = NQLAsk1;
+						}
+					}
+					else if (NQLAsk1 < NQMPvt)
+					{
+						if (NQLAsk1 > NQPvt)
+						{
+							NQPvt = NQLAsk1;
 						}
 					}
 				}
@@ -3461,7 +3482,7 @@ int main(int      argc,
 	char * * argv,
 	char * * envp)
 {
-	char * USAGE = (char *)"App Name | User | Password | Balance | Hour | Minute | Hour2 | Exchange | Ticker | Exchange2 | Ticker2 | Minute2\n";
+	char * USAGE = (char *)"App Name | User | Password | Balance | Day | Hour | Minute | Exchange | Ticker | Exchange2 | Ticker2\n";
 
 	MyAdmCallbacks *  pAdmCallbacks;
 	MyCallbacks		  pMyCallbacks;
@@ -3485,13 +3506,13 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	if (argc < 9 || argc == 11)
+	if (argc < 9)
 	{
 		std::cout << USAGE << endl;
 		return (BAD);
 	}
 
-	if (argc >= 11)
+	if (argc == 11)
 		contract = true;
 
 	GetSystemTime(&st);
@@ -3520,19 +3541,16 @@ int main(int      argc,
 	/*   document in your download directory.                               */
 
 	strValue << argv[4];
-	strValue >> hr_T;
+	strValue >> day_T;
 	strValue.clear();
 	strValue << argv[5];
-	strValue >> min_T;
+	strValue >> hr_T;
 	strValue.clear();
 	strValue << argv[6];
-	strValue >> hr_2;
+	strValue >> min_T;
 	strValue.clear();
 	strValue << argv[3];
 	strValue >> _RiskBal;
-	strValue.clear();
-	strValue << argv[12];
-	strValue >> min_2;
 	strValue.clear();
 	user1 = "42554PPR";
 	user2 = "andrew.kowuoche@gmail.com";
@@ -3950,8 +3968,7 @@ int main(int      argc,
 				//Close application if greater than 1 minute
 				if ((curr - EconNews) > 2)
 				{
-					EconTrade = false;
-
+					
 					oMktOrdParams.sTicker.pData = SymbNQ.pData;
 					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 					oMktOrdParams.sExchange = _sExchangeNQ;
@@ -3962,10 +3979,12 @@ int main(int      argc,
 						oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
 						if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
+							std::cout << "\nClosed order and exiting : " << endl;
 							ordcntNQ = 0;
 							if (!contract)
 							{
 								done = true;
+								EconTrade = false;
 							}
 						}
 					}
@@ -3979,7 +3998,9 @@ int main(int      argc,
 							if (!contract)
 							{
 								done = true;
+								EconTrade = false;
 							}
+							std::cout << "\nClosed order and exiting : " << endl;
 						}
 					}
 
@@ -3997,6 +4018,8 @@ int main(int      argc,
 							{
 								ordcntES = 0;
 								done = true;
+								EconTrade = false;
+								std::cout << "\nClosed order and exiting : " << endl;
 							}
 						}
 
@@ -4008,6 +4031,8 @@ int main(int      argc,
 							{
 								ordcntES = 0;
 								done = true;
+								EconTrade = false;
+								std::cout << "\nClosed order and exiting : " << endl;
 							}
 						}
 
