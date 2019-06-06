@@ -109,7 +109,7 @@ std::string trial, test, _sExchange;
 short int  hr_T = 19, min_T = 36, day_T, Econ_HR = 0, Econ_Min = 0, EconNews;
 double _RiskBal;
 int _qty = 1, iCode, curr;
-long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd;
+long SpdLineUpd, SpdPnL, SpdBAsk, SpdBBid, SpdBAskBid, SpdProc, SpdClOrd, SpdPnLR;
 long SpdAsk, SpdBid, SpdTrade, SpdSellFn, SpdBuyFn, SpdCloseBuyFn, SpdCloseSellFn;
 long _minqty = 0, _maxqty = 0;
 bool done = false, contract = false, BalMntr = false;
@@ -136,11 +136,11 @@ double ESHighBid = 0, ESHighAsk = 0, ESLowBid = 0, ESLowAsk = 0;
 long NQPosn, ESPosn;
 double NQPnl, ESPnl, NQPvt = 0, ESPvt = 0;
 double NQopn, NQcls, ESopn, EScls;
-double AccPL = 0;
+double AccPL = 0, Pnl = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES, modi;
 short int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
-short int NQPnlMntr = 2, ESPnlMntr = 2, cut = 0;
+short int NQPnlMntr = 1, ESPnlMntr = 1, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
 bool NQlook = false, ESlook = false;
@@ -506,19 +506,15 @@ void MyCallbacks::CloseBuyFn()
 				{
 					CloseSignNQ = 0;
 					ordcntNQ = 0;
-					NQPnlMntr = 2;
-					NQBuyMkt = false;
 					NQCmsh = NQCmsh + 3.4;
 				}
 				if (ordcntES == 1)
 				{
 					CloseSignES = 0;
 					ordcntES = 0;
-					ESPnlMntr = 2;
-					ESBuyMkt = false;
 					ESCmsh = ESCmsh + 3.4;
 				}
-
+				Pnl = Pnl + AccPL;
 			}
 			else
 				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
@@ -574,15 +570,16 @@ void MyCallbacks::CloseSellFn()
 					CloseSignNQ = 0;
 					ordcntNQ = 0;
 					NQSellMkt = false;
-					NQPnlMntr = 2;
+					NQCmsh = NQCmsh + 3.4;
 				}
 				if (ordcntES == 2)
 				{
 					CloseSignES = 0;
 					ordcntES = 0;
 					ESSellMkt = false;
-					ESPnlMntr = 2;
+					ESCmsh = ESCmsh + 3.4;
 				}
+				Pnl = Pnl + AccPL;
 			}
 			else
 				std::cout << "\nFailed to close Buy Market order due to reason code : " << iCode << endl;
@@ -815,6 +812,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_PriceToFillNQ = pInfo->dPriceToFill;
 		if (pInfo->bAvgFillPriceFlag)
 		{
+			
 			if (NQChk = true)
 			{
 				NQopn = pInfo->dAvgFillPrice;
@@ -823,7 +821,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			else
 			{
 				NQcls = pInfo->dAvgFillPrice;
-				NQChk = true;
 				if (_sBuySell == "B")
 				{
 					NQRpft = NQcls - NQopn;
@@ -836,6 +833,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 				}
 			}
 		}
+		
 	}
 
 	else if (contract)
@@ -859,7 +857,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 				else
 				{
 					EScls = pInfo->dAvgFillPrice;
-					ESChk = true;
+
 					if (_sBuySell == "B")
 					{
 						ESRpft = EScls - ESopn;
@@ -921,6 +919,12 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 	void *          pContext,
 	int *           aiCode)
 {
+	GetLocalTime(&lt);
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&StartingTime);
+
+	/*   ----------------------------------------------------------------   */
+
 	PnlInfo * pnl, *pl, *jk, *wr;
 	tsNCharcb OrdNum;
 	int aCode, Arr;
@@ -939,7 +943,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		tick1 = string(jk->sTicker.pData, jk->sTicker.iDataLen);
 		tick2 = string(wr->sTicker.pData, wr->sTicker.iDataLen);
 
-
 		if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		{
 			NQPosn = pnl->lPosition;
@@ -955,19 +958,12 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 				OrdNum.iDataLen = modi.length();
 
 			}
-
-
-			if (NQPosn > 0)
-				NQBuyMkt = true;
-			if (NQPosn < 0)
-				NQSellMkt = true;
 			NQPnlMntr = 1;
 		}
-
-		if (tick1 == std::string(_TickerES.pData, _TickerES.iDataLen))
+		else if (tick == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 		{
-			ESPosn = jk->lPosition;
-			ESPnl = jk->dOpenPnl;
+			NQPosn = pl->lPosition;
+			NQPnl = pl->dOpenPnl;
 			if (tick.empty())
 			{
 				OrdNum.pData = NULL;
@@ -977,18 +973,129 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				OrdNum.pData = (char *)tick.data();
 				OrdNum.iDataLen = tick.length();
-			}
 
-			if (ESPosn > 0)
-				ESBuyMkt = true;
-			if (ESPosn < 0)
-				ESSellMkt = true;
-			ESPnlMntr = 1;
+			}
+			NQPnlMntr = 1;
+		}
+		else if (tick1 == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+			NQPosn = pnl->lPosition;
+			NQPnl = pnl->dOpenPnl;
+			if (tick1.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)tick1.data();
+				OrdNum.iDataLen = tick1.length();
+
+			}
+			NQPnlMntr = 1;
+		}
+		else if (tick2 == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+			NQPosn = pnl->lPosition;
+			NQPnl = pnl->dOpenPnl;
+			if (tick2.empty())
+			{
+				OrdNum.pData = NULL;
+				OrdNum.iDataLen = 0;
+			}
+			else
+			{
+				OrdNum.pData = (char *)tick2.data();
+				OrdNum.iDataLen = tick2.length();
+
+			}
+			NQPnlMntr = 1;
 		}
 
-		AccPL = ((NQPnl + ESPnl) - Cmshn);
+		if (contract)
+		{
+			if (modi == std::string(_TickerES.pData, _TickerES.iDataLen))
+			{
+				ESPosn = pnl->lPosition;
+				ESPnl = pnl->dOpenPnl;
+				if (modi.empty())
+				{
+					OrdNum.pData = NULL;
+					OrdNum.iDataLen = 0;
+				}
+				else
+				{
+					OrdNum.pData = (char *)modi.data();
+					OrdNum.iDataLen = modi.length();
+
+				}
+				ESPnlMntr = 1;
+			}
+			else if (tick == std::string(_TickerES.pData, _TickerES.iDataLen))
+			{
+				ESPosn = pl->lPosition;
+				ESPnl = pl->dOpenPnl;
+				if (tick.empty())
+				{
+					OrdNum.pData = NULL;
+					OrdNum.iDataLen = 0;
+				}
+				else
+				{
+					OrdNum.pData = (char *)tick.data();
+					OrdNum.iDataLen = tick.length();
+
+				}
+				ESPnlMntr = 1;
+			}
+			else if (tick1 == std::string(_TickerES.pData, _TickerES.iDataLen))
+			{
+				ESPosn = pnl->lPosition;
+				ESPnl = pnl->dOpenPnl;
+				if (tick1.empty())
+				{
+					OrdNum.pData = NULL;
+					OrdNum.iDataLen = 0;
+				}
+				else
+				{
+					OrdNum.pData = (char *)tick1.data();
+					OrdNum.iDataLen = tick1.length();
+
+				}
+				ESPnlMntr = 1;
+			}
+			else if (tick2 == std::string(_TickerES.pData, _TickerES.iDataLen))
+			{
+				ESPosn = pnl->lPosition;
+				ESPnl = pnl->dOpenPnl;
+				if (tick2.empty())
+				{
+					OrdNum.pData = NULL;
+					OrdNum.iDataLen = 0;
+				}
+				else
+				{
+					OrdNum.pData = (char *)tick2.data();
+					OrdNum.iDataLen = tick2.length();
+
+				}
+				ESPnlMntr = 1;
+			}
+		}
+
+		AccPL = (NQPnl + ESPnl);
 
 	}
+
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+	if (ElapsedMicroseconds.QuadPart > SpdPnL)
+		SpdPnLR = ElapsedMicroseconds.QuadPart;
+
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1028,11 +1135,6 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		if (!contract)
 		{
 
-			if (_Posn > 0)
-				NQBuyMkt = true;
-			if (_Posn < 0)
-				NQSellMkt = true;
-
 			if ((pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0) && pInfo->dAccountBalance > 0)
 			{
 				_AccBal = pInfo->dAccountBalance;
@@ -1044,10 +1146,8 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 				}
 			}
 
-			AccPL = (_OpenPL - Cmshn);
-
 		}
-
+		
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1484,8 +1584,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
-
-					if (lt.wMinute == cut)
+					curr = (lt.wHour * 60) + lt.wMinute;
+					if (curr == cut)
 					{
 						if (lt.wSecond <= 59)
 						{
@@ -1494,10 +1594,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						}
 							
 					}
-					else if (lt.wMinute > cut)
+					else if (curr > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nMain Pivot is : " << NQMPvt << endl;
 						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
@@ -1560,8 +1661,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1599,8 +1700,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
+
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1625,21 +1726,32 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 
 						if (NQlk == 1)
 						{
-							if (NQPvt > NQMPvt)
+							if (ordcntNQ == 2)
 							{
-								if (NQLAsk1 < NQPvt)
+								if (NQPvt > NQMPvt)
 								{
-									NQPvt = NQLAsk1;
+									if (NQLAsk1 < NQPvt)
+									{
+										NQPvt = NQLAsk1;
+										if (NQPvt <= NQMPvt)
+										{
+											NQlk = 3;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
 								}
 							}
-							else
-								NQlk = 3;
 						}
 						else if (NQlk == 3)
 						{
-							if (NQLAsk1 > NQPvt)
+							if (ordcntNQ == 1)
 							{
-								NQPvt = NQLAsk1;
+								if (NQLAsk1 > NQPvt)
+								{
+									NQPvt = NQLAsk1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
 							}
 						}
 						
@@ -1652,9 +1764,35 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							NQlook = true;
 						}
 						
-						if (NQLAsk1 > NQPvt)
+						if (NQlk == 2)
 						{
-							NQPvt = NQLAsk1;
+							if (ordcntNQ == 1)
+							{
+								if (NQPvt < NQMPvt)
+								{
+									if (NQLAsk1 > NQPvt)
+									{
+										NQPvt = NQLAsk1;
+										if (NQPvt >= NQMPvt)
+										{
+											NQlk = 4;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 4)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQLAsk1 < NQPvt)
+								{
+									NQPvt = NQLAsk1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
 						}
 						
 					}
@@ -1689,7 +1827,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (!ESGoLive)
 					{
-						if (lt.wMinute == cut)
+						curr = (lt.wHour * 60) + lt.wMinute;
+						if (curr == cut)
 						{
 							if (lt.wSecond <= 59)
 							{
@@ -1697,10 +1836,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								ESMPvt = ESLAsk1;
 							}
 						}
-						else if (lt.wMinute > cut)
+						else if (curr > cut)
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nMain Pivot is : " << ESMPvt << endl;
 							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 
@@ -1764,8 +1904,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
+
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -1803,7 +1943,6 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -1821,17 +1960,84 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					{
 						if (ESLAsk1 > ESMPvt)
 						{
-							if (ESLAsk1 < ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLAsk1;
+								ESlk = 1;
+								ESlook = true;
 							}
+
+
+							if (ESlk == 1)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESPvt > ESMPvt)
+									{
+										if (ESLAsk1 < ESPvt)
+										{
+											ESPvt = ESLAsk1;
+											if (ESPvt <= ESMPvt)
+											{
+												ESlk = 3;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 3)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESLAsk1 > ESPvt)
+									{
+										ESPvt = ESLAsk1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 						else if (ESLAsk1 < ESMPvt)
 						{
-							if (ESLAsk1 > ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLAsk1;
+								ESlk = 2;
+								ESlook = true;
 							}
+
+							if (ESlk == 2)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESPvt < ESMPvt)
+									{
+										if (ESLAsk1 > ESPvt)
+										{
+											ESPvt = ESLAsk1;
+											if (ESPvt >= ESMPvt)
+											{
+												ESlk = 4;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 4)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESLAsk1 < ESPvt)
+									{
+										ESPvt = ESLAsk1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 					}
 				}
@@ -1914,17 +2120,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (!NQGoLive)
 				{
-
-					if (lt.wMinute == cut)
+					curr = (lt.wHour * 60) + lt.wMinute;
+					if (curr == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLAsk1;
 
 					}
-					else if (lt.wMinute > cut)
+					else if (curr > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nMain Pivot is : " << NQMPvt << endl;
 						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
@@ -1987,7 +2194,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2027,7 +2233,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2038,6 +2243,91 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
 						}
+					}
+				}
+
+				if (NQGoLive)
+				{
+					if (NQLAsk1 > NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 1;
+							NQlook = true;
+						}
+
+
+						if (NQlk == 1)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQPvt > NQMPvt)
+								{
+									if (NQLAsk1 < NQPvt)
+									{
+										NQPvt = NQLAsk1;
+										if (NQPvt <= NQMPvt)
+										{
+											NQlk = 3;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 3)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQLAsk1 > NQPvt)
+								{
+									NQPvt = NQLAsk1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
+					}
+					else if (NQLAsk1 < NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 2;
+							NQlook = true;
+						}
+
+						if (NQlk == 2)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQPvt < NQMPvt)
+								{
+									if (NQLAsk1 > NQPvt)
+									{
+										NQPvt = NQLAsk1;
+										if (NQPvt >= NQMPvt)
+										{
+											NQlk = 4;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 4)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQLAsk1 < NQPvt)
+								{
+									NQPvt = NQLAsk1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
 					}
 				}
 			}
@@ -2068,17 +2358,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			{
 				if (!NQGoLive)
 				{
-
-					if (lt.wMinute == cut)
+					curr = (lt.wHour * 60) + lt.wMinute;
+					if (curr == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
 
 					}
-					else if (lt.wMinute > cut)
+					else if (curr > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nMain Pivot is : " << NQMPvt << endl;
 						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
@@ -2141,7 +2432,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2181,7 +2471,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2192,6 +2481,91 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
 						}
+					}
+				}
+
+				if (NQGoLive)
+				{
+					if (NQLBid1 > NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 1;
+							NQlook = true;
+						}
+
+
+						if (NQlk == 1)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQPvt > NQMPvt)
+								{
+									if (NQLBid1 < NQPvt)
+									{
+										NQPvt = NQLBid1;
+										if (NQPvt <= NQMPvt)
+										{
+											NQlk = 3;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 3)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQLBid1 > NQPvt)
+								{
+									NQPvt = NQLBid1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
+					}
+					else if (NQLBid1 < NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 2;
+							NQlook = true;
+						}
+
+						if (NQlk == 2)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQPvt < NQMPvt)
+								{
+									if (NQLBid1 > NQPvt)
+									{
+										NQPvt = NQLBid1;
+										if (NQPvt >= NQMPvt)
+										{
+											NQlk = 4;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 4)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQLBid1 < NQPvt)
+								{
+									NQPvt = NQLBid1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
 					}
 				}
 			}
@@ -2224,7 +2598,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						if (lt.wMinute == cut)
+						curr = (lt.wHour * 60) + lt.wMinute;
+						if (curr == cut)
 						{
 							if (lt.wSecond <= 59)
 							{
@@ -2232,10 +2607,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								ESMPvt = ESLAsk1;
 							}
 						}
-						else if (lt.wMinute > cut)
+						else if (curr > cut)
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nMain Pivot is : " << ESMPvt << endl;
 							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
@@ -2298,7 +2674,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2338,7 +2713,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2356,17 +2730,84 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (ESLAsk1 > ESMPvt)
 						{
-							if (ESLAsk1 < ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLAsk1;
+								ESlk = 1;
+								ESlook = true;
 							}
+
+
+							if (ESlk == 1)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESPvt > ESMPvt)
+									{
+										if (ESLAsk1 < ESPvt)
+										{
+											ESPvt = ESLAsk1;
+											if (ESPvt <= ESMPvt)
+											{
+												ESlk = 3;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 3)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESLAsk1 > ESPvt)
+									{
+										ESPvt = ESLAsk1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 						else if (ESLAsk1 < ESMPvt)
 						{
-							if (ESLAsk1 > ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLAsk1;
+								ESlk = 2;
+								ESlook = true;
 							}
+
+							if (ESlk == 2)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESPvt < ESMPvt)
+									{
+										if (ESLAsk1 > ESPvt)
+										{
+											ESPvt = ESLAsk1;
+											if (ESPvt >= ESMPvt)
+											{
+												ESlk = 4;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 4)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESLAsk1 < ESPvt)
+									{
+										ESPvt = ESLAsk1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 					}
 				}
@@ -2397,7 +2838,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (!ESGoLive)
 					{
-						if (lt.wMinute == cut)
+						curr = (lt.wHour * 60) + lt.wMinute;
+						if (curr == cut)
 						{
 							if (lt.wSecond <= 59)
 							{
@@ -2405,10 +2847,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								ESMPvt = ESLBid1;
 							}
 						}
-						else if (lt.wMinute > cut)
+						else if (curr > cut)
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nMain Pivot is : " << ESMPvt << endl;
 							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
@@ -2471,7 +2914,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2511,7 +2953,6 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2529,17 +2970,84 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (ESLBid1 > ESMPvt)
 						{
-							if (ESLBid1 < ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLBid1;
+								ESlk = 1;
+								ESlook = true;
 							}
+
+
+							if (ESlk == 1)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESPvt > ESMPvt)
+									{
+										if (ESLBid1 < ESPvt)
+										{
+											ESPvt = ESLBid1;
+											if (ESPvt <= ESMPvt)
+											{
+												ESlk = 3;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 3)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESLBid1 > ESPvt)
+									{
+										ESPvt = ESLBid1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 						else if (ESLBid1 < ESMPvt)
 						{
-							if (ESLBid1 > ESPvt)
+							if (!ESlook)
 							{
-								ESPvt = ESLBid1;
+								ESlk = 2;
+								ESlook = true;
 							}
+
+							if (ESlk == 2)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESPvt < ESMPvt)
+									{
+										if (ESLBid1 > ESPvt)
+										{
+											ESPvt = ESLBid1;
+											if (ESPvt >= ESMPvt)
+											{
+												ESlk = 4;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 4)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESLBid1 < ESPvt)
+									{
+										ESPvt = ESLBid1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 					}
 				}
@@ -2620,17 +3128,18 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			{
 				if (!NQGoLive)
 				{
-
-					if (lt.wMinute == cut)
+					curr = (lt.wHour * 60) + lt.wMinute;
+					if (curr == cut)
 					{
 						if (lt.wSecond <= 59)
 							NQPvt = NQLBid1;
 
 					}
-					else if (lt.wMinute > cut)
+					else if (curr > cut)
 					{
 						NQGoLive = true;
 						std::cout << "\nNQGoLive set to True" << endl;
+						std::cout << "\nMain Pivot is : " << NQMPvt << endl;
 						std::cout << "\nNQ 1st Pivot is : " << NQPvt << endl;
 					}
 				}
@@ -2693,7 +3202,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2733,7 +3241,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 												ordcntNQ = 1;
 											else
 												ordcntNQ = 2;
-											NQPnlMntr = 1;
 											NQChk = true;
 
 										}
@@ -2744,6 +3251,91 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 							else
 								std::cout << "\nMinimum trading account balance breached" << endl;
 						}
+					}
+				}
+
+				if (NQGoLive)
+				{
+					if (NQLBid1 > NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 1;
+							NQlook = true;
+						}
+
+
+						if (NQlk == 1)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQPvt > NQMPvt)
+								{
+									if (NQLBid1 < NQPvt)
+									{
+										NQPvt = NQLBid1;
+										if (NQPvt <= NQMPvt)
+										{
+											NQlk = 3;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 3)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQLBid1 > NQPvt)
+								{
+									NQPvt = NQLBid1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
+					}
+					else if (NQLBid1 < NQMPvt)
+					{
+						if (!NQlook)
+						{
+							NQlk = 2;
+							NQlook = true;
+						}
+
+						if (NQlk == 2)
+						{
+							if (ordcntNQ == 1)
+							{
+								if (NQPvt < NQMPvt)
+								{
+									if (NQLBid1 > NQPvt)
+									{
+										NQPvt = NQLBid1;
+										if (NQPvt >= NQMPvt)
+										{
+											NQlk = 4;
+											std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+										}
+										std::cout << "\nPivot reset to : " << NQPvt << endl;
+									}
+								}
+							}
+						}
+						else if (NQlk == 4)
+						{
+							if (ordcntNQ == 2)
+							{
+								if (NQLBid1 < NQPvt)
+								{
+									NQPvt = NQLBid1;
+									std::cout << "\nPivot reset to : " << NQPvt << endl;
+								}
+							}
+						}
+
 					}
 				}
 			}
@@ -2774,17 +3366,20 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				ESspread = ESLAsk1 - ESLBid1;
 				if (EconTrade)
 				{
+					
 					if (!ESGoLive)
 					{
-						if (lt.wMinute == cut)
+						curr = (lt.wHour * 60) + lt.wMinute;
+						if (curr == cut)
 						{
 							if (lt.wSecond <= 59)
 								ESPvt = ESLBid1;
 						}
-						else if (lt.wMinute > cut)
+						else if (curr > cut)
 						{
 							ESGoLive = true;
 							std::cout << "\nESGoLive set to True" << endl;
+							std::cout << "\nMain Pivot is : " << ESMPvt << endl;
 							std::cout << "\nES 1st Pivot is : " << ESPvt << endl;
 						}
 					}
@@ -2847,7 +3442,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2887,7 +3481,6 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 													ordcntES = 1;
 												else
 													ordcntES = 2;
-												ESPnlMntr = 1;
 												ESChk = true;
 
 											}
@@ -2898,6 +3491,91 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								else
 									std::cout << "\nMinimum trading account balance breached" << endl;
 							}
+						}
+					}
+
+					if (ESGoLive)
+					{
+						if (ESLBid1 > ESMPvt)
+						{
+							if (!ESlook)
+							{
+								ESlk = 1;
+								ESlook = true;
+							}
+
+
+							if (ESlk == 1)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESPvt > ESMPvt)
+									{
+										if (ESLBid1 < ESPvt)
+										{
+											ESPvt = ESLBid1;
+											if (ESPvt <= ESMPvt)
+											{
+												ESlk = 3;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 3)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESLBid1 > ESPvt)
+									{
+										ESPvt = ESLBid1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
+						}
+						else if (ESLBid1 < ESMPvt)
+						{
+							if (!ESlook)
+							{
+								ESlk = 2;
+								ESlook = true;
+							}
+
+							if (ESlk == 2)
+							{
+								if (ordcntES == 1)
+								{
+									if (ESPvt < ESMPvt)
+									{
+										if (ESLBid1 > ESPvt)
+										{
+											ESPvt = ESLBid1;
+											if (ESPvt >= ESMPvt)
+											{
+												ESlk = 4;
+												std::cout << "\nPivot lower than or equal to main pivot : " << endl;
+											}
+											std::cout << "\nPivot reset to : " << ESPvt << endl;
+										}
+									}
+								}
+							}
+							else if (ESlk == 4)
+							{
+								if (ordcntES == 2)
+								{
+									if (ESLBid1 < ESPvt)
+									{
+										ESPvt = ESLBid1;
+										std::cout << "\nPivot reset to : " << ESPvt << endl;
+									}
+								}
+							}
+
 						}
 					}
 				}
@@ -3588,12 +4266,7 @@ int main(int      argc,
 
 	_MinBal = _RiskBal*0.999;
 	_AccBal = _RiskBal;
-	cut = min_T - 1;
-
-	if (contract)
-		Cmshn = 6.8;
-	else
-		Cmshn = 3.4;
+	cut = (hr_T * 60) + (min_T - 1);
 
 	if (_stricmp(argv[1], user1) == 0)
 	{
@@ -3974,36 +4647,46 @@ int main(int      argc,
 	std::cout << "\nReading algorithm..." << endl;
 
 	EconNews = (hr_T * 60) + min_T;
-	curr = (lt.wHour * 60) + lt.wMinute;
+	
+
+	while (!EconTrade)
+	{
+		curr = (lt.wHour * 60) + lt.wMinute;
+		if ((EconNews - curr) <= 3 && (curr - EconNews) <= 2)
+		{
+			EconTrade = true;
+			std::cout << "\nEconTrade set to True" << endl;
+		}
+	}
 
 	while (!done)
 	{
 		QueryPerformanceFrequency(&Frequency);
 		QueryPerformanceCounter(&StartingTime);
-
+		
 		if (EconNews != 0)
 		{
 			curr = (lt.wHour * 60) + lt.wMinute;
 			//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
 			//past economic news
-			if (!EconTrade)
+			if (ordcntNQ != 0 || ordcntES != 0)
 			{
-				if ((EconNews - curr) <= 3 && (curr - EconNews) <= 2)
+				if (NQPnlMntr < 2 || ESPnlMntr < 2)
 				{
-					EconTrade = true;
-					std::cout << "\nEconTrade set to True" << endl;
+					NQPnlMntr = 2;
+					ESPnlMntr = 2;
+					g_pEngine->replayPnl(&g_oAccount, &iCode);
 				}
 			}
-			else
-			{
 				//Close application if greater than 1 minute
 				if ((curr - EconNews) > 2)
 				{
-					
+					EconTrade = false;
+
 					oMktOrdParams.sTicker.pData = SymbNQ.pData;
 					oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
 					oMktOrdParams.sExchange = _sExchangeNQ;
-					
+
 					if (ordcntNQ == 1)
 					{
 						oMktOrdParams.sBuySellType.pData = "S";
@@ -4017,6 +4700,8 @@ int main(int      argc,
 								done = true;
 								EconTrade = false;
 							}
+							NQCmsh = NQCmsh + 3.4;
+							Pnl = Pnl + AccPL;
 						}
 					}
 					else if (ordcntNQ == 2)
@@ -4031,7 +4716,8 @@ int main(int      argc,
 								done = true;
 								EconTrade = false;
 							}
-							std::cout << "\nClosed order and exiting : " << endl;
+							NQCmsh = NQCmsh + 3.4;
+							Pnl = Pnl + AccPL;
 						}
 					}
 
@@ -4050,7 +4736,8 @@ int main(int      argc,
 								ordcntES = 0;
 								done = true;
 								EconTrade = false;
-								std::cout << "\nClosed order and exiting : " << endl;
+								ESCmsh = ESCmsh + 3.4;
+								Pnl = Pnl + AccPL;
 							}
 						}
 
@@ -4063,14 +4750,15 @@ int main(int      argc,
 								ordcntES = 0;
 								done = true;
 								EconTrade = false;
-								std::cout << "\nClosed order and exiting : " << endl;
+								ESCmsh = ESCmsh + 3.4;
+								Pnl = Pnl + AccPL;
 							}
 						}
 
 					}
-				}
-			}
 
+					
+				}
 
 		}
 
@@ -4086,6 +4774,9 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
+	double TotPL;
+
+	TotPL = Pnl - (NQCmsh + ESCmsh);
 
 	if (myfile.is_open())
 	{
@@ -4102,6 +4793,7 @@ int main(int      argc,
 	std::cout << "\n\nWhile loop Processing speed is : " << SpdProc << endl;
 	std::cout << "\n\Line update Processing speed is : " << SpdLineUpd << endl;
 	std::cout << "\n\PnL Processing speed is : " << SpdPnL << endl;
+	std::cout << "\n\PnL Replay Processing speed is : " << SpdPnLR << endl;
 	std::cout << "\n\Best Ask Processing speed is : " << SpdBAsk << endl;
 	std::cout << "\n\Best Bid Processing speed is : " << SpdBBid << endl;
 	std::cout << "\n\Best Ask & Bid Processing speed is : " << SpdBAskBid << endl;
@@ -4113,11 +4805,13 @@ int main(int      argc,
 	std::cout << "\n\Sell Function Processing speed is : " << SpdSellFn << endl;
 	std::cout << "\n\Close Buy function processing speed is : " << SpdCloseBuyFn << endl;
 	std::cout << "\n\Close Sell Function Processing speed is : " << SpdCloseSellFn << endl;
-	std::cout << "\nPnL less commission is : " << AccPL << endl;
-	std::cout << "\nNQ Accumulated PIPs is : " << NQApft << endl;
-	std::cout << "\nES Accumulated PIPs is : " << ESApft << endl;
+	std::cout << "\nPnL less commission is : " << Pnl << endl;
+	std::cout << "\nAccPL less commission is : " << AccPL << endl;
+	std::cout << "\nTotal PL less commission is : " << TotPL << endl;
 	std::cout << "\nNQ Accumulated commission is : " << NQCmsh << endl;
 	std::cout << "\nES Accumulated commission is : " << ESCmsh << endl;
+	std::cout << "\nNQ Accumulated PIPS is : " << NQApft << endl;
+	std::cout << "\nES Accumulated PIPS is : " << ESApft << endl;
 	std::cout << "\n\nClosing Black Box..." << endl;
 
 	delete g_pEngine;
