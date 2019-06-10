@@ -1641,7 +1641,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				else if (ordcntNQ == 1)
 				{
-					if ((NQLAsk1 < NQPvt) && (NQLBid1 < NQPvt))
+					if ((NQLAsk1 < NQPvt) || (NQLBid1 < NQPvt))
 					{
 						if (g_pEngine->tryLock(&iCode) == 1)
 						{
@@ -1654,7 +1654,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				else if (ordcntNQ == 2)
 				{
-					if ((NQLAsk1 > NQPvt) && (NQLBid1 > NQPvt))
+					if ((NQLAsk1 > NQPvt) || (NQLBid1 > NQPvt))
 					{
 						if (g_pEngine->tryLock(&iCode) == 1)
 						{
@@ -1664,7 +1664,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							g_pEngine->unlock(&iCode);
 						}
 					}
-				}
+				}				
 				
 				if (ordcntNQ == 0)
 				{
