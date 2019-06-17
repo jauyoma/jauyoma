@@ -978,6 +978,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		{
 			NQPosn = pnl->lPosition;
 			NQPnl = pnl->dOpenPnl;
+			NQLBuy = false;
+			NQLSell = false;
 			if(NQMPnl == 0)
 				NQCPnl = pnl->dOpenPnl;
 			else
@@ -999,6 +1001,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		{
 			NQPosn = pl->lPosition;
 			NQPnl = pl->dOpenPnl;
+			NQLBuy = false;
+			NQLSell = false;
 			if (NQMPnl == 0)
 				NQCPnl = pl->dOpenPnl;
 			else
@@ -1020,6 +1024,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		{
 			NQPosn = jk->lPosition;
 			NQPnl = jk->dOpenPnl;
+			NQLBuy = false;
+			NQLSell = false;
 			if (NQMPnl == 0)
 				NQCPnl = jk->dOpenPnl;
 			else
@@ -1041,6 +1047,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 		{
 			NQPosn = wr->lPosition;
 			NQPnl = wr->dOpenPnl;
+			NQLBuy = false;
+			NQLSell = false;
 			if (NQMPnl == 0)
 				NQCPnl = wr->dOpenPnl;
 			else
@@ -1065,6 +1073,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				ESPosn = pnl->lPosition;
 				ESPnl = pnl->dOpenPnl;
+				ESLBuy = false;
+				ESLSell = false;
 				if (ESMPnl == 0)
 					ESCPnl = pnl->dOpenPnl;
 				else
@@ -1086,6 +1096,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				ESPosn = pl->lPosition;
 				ESPnl = pl->dOpenPnl;
+				ESLBuy = false;
+				ESLSell = false;
 				if (ESMPnl == 0)
 					ESCPnl = pl->dOpenPnl;
 				else
@@ -1107,6 +1119,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				ESPosn = jk->lPosition;
 				ESPnl = jk->dOpenPnl;
+				ESLBuy = false;
+				ESLSell = false;
 				if (ESMPnl == 0)
 					ESCPnl = jk->dOpenPnl;
 				else
@@ -1128,6 +1142,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				ESPosn = wr->lPosition;
 				ESPnl = wr->dOpenPnl;
+				ESLBuy = false;
+				ESLSell = false;
 				if (ESMPnl == 0)
 					ESCPnl = wr->dOpenPnl;
 				else
@@ -1300,19 +1316,17 @@ int MyCallbacks::CancelReport(OrderCancelReport * pReport,
 	int iIgnored;
 
 	/*   ----------------------------------------------------------------   */
-	if (BuyLimit)
+	if (NQLBuy)
 	{
-		BuyLimit = false;
+		NQLBuy = false;
 		NQBCl = false;
 		buycheck = 0;
-		std::cout << "\nClosed Buy Limit Order" << endl;
 	}
-	if (SellLimit)
+	if (NQLSell)
 	{
-		SellLimit = false;
+		NQLSell = false;
 		NQSCl = false;
 		sellcheck = 0;
-		std::cout << "\nClosed Sell Limit Order" << endl;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1673,11 +1687,61 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			
 			if (ordcntNQ == 1)
 			{
+				if (NQLBuy)
+				{
+					if (NQBLmt != NQLAsk1)
+					{
 
+					}
+				}
+				else if (NQPosn == 1)
+				{
+				
+				}
 			}
 			else if (ordcntNQ == 2)
 			{
-
+				if (NQPosn == -1)
+				{
+					if(NQLAsk >= NQBLmt)
+					{
+						if (Bs3 >= 0.25 && Psh6 >= 0.25)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								oMktOrdParams.sBuySellType.pData = "B";
+								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
+								oMktOrdParams.sTicker.pData = SymbNQ.pData;
+								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+								oMktOrdParams.sExchange = _sExchangeNQ;
+								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+								{
+									ordcntNQ = 0;
+									NQBLmt = 0;
+								}
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+				}
+				else if (NQLSell)
+				{
+					if (Bs3 >= 0.25 && Psh6 >= 0.25)
+					{
+					
+					}					
+					else if (NQBLmt != NQLAsk1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLAsk1;
+						if(g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQBLmt = NQLAsk1;
+					}
+				}
+				
 			}
 			else if (ordcntNQ == 0)
 			{
