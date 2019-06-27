@@ -145,8 +145,8 @@ short int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
 short int NQPnlMntr = 1, ESPnlMntr = 1, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
-bool NQlook = false, ESlook = false, bPnl = false, BvolTrackerES = false, SvolTrackerES = false;
-short int NQlk = 0, ESlk = 0;
+bool NQlook = false, ESlook = false, BvolTrackerES = false, SvolTrackerES = false;
+short int NQlk = 0, ESlk = 0,  bPnl = 0;
 double NQCPnl = 0, ESCPnl = 0, NQMPnl, ESMPnl;
 double Bs1, Bs2, Bs3, Psh4, Psh5, Psh6;
 bool NQLBuy = false, NQLSell = false, ESLBuy = false, ESLSell = false;
@@ -1276,7 +1276,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			}
 
 		}
-		bPnl = true;
+		bPnl = 2;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1763,6 +1763,10 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								{
 									ordcntNQ = 0;
 									NQSLmt = 0;
+									if(bPnl == 2 && ordcntES > 0)
+										bPnl = 1;
+									else
+										bPnl = 0;
 								}
 								g_pEngine->unlock(&iCode);
 							}
@@ -1928,6 +1932,10 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 									{
 										ordcntES = 0;
 										ESSLmt = 0;
+										if(bPnl == 2 && ordcntNQ > 0)
+											bPnl = 1;
+										else
+											bPnl = 0;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -1941,7 +1949,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
 						{
-
+							
 						}
 					}
 					else if (ESSLmt != ESLAsk1)
@@ -2130,6 +2138,10 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									ordcntNQ = 0;
 									NQSLmt = 0;
+									if(bPnl == 2 && ordcntES > 0)
+										bPnl = 1;
+									else
+										bPnl = 0;
 								}
 								g_pEngine->unlock(&iCode);
 							}
@@ -2293,6 +2305,10 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									ordcntNQ = 0;
 									NQBLmt = 0;
+									if(bPnl == 2 && ordcntES > 0)
+										bPnl = 1;
+									else
+										bPnl = 0;
 								}
 								g_pEngine->unlock(&iCode);
 							}
@@ -2458,6 +2474,10 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 									{
 										ordcntES = 0;
 										ESSLmt = 0;
+										if(bPnl == 2 && ordcntNQ > 0)
+											bPnl = 1;
+										else
+											bPnl = 0;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -2621,6 +2641,10 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 									{
 										ordcntES = 0;
 										ESBLmt = 0;
+										if(bPnl == 2 && ordcntNQ > 0)
+											bPnl = 1;
+										else
+											bPnl = 0;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -2821,6 +2845,10 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								{
 									ordcntNQ = 0;
 									NQBLmt = 0;
+									if(bPnl == 2 && ordcntES > 0)
+										bPnl = 1;
+									else
+										bPnl = 0;
 								}
 								g_pEngine->unlock(&iCode);
 							}
@@ -2986,6 +3014,10 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 									{
 										ordcntES = 0;
 										ESBLmt = 0;
+										if(bPnl == 2 && ordcntNQ > 0)
+											bPnl = 1;
+										else
+											bPnl = 0;
 									}
 									g_pEngine->unlock(&iCode);
 								}
@@ -4170,48 +4202,42 @@ int main(int      argc,
 	}
 
 	std::cout << "\nExit time loop. Beginning of main thread" << endl;
-
-	while (!done)
+	
+	if (EconNews != 0)
 	{
-		QueryPerformanceFrequency(&Frequency);
-		QueryPerformanceCounter(&StartingTime);
-
-		if (EconNews != 0)
+		while (!done)
 		{
-			curr = (lt.wHour * 60) + lt.wMinute;
+			QueryPerformanceFrequency(&Frequency);
+			QueryPerformanceCounter(&StartingTime);
 
 			//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
 			//past economic news
 
-			if (bPnl)
+			if (bPnl > 0)
 			{
-				if (ordcntNQ != 0 || ordcntES != 0)
-				{
 					if (NQPnlMntr < 2 || ESPnlMntr < 2)
 					{
 						NQPnlMntr = 2;
 						ESPnlMntr = 2;
 						g_pEngine->replayPnl(&g_oAccount, &iCode);
 					}
-				}
-				else
-					bPnl = false;
 			}
 
 			//Close application if greater than 1 minute
 			
+			QueryPerformanceCounter(&EndingTime);
+			ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+			ElapsedMicroseconds.QuadPart *= 1000000;
+			ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
 
+			if (ElapsedMicroseconds.QuadPart > SpdProc)
+				SpdProc = ElapsedMicroseconds.QuadPart;
 		}
-
-		QueryPerformanceCounter(&EndingTime);
-		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-		ElapsedMicroseconds.QuadPart *= 1000000;
-		ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
-		if (ElapsedMicroseconds.QuadPart > SpdProc)
-			SpdProc = ElapsedMicroseconds.QuadPart;
+		
 	}
-
+	
+	curr = (lt.wHour * 60) + lt.wMinute;
+	
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
