@@ -87,9 +87,9 @@ MarketOrderParams oMktOrdParams;
 ModifyLimitOrderParams	oModLmtOrdParams;
 ModifyOrderParams	oModOrdParams;
 
-tsNCharcb _BOrderNumNQ, _SOrderNumNQ, _OrderNumNQ, EntTyp, OrdNmb, Algo, UsrMsg;
+tsNCharcb _BOrderNumNQ, _SOrderNumNQ, _OrderNumNQ, _BOrderNumES, _SOrderNumES, Algo, UsrMsg;
 std::string Ord1, Ord2, Ord3, Ord4, Ord5, Ord6;
-void * pcontxt;
+void * pcontxt, * NQpcontxt, * ESpcontxt;
 std::string _sBuySell, _sOrdType;
 double Bid = 0, Ask = 0, incrNQ = 0;
 bool BidP = false, AskP = false, LBid = false, LOff = false;
@@ -99,11 +99,36 @@ tsNCharcb _TickerNQ, _TickerES;
 bool monitor = false, Buyord = false, Sellord = false, andy = false;
 string modi;
 int cnt = 0;
-bool NQread = false, ESread = false;
+bool NQread = false, ESread = false, done = false;
+tsNCharcb EntTypNQ, OrdNmbNQ, AlgoNQ, UsrMsgNQ;
+tsNCharcb EntTypES, OrdNmbES, AlgoES, UsrMsgES;
+void *pCxtNQ, *pCxtES;
+
 
 int main(int      argc,
 	char * * argv,
 	char * * envp);
+
+/*   ----------------------------------------------------------------   */
+/*   Function Definitions			                        */
+/*   ----------------------------------------------------------------   */
+
+BOOL ctrl_handler(DWORD event)
+{
+	if (event == CTRL_CLOSE_EVENT) {
+		std::cout << "\nConsole terminated\n" << endl;
+		done = true;
+		delete g_pEngine;
+		Sleep(20000); // force exit after 20 seconds
+		return TRUE;
+	}
+	if (event == CTRL_C_EVENT) {
+		std::cout << "\nLoop terminated\n" << endl;
+		done = true;
+		return TRUE;
+	}
+	return FALSE;
+}
 
 /*   =====================================================================   */
 /*                          class declarations                               */
@@ -563,14 +588,12 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		g_iToExchUsecs = pInfo->iUsecs;
 	}
 
-	EntTyp = pInfo->sEntryType;
-	pcontxt = pInfo->pContext;
 	_sBuySell = std::string(pInfo->sBuySellType.pData, pInfo->sBuySellType.iDataLen);
 	_sOrdType = std::string(pInfo->sOrderType.pData, pInfo->sOrderType.iDataLen);
-	Ord1 = std::string(pInfo->sCurrentSequenceNumber.pData, pInfo->sCurrentSequenceNumber.iDataLen);
-	Ord2 = std::string(pInfo->sInitialSequenceNumber.pData, pInfo->sInitialSequenceNumber.iDataLen);
-	Ord3 = std::string(pInfo->sOriginalOrderNum.pData, pInfo->sOriginalOrderNum.iDataLen);
-	Ord4 = std::string(pInfo->sExchOrdId.pData, pInfo->sExchOrdId.iDataLen);
+	Ord1 = std::string(pInfo->sTicker.pData, pInfo->sTicker.iDataLen);
+	EntTypNQ = pInfo->sEntryType;
+	UsrMsgNQ = pInfo->sUserMsg;
+
 
 
 	printf("\nReading Line Update info");
@@ -588,44 +611,49 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_OrderNumNQ.iDataLen = modi.length();
 	}
 
-	if (_sOrdType == "L")
+	if (Ord1 == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		
-
-		if (_sBuySell == "B" && !LBid)
+		if (_sOrdType == "L")
 		{
-			_BOrderNumNQ = pInfo->sOrderNum;
-			CloseOrd = true;
-		}
+			if (_sBuySell == "B" && !LBid)
+			{
+				_BOrderNumNQ = pInfo->sOrderNum;
+				CloseOrd = true;
+			}
 
-		if (_sBuySell == "S" && !LOff)
-		{
-			_SOrderNumNQ = pInfo->sOrderNum;
-			CloseOrd = true;
+			if (_sBuySell == "S" && !LOff)
+			{
+				_SOrderNumNQ = pInfo->sOrderNum;
+				CloseOrd = true;
+			}
 		}
 	}
 
+	if (Ord1 == std::string(_TickerES.pData, _TickerES.iDataLen))
+	{
+
+		if (_sOrdType == "L")
+		{
+			if (_sBuySell == "B" && !LBid)
+			{
+				_BOrderNumES = pInfo->sOrderNum;
+				CloseOrd = true;
+			}
+
+			if (_sBuySell == "S" && !LOff)
+			{
+				_SOrderNumES = pInfo->sOrderNum;
+				CloseOrd = true;
+			}
+		}
+	}
 	if (andy)
 	{
 		std::cout << "\n\nLine Info activated by Open Order Replay" << endl;
 		andy = false;
 	}
 
-	if (_sOrdType == "L")
-	{
-		if (Proceed)
-		{
-			if (_sBuySell == "B" && !LBid)
-			{
-
-			}
-
-			if (_sBuySell == "S" && !LOff)
-			{
-
-			}
-		}
-	}
+	OpenOrd = true;
 
 	/*   ----------------------------------------------------------------   */
 	/*   if there's a completion reason, the order is complete... */
@@ -674,7 +702,6 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			if (!monitor)
 			{
 				oModLmtOrdParams.sOrderNum = oModOrdParams.sOrderNum;
-				g_pEngine->modifyOrder(&oModLmtOrdParams, &aCode);
 
 			}
 			std::cout << "\nOrder string number is : " << modi << endl;
@@ -795,7 +822,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 	if (!pInfo->bPossOutOfOrder)
 	{
-		printf("\nReading pnl info");
+
 		if (pInfo->eAccountBalance == 2 || pInfo->eAccountBalance == 0)
 			_AccBal = pInfo->dAccountBalance;
 		if (pInfo->sTicker.pData == _TickerNQ.pData)
@@ -825,7 +852,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			{
 				_OpenPL = pInfo->dOpenPnl;
 				Buyord = true;
-				printf("\nDid not read PNL NQ Data");
+
 			}
 		position = pInfo->lPosition;
 		openPL = pInfo->eOpenPnl;
@@ -973,7 +1000,7 @@ int MyCallbacks::ModifyReport(OrderModifyReport * pReport,
 	/*   ----------------------------------------------------------------   */
 
 	printf("\n\nReceived Modify Report\n");
-
+	done = true;
 
 	/*   ----------------------------------------------------------------   */
 
@@ -1144,7 +1171,7 @@ int MyCallbacks::OtherReport(OrderReport * pReport,
 	{
 		oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
 		oModLmtOrdParams.sOrderNum = _OrderNumNQ;
-		g_pEngine->modifyOrder(&oModLmtOrdParams, &iIgnored);
+
 		BidP = oModLmtOrdParams.dPrice;
 	}
 
@@ -1612,6 +1639,9 @@ int main(int      argc,
 	int               iCode;
 	int               iFlags;
 	AccountInfo	  mAccount;
+	tsNCharcb         pFcmId;
+	tsNCharcb         pIbId;
+	void		*	  pCntxt;
 
 
 
@@ -1837,18 +1867,7 @@ int main(int      argc,
 
 	/*   ----------------------------------------------------------------   */
 
-	if (!g_pEngine->subscribePnl(&mAccount, &iCode))
-	{
-		printf("\nREngine::subscribePnL() error : %d\n", iCode);
-
-		delete g_pEngine;
-		delete pCallbacks;
-		delete pAdmCallbacks;
-
-		return (BAD);
-	}
-	else
-		printf("\nSuccessfully subscribed to PnL engine");
+	
 
 	/*   ----------------------------------------------------------------   */
 	/*   Once logged in, we request price increment info for the instrument */
@@ -1939,6 +1958,8 @@ int main(int      argc,
 		return (BAD);
 	}
 
+	
+
 	if (!g_pEngine->subscribeOrder(&mAccount, &iCode))
 	{
 		printf("REngine::subscribeOrder() error : %d\n", iCode);
@@ -1946,12 +1967,25 @@ int main(int      argc,
 	else
 		printf("REngine::subscribeOrder() success\n");
 
+	if (!g_pEngine->subscribePnl(&mAccount, &iCode))
+	{
+		printf("\nREngine::subscribePnL() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+	else
+		printf("\nSuccessfully subscribed to PnL engine");
+
 	/*   ----------------------------------------------------------------   */
 	/*   send market order */
 
-	_TickerNQ.pData = "ESM9";
+	_TickerNQ.pData = "ESU9";
 	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
-	_TickerES.pData = "NQM9";
+	_TickerES.pData = "NQU9";
 	_TickerES.iDataLen = (int)strlen(_TickerES.pData);
 
 	oMktOrdParams.sExchange = sExchange;
@@ -1989,37 +2023,43 @@ int main(int      argc,
 	oLmtOrdParams.dPrice = Bid - (incrNQ * 10);
 	oLmtOrdParams.sBuySellType.pData = "B";
 	oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+	oLmtOrdParams.pContext = NQpcontxt;
 	BidP = oLmtOrdParams.dPrice;
 	std::cout << "\n\nLimit price is : " << Bid - (incrNQ * 10) << endl;
 	bool check = false;
 
-	while (!OpenOrd)
+	if (!check)
 	{
-		oMktOrdParams.sTicker.pData = _TickerNQ.pData;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		if (!check)
+		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 		{
-			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-			{
-				printf("\n\nES Market order sent");
-				check = true;
-			}
-		}
-		oMktOrdParams.sTicker.pData = _TickerES.pData;
-		oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-		oMktOrdParams.sBuySellType.pData = "S";
-		oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-		if (check)
-		{
-			if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-			{
-				printf("\n\nNQ Market order sent");
-				OpenOrd = true;
-			}
+			printf("\n\nLimit order sent");
+			check = true;
 		}
 	}
 
-	oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
+	while (!done)
+	{
+
+		if (check && OpenOrd)
+		{
+			oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+			oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
+			if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+			{
+				check = false;
+				printf("\n\nModified order\n");
+			}
+			else
+				printf("\n\nFailed to cancel order\n");
+		}
+	}
+
+	if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+	{
+		printf("\n\nCancelled order\n");
+	}
+	else
+		printf("\n\nFailed to cancel order");
 
 	/*   ----------------------------------------------------------------   */
 	/*   A number of Order*Report and LineInfo callbacks will be fired.     */
@@ -2037,19 +2077,11 @@ int main(int      argc,
 
 	void * contxt;
 
-	Sleep(60000);
 	std::cout << "Account ID is : " << g_cAccountId << endl;
 	std::cout << "FCM ID is : " << g_cFcmId << endl;
 	std::cout << "IB ID is : " << g_cIbId << endl;
 
-	while (!monitor)
-	{
-		g_pEngine->replayPnl(&g_oAccount, &iCode);
-		
-	}
 
-	std::cout << "\nOrder string number is : " << modi << endl;
-	std::cout << "Order position is : " << _OpenNQ << endl;
 
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
