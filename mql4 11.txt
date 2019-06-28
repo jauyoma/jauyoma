@@ -1776,6 +1776,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			}
 			else if (NQLSell)
 			{
+				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
 				if (Bs3 >= 0.25 && Psh6 >= 0.25)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
@@ -1792,6 +1794,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					oModLmtOrdParams.dPrice = NQLAsk1;
 					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 						NQSLmt = NQLAsk1;
+				}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -1945,6 +1948,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				else if (ESLSell)
 				{
+					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
 					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
@@ -1961,6 +1966,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						oModLmtOrdParams.dPrice = ESLAsk1;
 						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 							ESSLmt = ESLAsk1;
+					}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2151,6 +2157,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			else if (NQLSell)
 			{
+				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
 				if (Bs3 >= 0.25 && Psh6 >= 0.25)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
@@ -2167,6 +2175,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					oModLmtOrdParams.dPrice = NQLAsk1;
 					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 						NQSLmt = NQLAsk1;
+				}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -2318,6 +2327,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			else if (NQLBuy)
 			{
+				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
 				if (Bs3 <= -0.25 && Psh6 <= -0.25)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
@@ -2334,6 +2345,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					oModLmtOrdParams.dPrice = NQLBid1;
 					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 						NQBLmt = NQLBid1;
+				}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -2487,6 +2499,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				else if (ESLSell)
 				{
+					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
 					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
@@ -2503,6 +2517,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						oModLmtOrdParams.dPrice = ESLAsk1;
 						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 							ESSLmt = ESLAsk1;
+					}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2654,6 +2669,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				else if (ESLBuy)
 				{
+					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
 					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
@@ -2670,6 +2687,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						oModLmtOrdParams.dPrice = ESLBid1;
 						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 							ESBLmt = ESLBid1;
+					}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2858,6 +2876,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			}
 			else if (NQLBuy)
 			{
+				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
 				if (Bs3 <= -0.25 && Psh6 <= -0.25)
 				{
 					if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
@@ -2874,6 +2894,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					oModLmtOrdParams.dPrice = NQLBid1;
 					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 						NQBLmt = NQLBid1;
+				}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -3027,6 +3048,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				}
 				else if (ESLBuy)
 				{
+					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
 					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
@@ -3043,6 +3066,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						oModLmtOrdParams.dPrice = ESLBid1;
 						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 							ESBLmt = ESLBid1;
+					}
 					}
 				}
 				else if (ordcntES == 0)
