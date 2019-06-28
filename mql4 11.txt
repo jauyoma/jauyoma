@@ -152,6 +152,7 @@ double Bs1, Bs2, Bs3, Psh4, Psh5, Psh6;
 bool NQLBuy = false, NQLSell = false, ESLBuy = false, ESLSell = false;
 double NQLow = 0, NQHigh, ESLow = 0, ESHigh = 0;
 void *pCxtNQ, *pCxtES;
+bool NQCnlBOrd = false, ESBCnlBOrd = false, NQSCnlSOrd = false, ESCnlSOrd = false;
 
 SYSTEMTIME st, lt;
 
@@ -1781,9 +1782,12 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
+						if(!NQCnlSOrd)
+						{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
 						{
-
+							NQCnlSOrd = true;
+						}
 						}
 					}
 					else if (NQSLmt != NQLAsk1)
@@ -1824,6 +1828,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 										{
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
+											NQCnlSOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1853,6 +1858,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 										{
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
+											NQCnlSOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -1954,9 +1960,12 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					{
 						if (Bs3 >= 0.25 && Psh6 >= 0.25)
 						{
+							if(!ESCnlSOrd)
+							{
 							if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
 							{
-
+								ESCnlSOrd = true;
+							}
 							}
 						}
 						else if (ESSLmt != ESLAsk1)
@@ -1997,6 +2006,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											{
 												ESLSell = true;
 												ESSLmt = ESLAsk1;
+												ESCnlSOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2026,6 +2036,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											{
 												ESLSell = true;
 												ESSLmt = ESLAsk1;
+												ESCnlSOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2164,9 +2175,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
+						if(!NQCnlSOrd)
+						{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
 						{
-
+							NQCnlSOrd = true;
+						}
 						}
 					}
 					else if (NQSLmt != NQLAsk1)
@@ -2207,6 +2221,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										{
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
+											NQCnlSOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2236,6 +2251,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										{
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
+											NQCnlSOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2335,9 +2351,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
+						if(!NQCnlBOrd)
+						{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
 						{
-
+							NQCnlBOrd = true;
+						}
 						}
 					}
 					else if (NQBLmt != NQLBid1)
@@ -2378,6 +2397,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										{
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
+											NQCnlBOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2407,6 +2427,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										{
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
+											NQCnlBOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2508,9 +2529,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 >= 0.25 && Psh6 >= 0.25)
 						{
+							if(!ESCnlSOrd)
+							{
 							if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
 							{
-
+								ESCnlSOrd = true;
+							}
 							}
 						}
 						else if (ESSLmt != ESLAsk1)
@@ -2551,6 +2575,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												ESLSell = true;
 												ESSLmt = ESLAsk1;
+												ESCnlSOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2580,6 +2605,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												ESLSell = true;
 												ESSLmt = ESLAsk1;
+												ESCnlSOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2679,9 +2705,12 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 <= -0.25 && Psh6 <= -0.25)
 						{
+							if(!ESCnlBOrd)
+							{
 							if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
 							{
-
+								ESCnlBOrd = true;
+							}
 							}
 						}
 						else if (ESBLmt != ESLBid1)
@@ -2722,6 +2751,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												ESLBuy = true;
 												ESBLmt = ESLBid1;
+												ESCnlBOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2751,6 +2781,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											{
 												ESLBuy = true;
 												ESBLmt = ESLBid1;
+												ESCnlBOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -2887,9 +2918,12 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				{
 					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
+						if(!NQCnlBOrd)
+						{
 						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
 						{
-
+							NQCnlBOrd = true;
+						}
 						}
 					}
 					else if (NQBLmt != NQLBid1)
@@ -2930,6 +2964,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 										{
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
+											NQCnlBOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2959,6 +2994,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 										{
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
+											NQCnlBOrd = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -3060,9 +3096,12 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					{
 						if (Bs3 <= -0.25 && Psh6 <= -0.25)
 						{
+							if(!ESCnlBOrd)
+							{
 							if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
 							{
-
+								ESCnlBOrd = true;
+							}
 							}
 						}
 						else if (ESBLmt != ESLBid1)
@@ -3103,6 +3142,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											{
 												ESLBuy = true;
 												ESBLmt = ESLBid1;
+												ESCnlBOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
@@ -3132,6 +3172,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											{
 												ESLBuy = true;
 												ESBLmt = ESLBid1;
+												ESCnlBOrd = false;
 											}
 											g_pEngine->unlock(&iCode);
 										}
