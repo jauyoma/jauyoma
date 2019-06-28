@@ -146,7 +146,7 @@ short int NQPnlMntr = 1, ESPnlMntr = 1, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
 bool NQlook = false, ESlook = false, BvolTrackerES = false, SvolTrackerES = false;
-short int NQlk = 0, ESlk = 0,  bPnl = 0;
+short int NQlk = 0, ESlk = 0, bPnl = 0;
 double NQCPnl = 0, ESCPnl = 0, NQMPnl, ESMPnl;
 double Bs1, Bs2, Bs3, Psh4, Psh5, Psh6;
 bool NQLBuy = false, NQLSell = false, ESLBuy = false, ESLSell = false;
@@ -1715,6 +1715,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				NQHigh = NQLAsk1;
 				NQLow = NQLAsk1;
 				NQChk = true;
+				std::cout << "\nProcessed NQ Best Ask Quote " << endl;
 			}
 
 			if (NQLAsk1 != NQLAsk2)
@@ -1763,7 +1764,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								{
 									ordcntNQ = 0;
 									NQSLmt = 0;
-									if(bPnl == 2 && ordcntES > 0)
+									if (bPnl == 2 && ordcntES > 0)
 										bPnl = 1;
 									else
 										bPnl = 0;
@@ -1776,25 +1777,25 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			}
 			else if (NQLSell)
 			{
-				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
 				{
-				if (Bs3 >= 0.25 && Psh6 >= 0.25)
-				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
+						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+						{
 
+						}
 					}
-				}
-				else if (NQSLmt != NQLAsk1)
-				{
-					oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-					oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oModLmtOrdParams.sExchange = _sExchangeNQ;
-					oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
-					oModLmtOrdParams.dPrice = NQLAsk1;
-					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-						NQSLmt = NQLAsk1;
-				}
+					else if (NQSLmt != NQLAsk1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLAsk1;
+						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQSLmt = NQLAsk1;
+					}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -1860,7 +1861,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						}
 					}
 				}
-			}		
+			}
 		}
 	}
 
@@ -1887,6 +1888,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					ESHigh = NQLAsk1;
 					ESLow = NQLAsk1;
 					ESChk = true;
+					std::cout << "\nProcessed ES Best Ask Quote " << endl;
 				}
 
 				if (ESLAsk1 != ESLAsk2)
@@ -1935,7 +1937,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 									{
 										ordcntES = 0;
 										ESSLmt = 0;
-										if(bPnl == 2 && ordcntNQ > 0)
+										if (bPnl == 2 && ordcntNQ > 0)
 											bPnl = 1;
 										else
 											bPnl = 0;
@@ -1948,25 +1950,25 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				else if (ESLSell)
 				{
-					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
 					{
-					if (Bs3 >= 0.25 && Psh6 >= 0.25)
-					{
-						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+						if (Bs3 >= 0.25 && Psh6 >= 0.25)
 						{
-							
+							if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+							{
+
+							}
 						}
-					}
-					else if (ESSLmt != ESLAsk1)
-					{
-						oModLmtOrdParams.sTicker.pData = SymbES.pData;
-						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oModLmtOrdParams.sExchange = _sExchangeES;
-						oModLmtOrdParams.sOrderNum = _SOrderNumES;
-						oModLmtOrdParams.dPrice = ESLAsk1;
-						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-							ESSLmt = ESLAsk1;
-					}
+						else if (ESSLmt != ESLAsk1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _SOrderNumES;
+							oModLmtOrdParams.dPrice = ESLAsk1;
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								ESSLmt = ESLAsk1;
+						}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2089,6 +2091,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				NQHigh = NQLAsk1;
 				NQLow = NQLAsk1;
 				NQChk = true;
+				std::cout << "\nProcessed NQ Best Ask Quote " << endl;
 			}
 
 			Bs1 = NQSBid1 - NQSAsk1;
@@ -2144,7 +2147,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									ordcntNQ = 0;
 									NQSLmt = 0;
-									if(bPnl == 2 && ordcntES > 0)
+									if (bPnl == 2 && ordcntES > 0)
 										bPnl = 1;
 									else
 										bPnl = 0;
@@ -2157,25 +2160,25 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			else if (NQLSell)
 			{
-				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
 				{
-				if (Bs3 >= 0.25 && Psh6 >= 0.25)
-				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+					if (Bs3 >= 0.25 && Psh6 >= 0.25)
 					{
+						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+						{
 
+						}
 					}
-				}
-				else if (NQSLmt != NQLAsk1)
-				{
-					oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-					oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oModLmtOrdParams.sExchange = _sExchangeNQ;
-					oModLmtOrdParams.sOrderNum = _SOrderNumNQ;
-					oModLmtOrdParams.dPrice = NQLAsk1;
-					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-						NQSLmt = NQLAsk1;
-				}
+					else if (NQSLmt != NQLAsk1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _SOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLAsk1;
+						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQSLmt = NQLAsk1;
+					}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -2266,6 +2269,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				NQHigh = NQLBid1;
 				NQLow = NQLBid1;
 				NQChk = true;
+				std::cout << "\nProcessed NQ Best Bid Quote " << endl;
 			}
 
 			if (NQLBid1 != NQLBid2)
@@ -2314,7 +2318,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								{
 									ordcntNQ = 0;
 									NQBLmt = 0;
-									if(bPnl == 2 && ordcntES > 0)
+									if (bPnl == 2 && ordcntES > 0)
 										bPnl = 1;
 									else
 										bPnl = 0;
@@ -2327,25 +2331,25 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			}
 			else if (NQLBuy)
 			{
-				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
 				{
-				if (Bs3 <= -0.25 && Psh6 <= -0.25)
-				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
+						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+						{
 
+						}
 					}
-				}
-				else if (NQBLmt != NQLBid1)
-				{
-					oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-					oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oModLmtOrdParams.sExchange = _sExchangeNQ;
-					oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
-					oModLmtOrdParams.dPrice = NQLBid1;
-					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-						NQBLmt = NQLBid1;
-				}
+					else if (NQBLmt != NQLBid1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLBid1;
+						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQBLmt = NQLBid1;
+					}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -2438,6 +2442,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					ESHigh = ESLAsk1;
 					ESLow = ESLAsk1;
 					ESChk = true;
+					std::cout << "\nProcessed ES Best Ask Quote " << endl;
 				}
 
 				if (ESLAsk1 != ESLAsk2)
@@ -2486,7 +2491,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 									{
 										ordcntES = 0;
 										ESSLmt = 0;
-										if(bPnl == 2 && ordcntNQ > 0)
+										if (bPnl == 2 && ordcntNQ > 0)
 											bPnl = 1;
 										else
 											bPnl = 0;
@@ -2499,25 +2504,25 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				else if (ESLSell)
 				{
-					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
 					{
-					if (Bs3 >= 0.25 && Psh6 >= 0.25)
-					{
-						if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+						if (Bs3 >= 0.25 && Psh6 >= 0.25)
 						{
+							if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+							{
 
+							}
 						}
-					}
-					else if (ESSLmt != ESLAsk1)
-					{
-						oModLmtOrdParams.sTicker.pData = SymbES.pData;
-						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oModLmtOrdParams.sExchange = _sExchangeES;
-						oModLmtOrdParams.sOrderNum = _SOrderNumES;
-						oModLmtOrdParams.dPrice = ESLAsk1;
-						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-							ESSLmt = ESLAsk1;
-					}
+						else if (ESSLmt != ESLAsk1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _SOrderNumES;
+							oModLmtOrdParams.dPrice = ESLAsk1;
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								ESSLmt = ESLAsk1;
+						}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2608,6 +2613,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					ESHigh = ESLBid1;
 					ESLow = ESLBid1;
 					ESChk = true;
+					std::cout << "\nProcessed ES Best Bid Quote " << endl;
 				}
 
 				if (ESLBid1 != ESLBid2)
@@ -2656,7 +2662,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 									{
 										ordcntES = 0;
 										ESBLmt = 0;
-										if(bPnl == 2 && ordcntNQ > 0)
+										if (bPnl == 2 && ordcntNQ > 0)
 											bPnl = 1;
 										else
 											bPnl = 0;
@@ -2669,25 +2675,25 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				}
 				else if (ESLBuy)
 				{
-					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
 					{
-					if (Bs3 <= -0.25 && Psh6 <= -0.25)
-					{
-						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+						if (Bs3 <= -0.25 && Psh6 <= -0.25)
 						{
+							if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+							{
 
+							}
 						}
-					}
-					else if (ESBLmt != ESLBid1)
-					{
-						oModLmtOrdParams.sTicker.pData = SymbES.pData;
-						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oModLmtOrdParams.sExchange = _sExchangeES;
-						oModLmtOrdParams.sOrderNum = _BOrderNumES;
-						oModLmtOrdParams.dPrice = ESLBid1;
-						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-							ESBLmt = ESLBid1;
-					}
+						else if (ESBLmt != ESLBid1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _BOrderNumES;
+							oModLmtOrdParams.dPrice = ESLBid1;
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								ESBLmt = ESLBid1;
+						}
 					}
 				}
 				else if (ordcntES == 0)
@@ -2815,6 +2821,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				NQHigh = NQLBid1;
 				NQLow = NQLBid1;
 				NQChk = true;
+				std::cout << "\nProcessed NQ Best Bid Quote " << endl;
 			}
 
 			if (NQLBid1 != NQLBid2)
@@ -2863,7 +2870,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								{
 									ordcntNQ = 0;
 									NQBLmt = 0;
-									if(bPnl == 2 && ordcntES > 0)
+									if (bPnl == 2 && ordcntES > 0)
 										bPnl = 1;
 									else
 										bPnl = 0;
@@ -2876,25 +2883,25 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			}
 			else if (NQLBuy)
 			{
-				if(bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
 				{
-				if (Bs3 <= -0.25 && Psh6 <= -0.25)
-				{
-					if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+					if (Bs3 <= -0.25 && Psh6 <= -0.25)
 					{
+						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+						{
 
+						}
 					}
-				}
-				else if (NQBLmt != NQLBid1)
-				{
-					oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-					oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-					oModLmtOrdParams.sExchange = _sExchangeNQ;
-					oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
-					oModLmtOrdParams.dPrice = NQLBid1;
-					if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-						NQBLmt = NQLBid1;
-				}
+					else if (NQBLmt != NQLBid1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLBid1;
+						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQBLmt = NQLBid1;
+					}
 				}
 			}
 			else if (ordcntNQ == 0)
@@ -2987,6 +2994,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					ESHigh = ESLBid1;
 					ESLow = ESLBid1;
 					ESChk = true;
+					std::cout << "\nProcessed ES Best Bid Quote " << endl;
 				}
 
 				if (ESLBid1 != ESLBid2)
@@ -3035,7 +3043,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 									{
 										ordcntES = 0;
 										ESBLmt = 0;
-										if(bPnl == 2 && ordcntNQ > 0)
+										if (bPnl == 2 && ordcntNQ > 0)
 											bPnl = 1;
 										else
 											bPnl = 0;
@@ -3048,25 +3056,25 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				}
 				else if (ESLBuy)
 				{
-					if(bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
 					{
-					if (Bs3 <= -0.25 && Psh6 <= -0.25)
-					{
-						if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+						if (Bs3 <= -0.25 && Psh6 <= -0.25)
 						{
+							if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+							{
 
+							}
 						}
-					}
-					else if (ESBLmt != ESLBid1)
-					{
-						oModLmtOrdParams.sTicker.pData = SymbES.pData;
-						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-						oModLmtOrdParams.sExchange = _sExchangeES;
-						oModLmtOrdParams.sOrderNum = _BOrderNumES;
-						oModLmtOrdParams.dPrice = ESLBid1;
-						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-							ESBLmt = ESLBid1;
-					}
+						else if (ESBLmt != ESLBid1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _BOrderNumES;
+							oModLmtOrdParams.dPrice = ESLBid1;
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								ESBLmt = ESLBid1;
+						}
 					}
 				}
 				else if (ordcntES == 0)
@@ -4212,56 +4220,35 @@ int main(int      argc,
 	std::cout << "\nStarting Account Balance is : " << _RiskBal << endl;
 	std::cout << "\nReading algorithm..." << endl;
 
-	EconNews = (hr_T * 60) + min_T;
-
-
-	while (!EconTrade)
+	while (!done)
 	{
-		curr = (lt.wHour * 60) + lt.wMinute;
-		if ((EconNews - curr) <= 3 && (curr - EconNews) <= 2)
+		QueryPerformanceFrequency(&Frequency);
+		QueryPerformanceCounter(&StartingTime);
+
+		//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
+		//past economic news
+
+		if (bPnl > 0)
 		{
-			EconTrade = true;
-			std::cout << "\nEconTrade set to True" << endl;
-		}
-	}
-
-	std::cout << "\nExit time loop. Beginning of main thread" << endl;
-	
-	if (EconNews != 0)
-	{
-		while (!done)
-		{
-			QueryPerformanceFrequency(&Frequency);
-			QueryPerformanceCounter(&StartingTime);
-
-			//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
-			//past economic news
-
-			if (bPnl > 0)
+			if (NQPnlMntr < 2 || ESPnlMntr < 2)
 			{
-					if (NQPnlMntr < 2 || ESPnlMntr < 2)
-					{
-						NQPnlMntr = 2;
-						ESPnlMntr = 2;
-						g_pEngine->replayPnl(&g_oAccount, &iCode);
-					}
+				NQPnlMntr = 2;
+				ESPnlMntr = 2;
+				g_pEngine->replayPnl(&g_oAccount, &iCode);
 			}
-
-			//Close application if greater than 1 minute
-			
-			QueryPerformanceCounter(&EndingTime);
-			ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-			ElapsedMicroseconds.QuadPart *= 1000000;
-			ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-
-			if (ElapsedMicroseconds.QuadPart > SpdProc)
-				SpdProc = ElapsedMicroseconds.QuadPart;
 		}
-		
+
+		//Close application if greater than 1 minute
+
+		QueryPerformanceCounter(&EndingTime);
+		ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+		ElapsedMicroseconds.QuadPart *= 1000000;
+		ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+
+		if (ElapsedMicroseconds.QuadPart > SpdProc)
+			SpdProc = ElapsedMicroseconds.QuadPart;
 	}
-	
-	curr = (lt.wHour * 60) + lt.wMinute;
-	
+
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
