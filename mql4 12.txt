@@ -153,6 +153,7 @@ bool NQLBuy = false, NQLSell = false, ESLBuy = false, ESLSell = false;
 double NQLow = 0, NQHigh, ESLow = 0, ESHigh = 0;
 void *pCxtNQ, *pCxtES;
 bool NQCnlBOrd = false, ESCnlBOrd = false, NQCnlSOrd = false, ESCnlSOrd = false;
+bool NQModBOrd = false, ESModBOrd = false, NQModSOrd = false, ESModSOrd = false;
 
 SYSTEMTIME st, lt;
 
@@ -911,8 +912,83 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	void *            pContext,
 	int *             aiCode)
 {
-
-
+	PnlInfo * pnl, *pl, *jk, *wr;
+	string tick, tick1, tick2;
+	int elem;
+	tsNCharcb OrdNum;
+	
+	elem = pInfo->iArrayLen;
+	
+	for (int z = 0; z < elem; z++)
+	{
+		pnl = &pInfo->asLineInfoArray[z];
+		tick = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
+		
+		if (tick == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+			_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
+			
+			if (_sOrdType == "L")
+			{
+				_sBuySell = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
+				
+				if (_sBuySell == "B")
+				{
+					OrdNum = pnl->sOrderNum;
+					NQLBuy = true;					
+				}
+				
+				else if (_sBuySell == "S")
+				{
+					OrdNum = pnl->sOrderNum;
+					NQLSell = true;
+				}
+				
+				if (NQCnlSOrd)
+				{	
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						if (g_pEngine->cancelOrder(&g_oAccount, &OrdNum, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+						{	
+									
+						}
+						g_pEngine->unlock(&iCode);
+					}
+					NQCnlSOrd = false;
+				}
+				
+				if (NQModSOrd)
+				{
+					if (g_pEngine->tryLock(&iCode) == 1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = OrdNum;
+						oModLmtOrdParams.dPrice = NQLAsk1;
+					
+						if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							NQSLmt = NQLAsk1;
+						g_pEngine->unlock(&iCode);
+					}
+				}
+				
+				
+			}
+		}
+	
+	}
+	if (pInfo->iArrayLen > 0)
+	{
+		pnl = &pInfo->asLineInfoArray[0];
+		
+		tick = string(pl->sTicker.pData, pl->sTicker.iDataLen);
+		
+		if (tick == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+		{
+	
+	
+	
 	*aiCode = API_OK;
 	return(OK);
 }
@@ -1775,7 +1851,31 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					}
 				}
 			}
-	
+			else if (NQLSell)
+			{
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
+					if (Bs3 >= 0.25 && Psh6 >= 0.25)
+					{
+						if (!NQCnlSOrd)
+						{
+							NQCnlSOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+														
+						}
+					}
+					else if (NQSLmt != NQLAsk1)
+					{
+						if (!NQModSOrd)
+						{
+							NQModSOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+														
+						}
+						
+					}
+				}
+			}
 			else if (ordcntNQ == 0)
 			{
 				if (NQPosn == 0)
@@ -1928,7 +2028,40 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						}
 					}
 				}
-				
+				else if (ESLSell)
+				{
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
+						if (Bs3 >= 0.25 && Psh6 >= 0.25)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (!ESCnlSOrd)
+								{
+									if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+									{
+										ESCnlSOrd = true;
+									}
+								}
+								g_pEngine->unlock(&iCode);
+							}
+						}
+						else if (ESSLmt != ESLAsk1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _SOrderNumES;
+							oModLmtOrdParams.dPrice = ESLAsk1;
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+									ESSLmt = ESLAsk1;
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+				}
 				else if (ordcntES == 0)
 				{
 					if (ESPosn == 0)
@@ -2118,7 +2251,40 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					}
 				}
 			}
-			
+			else if (NQLSell)
+			{
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
+					if (Bs3 >= 0.25 && Psh6 >= 0.25)
+					{
+						if (!NQCnlSOrd)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+								{
+									NQCnlSOrd = true;
+								}
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+					else if (NQSLmt != NQLAsk1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _SOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLAsk1;
+						if (g_pEngine->tryLock(&iCode) == 1)
+						{
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								NQSLmt = NQLAsk1;
+							g_pEngine->unlock(&iCode);
+						}
+					}
+				}
+			}
 			else if (ordcntNQ == 0)
 			{
 				if (NQPosn == 0)
@@ -2269,7 +2435,40 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					}
 				}
 			}
-			
+			else if (NQLBuy)
+			{
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
+					if (Bs3 <= -0.25 && Psh6 <= -0.25)
+					{
+						if (!NQCnlBOrd)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+								{
+									NQCnlBOrd = true;
+								}
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+					else if (NQBLmt != NQLBid1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLBid1;
+						if (g_pEngine->tryLock(&iCode) == 1)
+						{
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								NQBLmt = NQLBid1;
+							g_pEngine->unlock(&iCode);
+						}
+					}
+				}
+			}
 			else if (ordcntNQ == 0)
 			{
 				if (NQPosn == 0)
@@ -2422,7 +2621,40 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						}
 					}
 				}
-				
+				else if (ESLSell)
+				{
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
+						if (Bs3 >= 0.25 && Psh6 >= 0.25)
+						{
+							if (!ESCnlSOrd)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									if (g_pEngine->cancelOrder(&g_oAccount, &_SOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+									{
+										ESCnlSOrd = true;
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+						}
+						else if (ESSLmt != ESLAsk1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _SOrderNumES;
+							oModLmtOrdParams.dPrice = ESLAsk1;
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+									ESSLmt = ESLAsk1;
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+				}
 				else if (ordcntES == 0)
 				{
 					if (ESPosn == 0)
@@ -2573,7 +2805,40 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						}
 					}
 				}
-				
+				else if (ESLBuy)
+				{
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
+						if (Bs3 <= -0.25 && Psh6 <= -0.25)
+						{
+							if (!ESCnlBOrd)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+									{
+										ESCnlBOrd = true;
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+						}
+						else if (ESBLmt != ESLBid1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _BOrderNumES;
+							oModLmtOrdParams.dPrice = ESLBid1;
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+									ESBLmt = ESLBid1;
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+				}
 				else if (ordcntES == 0)
 				{
 					if (ESPosn == 0)
@@ -2761,7 +3026,40 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					}
 				}
 			}
-			
+			else if (NQLBuy)
+			{
+				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
+				{
+					if (Bs3 <= -0.25 && Psh6 <= -0.25)
+					{
+						if (!NQCnlBOrd)
+						{
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+								{
+									NQCnlBOrd = true;
+								}
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+					else if (NQBLmt != NQLBid1)
+					{
+						oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
+						oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+						oModLmtOrdParams.sExchange = _sExchangeNQ;
+						oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+						oModLmtOrdParams.dPrice = NQLBid1;
+						if (g_pEngine->tryLock(&iCode) == 1)
+						{
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+								NQBLmt = NQLBid1;
+							g_pEngine->unlock(&iCode);
+						}
+					}
+				}
+			}
 			else if (ordcntNQ == 0)
 			{
 				if (NQPosn == 0)
@@ -2914,7 +3212,40 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						}
 					}
 				}
-				
+				else if (ESLBuy)
+				{
+					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
+					{
+						if (Bs3 <= -0.25 && Psh6 <= -0.25)
+						{
+							if (!ESCnlBOrd)
+							{
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumES, &EntTypES, &AlgoES, &UsrMsgES, &pCxtES, &iCode))
+									{
+										ESCnlBOrd = true;
+									}
+									g_pEngine->unlock(&iCode);
+								}
+							}
+						}
+						else if (ESBLmt != ESLBid1)
+						{
+							oModLmtOrdParams.sTicker.pData = SymbES.pData;
+							oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+							oModLmtOrdParams.sExchange = _sExchangeES;
+							oModLmtOrdParams.sOrderNum = _BOrderNumES;
+							oModLmtOrdParams.dPrice = ESLBid1;
+							if (g_pEngine->tryLock(&iCode) == 1)
+							{
+								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+									ESBLmt = ESLBid1;
+								g_pEngine->unlock(&iCode);
+							}
+						}
+					}
+				}
 				else if (ordcntES == 0)
 				{
 					if (ESPosn == 0)
