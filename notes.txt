@@ -1,1 +1,2 @@
-track actual entry price and exit price - Line info
+Live order not closing (ordcnt)
+track value of ordcnt on main loop
