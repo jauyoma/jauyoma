@@ -594,7 +594,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	EntTypNQ = pInfo->sEntryType;
 	UsrMsgNQ = pInfo->sUserMsg;
 
-
+	_OrderNumNQ = pInfo->sOrderNum;
 
 	printf("\nReading Line Update info");
 
@@ -611,7 +611,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		_OrderNumNQ.iDataLen = modi.length();
 	}
 
-	if (Ord1 == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
+	if (Ord1 == std::string(sTicker.pData, sTicker.iDataLen))
 	{
 		if (_sOrdType == "L")
 		{
@@ -1983,11 +1983,6 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   send market order */
 
-	_TickerNQ.pData = "ESU9";
-	_TickerNQ.iDataLen = (int)strlen(_TickerNQ.pData);
-	_TickerES.pData = "NQU9";
-	_TickerES.iDataLen = (int)strlen(_TickerES.pData);
-
 	oMktOrdParams.sExchange = sExchange;
 	oMktOrdParams.sTicker = sTicker;
 	oMktOrdParams.pAccount = &mAccount;
@@ -2042,7 +2037,7 @@ int main(int      argc,
 
 		if (check && OpenOrd)
 		{
-			oModLmtOrdParams.sOrderNum = _BOrderNumNQ;
+			oModLmtOrdParams.sOrderNum = _OrderNumNQ;
 			oModLmtOrdParams.dPrice = Bid - (incrNQ * 5);
 			if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 			{
@@ -2054,7 +2049,7 @@ int main(int      argc,
 		}
 	}
 
-	if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+	if (g_pEngine->cancelOrder(&g_oAccount, &_OrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
 	{
 		printf("\n\nCancelled order\n");
 	}
