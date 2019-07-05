@@ -817,12 +817,14 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			{
 				_BOrderNumNQ = pInfo->sOrderNum;
 				NQLBuy = true;
+				std::cout << "\nAllocated Buy Limit order number" << bPnl << endl;
 			}
 
 			if (_sBuySell == "S")
 			{
 				_SOrderNumNQ = pInfo->sOrderNum;
 				NQLSell = true;
+				std::cout << "\nAllocated Sell Limit order number" << bPnl << endl;
 			}
 		}
 
@@ -1980,7 +1982,14 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							if (!NQCnlSOrd)
 							{
 								NQCnlSOrd = true;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+								if (g_pEngine->tryLock(&iCode) == 1)
+								{
+									if (g_pEngine->cancelOrder(&g_oAccount, &_BOrderNumNQ, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+									{
+
+									}
+									g_pEngine->unlock(&iCode);
+								}
 
 							}
 						}
