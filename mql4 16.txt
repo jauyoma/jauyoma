@@ -1027,12 +1027,14 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 						ordcntNQ = 1;
 						NQLBuy = false;
 						NQPosn = 1;
+						std::cout << "\nBuy NQ Market Order" << endl;
 					}
 					else if (tick1 == "S")
 					{
 						ordcntNQ = 2;
 						NQLSell = false;
 						NQPosn = -1;
+						std::cout << "\nSell NQ Market Order" << endl;
 					}
 				}
 			}
@@ -1121,12 +1123,14 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 								ordcntES = 1;
 								ESLBuy = false;
 								ESPosn = 1;
+								std::cout << "\nBuy ES Market Order" << endl;
 							}
 							else if (tick1 == "S")
 							{
 								ordcntES = 2;
 								ESLSell = false;
 								ESPosn = -1;
+								std::cout << "\nSell ES Market Order" << endl;
 							}
 						}
 					}
