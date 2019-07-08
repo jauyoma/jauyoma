@@ -815,13 +815,13 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			if (_sBuySell == "B")
 			{
 				_BOrderNumNQ = pInfo->sOrderNum;
-				
+
 			}
 
 			if (_sBuySell == "S")
 			{
 				_SOrderNumNQ = pInfo->sOrderNum;
-				
+
 			}
 		}
 
@@ -855,19 +855,19 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 				if (_sBuySell == "B")
 				{
 					_BOrderNumES = pInfo->sOrderNum;
-					
+
 				}
 
 				if (_sBuySell == "S")
 				{
 					_SOrderNumES = pInfo->sOrderNum;
-					
+
 				}
 			}
 
 			if (pInfo->bAvgFillPriceFlag)
 			{
-				
+
 			}
 		}
 	}
@@ -909,9 +909,9 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	tsNCharcb OrderNum;
 
 	elem = pInfo->iArrayLen;
-	std::cout << "\nOpen Ord Replay: Array length is : "<< elem << endl;
+	std::cout << "\nOpen Ord Replay: Array length is : " << elem << endl;
 
-	if(elem > 0)
+	if (elem > 0)
 	{
 		for (int z = 0; z < elem; z++)
 		{
@@ -1018,7 +1018,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 						}
 					}
 				}
-				else if(_sOrdType == "M")
+				else if (_sOrdType == "M")
 				{
 					tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
 
@@ -1138,7 +1138,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			}
 		}
 	}
-	
+
 	livOrd = false;
 
 	QueryPerformanceCounter(&EndingTime);
@@ -1185,8 +1185,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 	string tick, tick1, tick2;
 
 	Arr = pInfo->iArrayLen;
-	
-	std::cout << "\nPnl Replay: Array length is : "<< Arr << endl;
+
+	std::cout << "\nPnl Replay: Array length is : " << Arr << endl;
 
 	if (Arr > 0)
 	{
@@ -1195,9 +1195,9 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			pnl = &pInfo->asPnlInfoArray[z];
 
 			modi = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
-			
+
 			std::cout << "\nProcessing Pnl request" << endl;
-			
+
 			if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 			{
 				NQPosn = pnl->lPosition;
@@ -1215,7 +1215,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					NQLSell = false;
 					std::cout << "\nSell NQ Market Order" << endl;
 				}
-				
+
 				NQPnlMntr = 1;
 			}
 
@@ -1237,7 +1237,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 						ESLSell = false;
 						std::cout << "\nSell ES Market Order" << endl;
 					}
-					
+
+
 					ESPnlMntr = 1;
 				}
 			}
@@ -1304,7 +1305,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 		}
 		bPnl = 2;
-		
+
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -1810,11 +1811,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						{
 							if (!NQCnlSOrd)
 							{
-								
+
 								NQCnlSOrd = true;
 								std::cout << "\nSending Cancelling request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-						
+
 							}
 						}
 						else if (NQSLmt != NQLAsk1)
@@ -4296,20 +4297,13 @@ int main(int      argc,
 
 		//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
 		//past economic news
-		
-		if (ordcntNQ > 0 || ordcntES > 0)
-		{
-			
-			if (NQPnlMntr < 2 || ESPnlMntr < 2)
-			{
-				NQPnlMntr = 2;
-				ESPnlMntr = 2;
-				g_pEngine->replayPnl(&g_oAccount, &iCode);
 
-			}
-		}
-		else
+		if (ordcntNQ == 0 && ordcntES == 0)
+		{
 			livOrd = false;
+
+		}
+
 
 		//Close application if greater than 1 minute
 
