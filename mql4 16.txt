@@ -1775,6 +1775,12 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 
 			if (ordcntNQ == 2)
 			{
+				if(!NQlook)
+				{
+					std::cout << "\nSell Limit price is : "<< NQSLmt << "Sell position is : " << NQPosn << endl;
+					NQlook = true;
+				}
+					
 				if (NQPosn == -1)
 				{
 					if (NQLAsk1 >= NQSLmt)
@@ -1889,6 +1895,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
 											NQCnlSOrd = false;
+											NQlook = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2170,6 +2177,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 			if (ordcntNQ == 2)
 			{
+				if(!NQlook)
+				{
+					std::cout << "\nSell Limit price is : "<< NQSLmt << "Sell position is : " << NQPosn << endl;
+					NQlook = true;
+				}
 				if (NQPosn == -1)
 				{
 					if (NQLAsk1 >= NQSLmt)
@@ -2252,6 +2264,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
 											NQCnlSOrd = false;
+											NQlook = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2347,6 +2360,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 			if (ordcntNQ == 1)
 			{
+				if(!NQlook)
+				{
+					std::cout << "\nBuy Limit price is : "<< NQBLmt << "Buy position is : " << NQPosn << endl;
+					NQlook = true;
+				}
 				if (NQPosn == 1)
 				{
 					if (NQLBid1 <= NQBLmt)
@@ -2459,6 +2477,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
+											NQlook = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2913,6 +2932,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 
 			if (ordcntNQ == 1)
 			{
+				if(!NQlook)
+				{
+					std::cout << "\nBuy Limit price is : "<< NQBLmt << "Buy position is : " << NQPosn << endl;
+					NQlook = true;
+				}
 				if (NQPosn == 1)
 				{
 					if (NQLBid1 <= NQBLmt)
@@ -2995,6 +3019,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
+											NQlook = false;
 										}
 										g_pEngine->unlock(&iCode);
 									}
