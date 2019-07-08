@@ -875,7 +875,7 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 	if (!livOrd)
 	{
 		std::cout << "\nLive order" << endl;
-		g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+		g_pEngine->replayPnl(&g_oAccount, &iCode);
 		livOrd = true;
 	}
 
@@ -1186,6 +1186,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 
 	Arr = pInfo->iArrayLen;
 	
+	std::cout << "\nPnl Replay: Array length is : "<< Arr << endl;
 
 	if (Arr > 0)
 	{
@@ -1194,7 +1195,9 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			pnl = &pInfo->asPnlInfoArray[z];
 
 			modi = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
-
+			
+			std::cout << "\nProcessing Pnl request" << endl;
+			
 			if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 			{
 				NQPosn = pnl->lPosition;
@@ -1204,11 +1207,13 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 				{
 					ordcntNQ = 1;
 					NQLBuy = false;
+					std::cout << "\nBuy NQ Market Order" << endl;
 				}
 				else if (NQPosn < 0)
 				{
 					ordcntNQ = 2;
 					NQLSell = false;
+					std::cout << "\nSell NQ Market Order" << endl;
 				}
 				
 				NQPnlMntr = 1;
@@ -1224,11 +1229,13 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					{
 						ordcntES = 1;
 						ESLBuy = false;
+						std::cout << "\nBuy ES Market Order" << endl;
 					}
 					else if (ESPosn < 0)
 					{
 						ordcntES = 2;
 						ESLSell = false;
+						std::cout << "\nSell ES Market Order" << endl;
 					}
 					
 					ESPnlMntr = 1;
@@ -4301,6 +4308,8 @@ int main(int      argc,
 
 			}
 		}
+		else
+			livOrd = false;
 
 		//Close application if greater than 1 minute
 
