@@ -136,7 +136,7 @@ tsNCharcb EntTypES, OrdNmbES, AlgoES, UsrMsgES;
 bool EconTrade = false, NQGoLive = false, ESGoLive = false, NQSet = false, ESSet = false;
 double NQHighBid = 0, NQHighAsk = 0, NQLowBid = 0, NQLowAsk = 0;
 double ESHighBid = 0, ESHighAsk = 0, ESLowBid = 0, ESLowAsk = 0;
-long NQPosn, ESPosn;
+long NQPosn = 0, ESPosn = 0;
 double NQPnl, ESPnl, NQPvt = 0, ESPvt = 0;
 double NQopn, NQcls, ESopn, EScls;
 double AccPL = 0, Pnl = 0;
@@ -155,6 +155,7 @@ double NQLow = 0, NQHigh, ESLow = 0, ESHigh = 0;
 void *pCxtNQ, *pCxtES;
 bool NQCnlBOrd = false, ESCnlBOrd = false, NQCnlSOrd = false, ESCnlSOrd = false;
 bool NQModBOrd = false, ESModBOrd = false, NQModSOrd = false, ESModSOrd = false;
+bool livOrd = false;
 
 SYSTEMTIME st, lt;
 
@@ -814,15 +815,13 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 			if (_sBuySell == "B")
 			{
 				_BOrderNumNQ = pInfo->sOrderNum;
-				NQLBuy = true;
-				std::cout << "\nAllocated Buy Limit order number" << bPnl << endl;
+				
 			}
 
 			if (_sBuySell == "S")
 			{
 				_SOrderNumNQ = pInfo->sOrderNum;
-				NQLSell = true;
-				std::cout << "\nAllocated Sell Limit order number" << bPnl << endl;
+				
 			}
 		}
 
@@ -856,40 +855,28 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 				if (_sBuySell == "B")
 				{
 					_BOrderNumES = pInfo->sOrderNum;
-					ESLBuy = true;
+					
 				}
 
 				if (_sBuySell == "S")
 				{
 					_SOrderNumES = pInfo->sOrderNum;
-					ESLSell = true;
+					
 				}
 			}
 
 			if (pInfo->bAvgFillPriceFlag)
 			{
-				if (ESChk = true)
-				{
-					ESopn = pInfo->dAvgFillPrice;
-					ESChk = false;
-				}
-				else
-				{
-					EScls = pInfo->dAvgFillPrice;
-
-					if (_sBuySell == "B")
-					{
-						ESRpft = EScls - ESopn;
-						ESApft = ESApft + ESRpft;
-					}
-					else
-					{
-						ESRpft = ESopn - EScls;
-						ESApft = ESApft + ESRpft;
-					}
-				}
+				
 			}
 		}
+	}
+
+	if (!livOrd)
+	{
+		std::cout << "\nLive order" << endl;
+		g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+		livOrd = true;
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -970,8 +957,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							{
 								std::cout << "\nTrying to modify buy order" << endl;
 
-								oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-								oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+								oModLmtOrdParams.sTicker = SymbNQ;
 								oModLmtOrdParams.sExchange = _sExchangeNQ;
 								oModLmtOrdParams.sOrderNum = OrderNum;
 								oModLmtOrdParams.dPrice = NQLBid1;
@@ -1014,8 +1000,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							{
 								std::cout << "\nTrying to modify sell order" << endl;
 
-								oModLmtOrdParams.sTicker.pData = SymbNQ.pData;
-								oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+								oModLmtOrdParams.sTicker = SymbNQ;
 								oModLmtOrdParams.sExchange = _sExchangeNQ;
 								oModLmtOrdParams.sOrderNum = OrderNum;
 								oModLmtOrdParams.dPrice = NQLAsk1;
@@ -1082,8 +1067,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									oModLmtOrdParams.sTicker.pData = SymbES.pData;
-									oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oModLmtOrdParams.sTicker = SymbES;
 									oModLmtOrdParams.sExchange = _sExchangeES;
 									oModLmtOrdParams.sOrderNum = OrderNum;
 									oModLmtOrdParams.dPrice = ESLBid1;
@@ -1116,8 +1100,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							{
 								if (g_pEngine->tryLock(&iCode) == 1)
 								{
-									oModLmtOrdParams.sTicker.pData = SymbES.pData;
-									oModLmtOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
+									oModLmtOrdParams.sTicker = SymbES;
 									oModLmtOrdParams.sExchange = _sExchangeES;
 									oModLmtOrdParams.sOrderNum = OrderNum;
 									oModLmtOrdParams.dPrice = ESLAsk1;
@@ -1152,6 +1135,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 		}
 	}
 	
+	livOrd = false;
 
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
@@ -1197,7 +1181,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 	string tick, tick1, tick2;
 
 	Arr = pInfo->iArrayLen;
-	std::cout << "\nOpen Ord Replay: Array length is : " << Arr << endl;
+	
 
 	if (Arr > 0)
 	{
@@ -1309,16 +1293,7 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 
 		}
 		bPnl = 2;
-		if (NQLBuy)
-		{
-			NQLBuy = false;
-			ordcntNQ = 1;
-		}
-		else if (NQLSell)
-		{
-			NQLSell = false;
-			ordcntNQ = 2;
-		}
+		
 	}
 
 	/*   ----------------------------------------------------------------   */
@@ -4303,8 +4278,6 @@ int main(int      argc,
 	std::cout << "\nStarting Account Balance is : " << _RiskBal << endl;
 	std::cout << "\nReading algorithm..." << endl;
 
-	bool livOrd = false;
-	int fgt = 20;
 	while (!done)
 	{
 		QueryPerformanceFrequency(&Frequency);
@@ -4315,11 +4288,7 @@ int main(int      argc,
 		
 		if (ordcntNQ > 0 || ordcntES > 0)
 		{
-			if (!livOrd)
-			{
-				std::cout << "\nLive order" << endl;
-				livOrd = true;
-			}
+			
 			if (NQPnlMntr < 2 || ESPnlMntr < 2)
 			{
 				NQPnlMntr = 2;
