@@ -1139,8 +1139,6 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 		}
 	}
 
-	livOrd = false;
-
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -1186,8 +1184,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 
 	Arr = pInfo->iArrayLen;
 
-	std::cout << "\nPnl Replay: Array length is : " << Arr << endl;
-
 	if (Arr > 0)
 	{
 		for (int z = 0; z < Arr; z++)
@@ -1195,8 +1191,6 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			pnl = &pInfo->asPnlInfoArray[z];
 
 			modi = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
-
-			std::cout << "\nProcessing Pnl request" << endl;
 
 			if (modi == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 			{
@@ -1775,12 +1769,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 
 			if (ordcntNQ == 2)
 			{
-				if(!NQlook)
-				{
-					std::cout << "\nSell Limit price is : "<< NQSLmt << "Sell position is : " << NQPosn << endl;
-					NQlook = true;
-				}
-					
+				
 				if (NQPosn == -1)
 				{
 					if (NQLAsk1 >= NQSLmt)
@@ -1796,6 +1785,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								oMktOrdParams.sExchange = _sExchangeNQ;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
+									livOrd = false;
 									ordcntNQ = 0;
 									NQSLmt = 0;
 									NQPosn = 0;
@@ -1817,7 +1807,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						{
 							if (!NQCnlSOrd)
 							{
-
+								livOrd = false;
 								NQCnlSOrd = true;
 								std::cout << "\nSending Cancelling request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -1828,6 +1818,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						{
 							if (!NQModSOrd)
 							{
+								livOrd = false;
 								NQModSOrd = true;
 								std::cout << "\nSending Modifying request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -1862,9 +1853,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 										}
 										else
 										{
+											livOrd = false;
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
 											NQCnlSOrd = false;
+											
 										}
 										g_pEngine->unlock(&iCode);
 									}
@@ -2177,11 +2170,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 			if (ordcntNQ == 2)
 			{
-				if(!NQlook)
-				{
-					std::cout << "\nSell Limit price is : "<< NQSLmt << "Sell position is : " << NQPosn << endl;
-					NQlook = true;
-				}
+
 				if (NQPosn == -1)
 				{
 					if (NQLAsk1 >= NQSLmt)
@@ -2197,6 +2186,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								oMktOrdParams.sExchange = _sExchangeNQ;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
+									livOrd = false;
 									ordcntNQ = 0;
 									NQSLmt = 0;
 									NQPosn = 0;
@@ -2218,6 +2208,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							if (!NQCnlSOrd)
 							{
+								livOrd = false;
 								NQCnlSOrd = true;
 								std::cout << "\nSending Cancelling request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -2228,6 +2219,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							if (!NQModSOrd)
 							{
+								livOrd = false;
 								NQModSOrd = true;
 								std::cout << "\nSending Modifying request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -2261,6 +2253,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										}
 										else
 										{
+											livOrd = false;
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
 											NQCnlSOrd = false;
@@ -2292,6 +2285,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										}
 										else
 										{
+											livOrd = false;
 											NQLSell = true;
 											NQSLmt = NQLAsk1;
 											NQCnlSOrd = false;
@@ -2360,11 +2354,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 
 			if (ordcntNQ == 1)
 			{
-				if(!NQlook)
-				{
-					std::cout << "\nBuy Limit price is : "<< NQBLmt << "Buy position is : " << NQPosn << endl;
-					NQlook = true;
-				}
+
 				if (NQPosn == 1)
 				{
 					if (NQLBid1 <= NQBLmt)
@@ -2380,6 +2370,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								oMktOrdParams.sExchange = _sExchangeNQ;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
+									livOrd = false;
 									ordcntNQ = 0;
 									NQBLmt = 0;
 									NQPosn = 0;
@@ -2401,6 +2392,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							if (!NQCnlBOrd)
 							{
+								livOrd = false;
 								NQCnlBOrd = true;
 								std::cout << "\nSending Cancelling request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -2411,6 +2403,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						{
 							if (!NQModBOrd)
 							{
+								livOrd = false;
 								NQModBOrd = true;
 								std::cout << "\nSending Modifying request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -2444,6 +2437,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										}
 										else
 										{
+											livOrd = false;
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
@@ -2474,6 +2468,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 										}
 										else
 										{
+											livOrd = false;
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
@@ -2932,11 +2927,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 
 			if (ordcntNQ == 1)
 			{
-				if(!NQlook)
-				{
-					std::cout << "\nBuy Limit price is : "<< NQBLmt << "Buy position is : " << NQPosn << endl;
-					NQlook = true;
-				}
+
 				if (NQPosn == 1)
 				{
 					if (NQLBid1 <= NQBLmt)
@@ -2952,6 +2943,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								oMktOrdParams.sExchange = _sExchangeNQ;
 								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 								{
+									livOrd = false;
 									ordcntNQ = 0;
 									NQBLmt = 0;
 									NQPosn = 0;
@@ -2973,6 +2965,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						{
 							if (!NQCnlBOrd)
 							{
+								livOrd = false;
 								NQCnlBOrd = true;
 								std::cout << "\nSending Cancelling request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -2983,6 +2976,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						{
 							if (!NQModBOrd)
 							{
+								livOrd = false;
 								NQModBOrd = true;
 								std::cout << "\nSending Modifying request" << endl;
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
@@ -3016,6 +3010,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 										}
 										else
 										{
+											livOrd = false;
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
@@ -3047,6 +3042,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 										}
 										else
 										{
+											livOrd = false;
 											NQLBuy = true;
 											NQBLmt = NQLBid1;
 											NQCnlBOrd = false;
@@ -3628,35 +3624,36 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
+		
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
 		{
 			NQ2BV = pInfo->iVolumeBought - NQ1BV;
-			if (NQ1BV > 0)
+			if (abs(NQ1BV) > 0)
 			{
 				if (!BvolTracker)
-					NQ4BV = NQ4BV + NQ2BV;
+					NQ4BV = NQ4BV + abs(NQ2BV);
 				else
-					NQ4BV = NQ2BV;
-				NQ3BV = NQ3BV + NQ2BV;
+					NQ4BV = abs(NQ2BV);
+				NQ3BV = NQ3BV + abs(NQ2BV);
 			}
 			NQ1BV = pInfo->iVolumeBought;
 		}
 		if (pInfo->bVolumeSoldFlag)
 		{
 			NQ2SV = pInfo->iVolumeSold - NQ1SV;
-			if (NQ1SV > 0)
+			if (abs(NQ1SV) > 0)
 			{
-				NQ3SV = NQ3SV + NQ2SV;
+				NQ3SV = NQ3SV + abs(NQ2SV);
 				if (!SvolTracker)
-					NQ4SV = NQ4SV + NQ2SV;
+					NQ4SV = NQ4SV + abs(NQ2SV);
 				else
-					NQ4SV = NQ2SV;
+					NQ4SV = abs(NQ2SV);
 			}
 			NQ1SV = pInfo->iVolumeSold;
 		}
-
+		
 	}
 	else if (contract)
 	{
