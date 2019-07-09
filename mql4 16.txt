@@ -916,29 +916,29 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			tick = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
 
 			if (tick == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
-			{				
+			{
 				_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
-				
+
 				if (_sOrdType == "L")
 				{
-					
+
 					tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
 					OrderNum = pnl->sOrderNum;
-					
+
 					if (tick1 == "B")
 					{
 						NQB = true;
 						if (NQModBOrd)
 						{
-								oModLmtOrdParams.sTicker = SymbNQ;
-								oModLmtOrdParams.sExchange = _sExchangeNQ;
-								oModLmtOrdParams.sOrderNum = OrderNum;
-								oModLmtOrdParams.dPrice = NQLBid1;
+							oModLmtOrdParams.sTicker = SymbNQ;
+							oModLmtOrdParams.sExchange = _sExchangeNQ;
+							oModLmtOrdParams.sOrderNum = OrderNum;
+							oModLmtOrdParams.dPrice = NQLBid1;
 
-								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-								{
-									NQBLmt = NQLBid1;
-								}
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							{
+								NQBLmt = NQLBid1;
+							}
 
 							NQModBOrd = false;
 						}
@@ -949,20 +949,20 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 						NQS = true;
 						if (NQModSOrd)
 						{
-								oModLmtOrdParams.sTicker = SymbNQ;
-								oModLmtOrdParams.sExchange = _sExchangeNQ;
-								oModLmtOrdParams.sOrderNum = OrderNum;
-								oModLmtOrdParams.dPrice = NQLAsk1;
-								
-								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
-								{
-									NQSLmt = NQLAsk1;
-								}
+							oModLmtOrdParams.sTicker = SymbNQ;
+							oModLmtOrdParams.sExchange = _sExchangeNQ;
+							oModLmtOrdParams.sOrderNum = OrderNum;
+							oModLmtOrdParams.dPrice = NQLAsk1;
+
+							if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
+							{
+								NQSLmt = NQLAsk1;
+							}
 							NQModSOrd = false;
 						}
 					}
 				}
-				
+
 			}
 
 			if (contract)
@@ -1063,53 +1063,53 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 				}
 			}
 		}
-		
-		
-		
-			if (NQModSOrd)
-			{							
-				if(!NQS)
-				{
+
+
+
+		if (NQModSOrd)
+		{
+			if (!NQS)
+			{
 				oLmtOrdParams.dPrice = NQLAsk1;
 				oLmtOrdParams.sBuySellType.pData = "S";
 				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 				oLmtOrdParams.iQty = 1;
-					
+
 				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 				{
 					NQSLmt = NQLAsk1;
 					SellNQ = SellNQ + 1;
 				}
 				NQModSOrd = false;
-				}
 			}
-			else if (NQModBOrd)
+		}
+		else if (NQModBOrd)
+		{
+			if (!NQB)
 			{
-				if(!NQB)
-				{	
 				oLmtOrdParams.dPrice = NQLBid1;
 				oLmtOrdParams.sBuySellType.pData = "B";
 				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 				oLmtOrdParams.iQty = 1;
-			
+
 				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 				{
 					NQBLmt = NQLBid1;
 					BuyNQ = BuyNQ + 1;
 				}
 				NQModBOrd = false;
-				}
-					
 			}
-		
+
+		}
+
 	}
 	else if (NQModSOrd)
-	{						
+	{
 		oLmtOrdParams.dPrice = NQLAsk1;
 		oLmtOrdParams.sBuySellType.pData = "S";
 		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 		oLmtOrdParams.iQty = 1;
-					
+
 		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 		{
 			NQSLmt = NQLAsk1;
@@ -1119,23 +1119,23 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	}
 	else if (NQModBOrd)
 	{
-					
+
 		oLmtOrdParams.dPrice = NQLBid1;
 		oLmtOrdParams.sBuySellType.pData = "B";
 		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
 		oLmtOrdParams.iQty = 1;
-			
+
 		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
 		{
 			NQBLmt = NQLBid1;
 			BuyNQ = BuyNQ + 1;
 		}
 		NQModBOrd = false;
-					
+
 	}
-	
-	livord = false;
-	
+
+	livOrd = false;
+
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -1193,13 +1193,13 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				NQPosn = pnl->lPosition;
 				NQPnl = pnl->dOpenPnl;
-				
-				if(pnl->eBuyQty != 1)
+
+				if (pnl->eBuyQty != 1)
 				{
 					BuyNQ = pnl->lBuyQty;
 				}
-				
-				if(pnl->eSellQty != 1)
+
+				if (pnl->eSellQty != 1)
 				{
 					SellNQ = pnl->lSellQty;
 				}
@@ -1739,7 +1739,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
-			
+
 			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
@@ -1775,8 +1775,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				SellLimit = true;
 				BuyLimit = false;
 			}
-			
-			if (!livord)
+
+			if (!livOrd)
 			{
 				if (NetNQ > -2)
 				{
@@ -1786,9 +1786,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						NQModSOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-							
+
 				}
-			}				
+			}
 		}
 	}
 
@@ -1845,7 +1845,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					BuyLimitES = false;
 				}
 
-				
+
 			}
 		}
 	}
@@ -1911,7 +1911,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
-			
+
 			NetNQ = BuyNQ - SellNQ;
 
 			if (NQLAsk1 != NQLAsk2)
@@ -1941,7 +1941,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (!livord)
+			if (!livOrd)
 			{
 				if (NetNQ > -2)
 				{
@@ -1951,7 +1951,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						NQModSOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-							
+
 				}
 			}
 		}
@@ -1972,7 +1972,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
-			
+
 			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
@@ -2010,7 +2010,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (!livord)
+			if (!livOrd)
 			{
 				if (NetNQ < 2)
 				{
@@ -2020,7 +2020,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						NQModBOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-							
+
 				}
 			}
 		}
@@ -2079,7 +2079,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					BuyLimitES = false;
 				}
 
-				
+
 			}
 		}
 
@@ -2134,7 +2134,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					BuyLimit = false;
 				}
 
-				
+
 			}
 		}
 	}
@@ -2190,7 +2190,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
-			
+
 			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
@@ -2228,7 +2228,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				BuyLimit = false;
 			}
 
-			if (!livord)
+			if (!livOrd)
 			{
 				if (NetNQ < 2)
 				{
@@ -2238,7 +2238,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						NQModBOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-							
+
 				}
 			}
 		}
@@ -2297,7 +2297,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					BuyLimit = false;
 				}
 
-				
+
 			}
 		}
 	}
@@ -2690,7 +2690,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 
 	if (trial == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
 	{
-		
+
 		if (pInfo->bPriceFlag)
 			NQ1TP = pInfo->dPrice;
 		if (pInfo->bVolumeBoughtFlag)
@@ -2719,7 +2719,7 @@ int MyCallbacks::TradePrint(TradeInfo * pInfo,
 			}
 			NQ1SV = pInfo->iVolumeSold;
 		}
-		
+
 	}
 	else if (contract)
 	{
@@ -3386,7 +3386,7 @@ int main(int      argc,
 		//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
 		//past economic news
 
-		if(livord)
+		if (livOrd)
 			std::cout << "\nBuy volume is : " << BuyNQ << " Sell volume is : " << SellNQ << endl;
 
 		//Close application if greater than 1 minute
