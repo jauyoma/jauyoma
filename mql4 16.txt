@@ -142,7 +142,7 @@ double NQopn, NQcls, ESopn, EScls;
 double AccPL = 0, Pnl = 0;
 tsNCharcb sTicker;
 string modiNQ, modiES, modi;
-short int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
+int	ordcnt = 0, ordcntNQ = 0, ordcntES = 0, CloseSignES, CloseSignNQ;
 short int NQPnlMntr = 1, ESPnlMntr = 1, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
@@ -156,6 +156,7 @@ void *pCxtNQ, *pCxtES;
 bool NQCnlBOrd = false, ESCnlBOrd = false, NQCnlSOrd = false, ESCnlSOrd = false;
 bool NQModBOrd = false, ESModBOrd = false, NQModSOrd = false, ESModSOrd = false;
 bool livOrd = false;
+int BuyNQ = 0, SellNQ = 0, BuyES = 0, SellES = 0, NetNQ = 0, NetES = 0;
 
 SYSTEMTIME st, lt;
 
@@ -872,12 +873,6 @@ int MyCallbacks::LineUpdate(LineInfo * pInfo,
 		}
 	}
 
-	if (!livOrd)
-	{
-		std::cout << "\nLive order" << endl;
-		g_pEngine->replayPnl(&g_oAccount, &iCode);
-		livOrd = true;
-	}
 
 	/*   ----------------------------------------------------------------   */
 
@@ -907,9 +902,9 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	string tick, tick1, tick2;
 	int elem;
 	tsNCharcb OrderNum;
+	bool NQB = false, ESB = false, NQS = false, ESS = false;
 
 	elem = pInfo->iArrayLen;
-	std::cout << "\nOpen Ord Replay: Array length is : " << elem << endl;
 
 	if (elem > 0)
 	{
@@ -920,43 +915,21 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			UsrMsgNQ = pnl->sUserMsg;
 			tick = string(pnl->sTicker.pData, pnl->sTicker.iDataLen);
 
-			std::cout << "\nProcessing open order request" << endl;
-
 			if (tick == std::string(_TickerNQ.pData, _TickerNQ.iDataLen))
-			{
+			{				
 				_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
-
+				
 				if (_sOrdType == "L")
 				{
+					
 					tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
 					OrderNum = pnl->sOrderNum;
-					tick2 = std::string(pnl->sOrderNum.pData, pnl->sOrderNum.iDataLen);
-
+					
 					if (tick1 == "B")
 					{
-
-						if (NQCnlBOrd)
+						NQB = true;
+						if (NQModBOrd)
 						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\nTrying to cancel buy order" << endl;
-
-								if (g_pEngine->cancelOrder(&g_oAccount, &OrderNum, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
-								{
-									std::cout << "\nCancelled Order" << endl;
-								}
-								else
-									std::cout << "\nCancelled Order Failed" << endl;
-								g_pEngine->unlock(&iCode);
-							}
-							NQCnlBOrd = false;
-						}
-						else if (NQModBOrd)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\nTrying to modify buy order" << endl;
-
 								oModLmtOrdParams.sTicker = SymbNQ;
 								oModLmtOrdParams.sExchange = _sExchangeNQ;
 								oModLmtOrdParams.sOrderNum = OrderNum;
@@ -965,78 +938,31 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 								{
 									NQBLmt = NQLBid1;
-									std::cout << "\nModified Order" << endl;
 								}
-								else
-									std::cout << "\nModified Order Failed" << endl;
-								g_pEngine->unlock(&iCode);
-							}
+
 							NQModBOrd = false;
 						}
 					}
 
 					else if (tick1 == "S")
 					{
-
-						if (NQCnlSOrd)
+						NQS = true;
+						if (NQModSOrd)
 						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\nTrying to cancel sell order" << endl;
-
-								if (g_pEngine->cancelOrder(&g_oAccount, &OrderNum, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
-								{
-									std::cout << "\nCancelled Order" << endl;
-								}
-								else
-									std::cout << "\nCancelled Order Failed" << endl;
-								g_pEngine->unlock(&iCode);
-							}
-							NQCnlSOrd = false;
-						}
-						else if (NQModSOrd)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								std::cout << "\nTrying to modify sell order" << endl;
-
 								oModLmtOrdParams.sTicker = SymbNQ;
 								oModLmtOrdParams.sExchange = _sExchangeNQ;
 								oModLmtOrdParams.sOrderNum = OrderNum;
 								oModLmtOrdParams.dPrice = NQLAsk1;
-
+								
 								if (g_pEngine->modifyOrder(&oModLmtOrdParams, &iCode))
 								{
 									NQSLmt = NQLAsk1;
-									std::cout << "\nModified Order" << endl;
 								}
-								else
-									std::cout << "\nModified Order Failed" << endl;
-								g_pEngine->unlock(&iCode);
-							}
 							NQModSOrd = false;
 						}
 					}
 				}
-				else if (_sOrdType == "M")
-				{
-					tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
-
-					if (tick1 == "B")
-					{
-						ordcntNQ = 1;
-						NQLBuy = false;
-						NQPosn = 1;
-						std::cout << "\nBuy NQ Market Order" << endl;
-					}
-					else if (tick1 == "S")
-					{
-						ordcntNQ = 2;
-						NQLSell = false;
-						NQPosn = -1;
-						std::cout << "\nSell NQ Market Order" << endl;
-					}
-				}
+				
 			}
 
 			if (contract)
@@ -1137,8 +1063,79 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 				}
 			}
 		}
+		
+		
+		
+			if (NQModSOrd)
+			{							
+				if(!NQS)
+				{
+				oLmtOrdParams.dPrice = NQLAsk1;
+				oLmtOrdParams.sBuySellType.pData = "S";
+				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+				oLmtOrdParams.iQty = 1;
+					
+				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				{
+					NQSLmt = NQLAsk1;
+					SellNQ = SellNQ + 1;
+				}
+				NQModSOrd = false;
+				}
+			}
+			else if (NQModBOrd)
+			{
+				if(!NQB)
+				{	
+				oLmtOrdParams.dPrice = NQLBid1;
+				oLmtOrdParams.sBuySellType.pData = "B";
+				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+				oLmtOrdParams.iQty = 1;
+			
+				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+				{
+					NQBLmt = NQLBid1;
+					BuyNQ = BuyNQ + 1;
+				}
+				NQModBOrd = false;
+				}
+					
+			}
+		
 	}
-
+	else if (NQModSOrd)
+	{						
+		oLmtOrdParams.dPrice = NQLAsk1;
+		oLmtOrdParams.sBuySellType.pData = "S";
+		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+		oLmtOrdParams.iQty = 1;
+					
+		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		{
+			NQSLmt = NQLAsk1;
+			SellNQ = SellNQ + 1;
+		}
+		NQModSOrd = false;
+	}
+	else if (NQModBOrd)
+	{
+					
+		oLmtOrdParams.dPrice = NQLBid1;
+		oLmtOrdParams.sBuySellType.pData = "B";
+		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+		oLmtOrdParams.iQty = 1;
+			
+		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+		{
+			NQBLmt = NQLBid1;
+			BuyNQ = BuyNQ + 1;
+		}
+		NQModBOrd = false;
+					
+	}
+	
+	livord = false;
+	
 	QueryPerformanceCounter(&EndingTime);
 	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
 	ElapsedMicroseconds.QuadPart *= 1000000;
@@ -1196,6 +1193,16 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 			{
 				NQPosn = pnl->lPosition;
 				NQPnl = pnl->dOpenPnl;
+				
+				if(pnl->eBuyQty != 1)
+				{
+					BuyNQ = pnl->lBuyQty;
+				}
+				
+				if(pnl->eSellQty != 1)
+				{
+					SellNQ = pnl->lSellQty;
+				}
 
 				if (NQPosn > 0)
 				{
@@ -1732,6 +1739,8 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
+			
+			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
 			{
@@ -1766,138 +1775,20 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				SellLimit = true;
 				BuyLimit = false;
 			}
-
-			if (ordcntNQ == 2)
+			
+			if (!livord)
 			{
-				
-				if (NQPosn == -1)
+				if (NetNQ > -2)
 				{
-					if (NQLAsk1 >= NQSLmt)
+					if (Bs3 < 0)
 					{
-						if (Bs3 >= 0.25 && Psh6 >= 0.1)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								oMktOrdParams.sBuySellType.pData = "B";
-								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-								oMktOrdParams.sTicker.pData = SymbNQ.pData;
-								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-								oMktOrdParams.sExchange = _sExchangeNQ;
-								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-								{
-									livOrd = false;
-									ordcntNQ = 0;
-									NQSLmt = 0;
-									NQPosn = 0;
-									std::cout << "\nClosed NQ Buy Market" << endl;
-								}
-								g_pEngine->unlock(&iCode);
-							}
-						}
+						livOrd = true;
+						NQModSOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
+							
 				}
-			}
-			else if (NQLSell)
-			{
-				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
-				{
-					if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2))
-					{
-						if (Bs3 >= 0.25 && Psh6 >= 0.25)
-						{
-							if (!NQCnlSOrd)
-							{
-								livOrd = false;
-								NQCnlSOrd = true;
-								std::cout << "\nSending Cancelling request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-						else if (NQSLmt != NQLAsk1)
-						{
-							if (!NQModSOrd)
-							{
-								livOrd = false;
-								NQModSOrd = true;
-								std::cout << "\nSending Modifying request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-
-						}
-					}
-				}
-			}
-			else if (ordcntNQ == 0)
-			{
-				if (NQPosn == 0)
-				{
-					if (BuyLimit)
-					{
-						if (NQLAsk1 < NQHigh)
-						{
-							if (Bs3 <= -0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLAsk1;
-										oLmtOrdParams.sBuySellType.pData = "S";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLSell = true;
-											NQSLmt = NQLAsk1;
-											NQCnlSOrd = false;
-											
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
-					else if (SellLimit)
-					{
-						if (NQLAsk1 <= NQLow)
-						{
-							if (Bs3 <= -0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLAsk1;
-										oLmtOrdParams.sBuySellType.pData = "S";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											NQLSell = true;
-											NQSLmt = NQLAsk1;
-											NQCnlSOrd = false;
-											NQlook = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			}				
 		}
 	}
 
@@ -1954,127 +1845,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					BuyLimitES = false;
 				}
 
-				if (ordcntES == 2)
-				{
-					if (ESPosn == -1)
-					{
-						if (ESLAsk1 >= ESSLmt)
-						{
-							if (Bs3 >= 0.25 && Psh6 >= 0.1)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "B";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										ordcntES = 0;
-										ESSLmt = 0;
-										ESPosn = 0;
-										std::cout << "\nClosed ES Buy Market" << endl;
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-					}
-				}
-				else if (ESLSell)
-				{
-					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
-					{
-						if (abs(ESSLmt - ESLAsk1) >= (incrES * 2))
-						{
-							if (Bs3 >= 0.25 && Psh6 >= 0.25)
-							{
-								if (!ESCnlSOrd)
-								{
-									ESCnlSOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-							else if (ESSLmt != ESLAsk1)
-							{
-								if (!ESModSOrd)
-								{
-									ESModSOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-						}
-					}
-				}
-				else if (ordcntES == 0)
-				{
-					if (ESPosn == 0)
-					{
-						if (BuyLimitES)
-						{
-							if (ESLAsk1 < ESHigh)
-							{
-								if (Bs3 <= -0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLAsk1;
-											oLmtOrdParams.sBuySellType.pData = "S";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLSell = true;
-												ESSLmt = ESLAsk1;
-												ESCnlSOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-						else if (SellLimitES)
-						{
-							if (ESLAsk1 <= ESLow)
-							{
-								if (Bs3 <= -0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLAsk1;
-											oLmtOrdParams.sBuySellType.pData = "S";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLSell = true;
-												ESSLmt = ESLAsk1;
-												ESCnlSOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				
 			}
 		}
 	}
@@ -2140,6 +1911,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
+			
+			NetNQ = BuyNQ - SellNQ;
 
 			if (NQLAsk1 != NQLAsk2)
 			{
@@ -2168,134 +1941,17 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (ordcntNQ == 2)
+			if (!livord)
 			{
-
-				if (NQPosn == -1)
+				if (NetNQ > -2)
 				{
-					if (NQLAsk1 >= NQSLmt)
+					if (Bs3 < 0)
 					{
-						if (Bs3 >= 0.25 && Psh6 >= 0.1)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								oMktOrdParams.sBuySellType.pData = "B";
-								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-								oMktOrdParams.sTicker.pData = SymbNQ.pData;
-								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-								oMktOrdParams.sExchange = _sExchangeNQ;
-								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-								{
-									livOrd = false;
-									ordcntNQ = 0;
-									NQSLmt = 0;
-									NQPosn = 0;
-									std::cout << "\nClosed NQ Buy Market" << endl;
-								}
-								g_pEngine->unlock(&iCode);
-							}
-						}
+						livOrd = true;
+						NQModSOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-				}
-			}
-			else if (NQLSell)
-			{
-				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
-				{
-					if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2))
-					{
-						if (Bs3 >= 0.25 && Psh6 >= 0.25)
-						{
-							if (!NQCnlSOrd)
-							{
-								livOrd = false;
-								NQCnlSOrd = true;
-								std::cout << "\nSending Cancelling request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-						else if (NQSLmt != NQLAsk1)
-						{
-							if (!NQModSOrd)
-							{
-								livOrd = false;
-								NQModSOrd = true;
-								std::cout << "\nSending Modifying request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-					}
-				}
-			}
-			else if (ordcntNQ == 0)
-			{
-				if (NQPosn == 0)
-				{
-					if (BuyLimit)
-					{
-						if (NQLAsk1 < NQHigh)
-						{
-							if (Bs3 <= -0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLAsk1;
-										oLmtOrdParams.sBuySellType.pData = "S";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLSell = true;
-											NQSLmt = NQLAsk1;
-											NQCnlSOrd = false;
-											NQlook = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
-					else if (SellLimit)
-					{
-						if (NQLAsk1 <= NQLow)
-						{
-							if (Bs3 <= -0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLAsk1;
-										oLmtOrdParams.sBuySellType.pData = "S";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLSell = true;
-											NQSLmt = NQLAsk1;
-											NQCnlSOrd = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
+							
 				}
 			}
 		}
@@ -2316,6 +1972,8 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
+			
+			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
 			{
@@ -2352,134 +2010,17 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (ordcntNQ == 1)
+			if (!livord)
 			{
-
-				if (NQPosn == 1)
+				if (NetNQ < 2)
 				{
-					if (NQLBid1 <= NQBLmt)
+					if (Bs3 > 0)
 					{
-						if (Bs3 <= -0.25 && Psh6 <= -0.1)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								oMktOrdParams.sBuySellType.pData = "S";
-								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-								oMktOrdParams.sTicker.pData = SymbNQ.pData;
-								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-								oMktOrdParams.sExchange = _sExchangeNQ;
-								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-								{
-									livOrd = false;
-									ordcntNQ = 0;
-									NQBLmt = 0;
-									NQPosn = 0;
-									std::cout << "\nClosed NQ Buy Market" << endl;
-								}
-								g_pEngine->unlock(&iCode);
-							}
-						}
+						livOrd = true;
+						NQModBOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-				}
-			}
-			else if (NQLBuy)
-			{
-				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
-				{
-					if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2))
-					{
-						if (Bs3 <= -0.25 && Psh6 <= -0.25)
-						{
-							if (!NQCnlBOrd)
-							{
-								livOrd = false;
-								NQCnlBOrd = true;
-								std::cout << "\nSending Cancelling request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-						else if (NQBLmt != NQLBid1)
-						{
-							if (!NQModBOrd)
-							{
-								livOrd = false;
-								NQModBOrd = true;
-								std::cout << "\nSending Modifying request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-					}
-				}
-			}
-			else if (ordcntNQ == 0)
-			{
-				if (NQPosn == 0)
-				{
-					if (SellLimit)
-					{
-						if (NQLBid1 > NQLow)
-						{
-							if (Bs3 >= 0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLBid1;
-										oLmtOrdParams.sBuySellType.pData = "B";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLBuy = true;
-											NQBLmt = NQLBid1;
-											NQCnlBOrd = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
-					else if (BuyLimit)
-					{
-						if (NQLBid1 >= NQHigh)
-						{
-							if (Bs3 >= 0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLBid1;
-										oLmtOrdParams.sBuySellType.pData = "B";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLBuy = true;
-											NQBLmt = NQLBid1;
-											NQCnlBOrd = false;
-											NQlook = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
+							
 				}
 			}
 		}
@@ -2538,127 +2079,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					BuyLimitES = false;
 				}
 
-				if (ordcntES == 2)
-				{
-					if (ESPosn == -1)
-					{
-						if (ESLAsk1 >= ESSLmt)
-						{
-							if (Bs3 >= 0.25 && Psh6 >= 0.25)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "B";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										ordcntES = 0;
-										ESSLmt = 0;
-										ESPosn = 0;
-										std::cout << "\nClosed ES Buy Market" << endl;
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-					}
-				}
-				else if (ESLSell)
-				{
-					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
-					{
-						if (abs(ESSLmt - ESLAsk1) >= (incrNQ * 2))
-						{
-							if (Bs3 >= 0.25 && Psh6 >= 0.25)
-							{
-								if (!ESCnlSOrd)
-								{
-									ESCnlSOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-							else if (ESSLmt != ESLAsk1)
-							{
-								if (!ESModSOrd)
-								{
-									ESModSOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-						}
-					}
-				}
-				else if (ordcntES == 0)
-				{
-					if (ESPosn == 0)
-					{
-						if (BuyLimitES)
-						{
-							if (ESLAsk1 < ESHigh)
-							{
-								if (Bs3 <= -0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLAsk1;
-											oLmtOrdParams.sBuySellType.pData = "S";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLSell = true;
-												ESSLmt = ESLAsk1;
-												ESCnlSOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-						else if (SellLimitES)
-						{
-							if (ESLAsk1 <= ESLow)
-							{
-								if (Bs3 <= -0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLAsk1;
-											oLmtOrdParams.sBuySellType.pData = "S";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLSell = true;
-												ESSLmt = ESLAsk1;
-												ESCnlSOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				
 			}
 		}
 
@@ -2713,127 +2134,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					BuyLimit = false;
 				}
 
-				if (ordcntES == 1)
-				{
-					if (ESPosn == 1)
-					{
-						if (ESLBid1 <= ESBLmt)
-						{
-							if (Bs3 <= -0.25 && Psh6 <= -0.25)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "S";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										ordcntES = 0;
-										ESBLmt = 0;
-										ESPosn = 0;
-										std::cout << "\nClosed ES Buy Market" << endl;
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-					}
-				}
-				else if (ESLBuy)
-				{
-					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
-					{
-						if (abs(ESBLmt - ESLBid1) >= (incrES * 2))
-						{
-							if (Bs3 <= -0.25 && Psh6 <= -0.25)
-							{
-								if (!ESCnlBOrd)
-								{
-									ESCnlBOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-							else if (ESBLmt != ESLBid1)
-							{
-								if (!ESModBOrd)
-								{
-									ESModBOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-						}
-					}
-				}
-				else if (ordcntES == 0)
-				{
-					if (ESPosn == 0)
-					{
-						if (SellLimitES)
-						{
-							if (ESLBid1 > ESLow)
-							{
-								if (Bs3 >= 0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLBid1;
-											oLmtOrdParams.sBuySellType.pData = "B";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLBuy = true;
-												ESBLmt = ESLBid1;
-												ESCnlBOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-						else if (BuyLimitES)
-						{
-							if (ESLBid1 >= ESHigh)
-							{
-								if (Bs3 >= 0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLBid1;
-											oLmtOrdParams.sBuySellType.pData = "B";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLBuy = true;
-												ESBLmt = ESLBid1;
-												ESCnlBOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				
 			}
 		}
 	}
@@ -2889,6 +2190,8 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 			Psh4 = NQ4BV - NQ4SV;
 			Psh5 = NQ4BV + NQ4SV;
 			Psh6 = Psh4 / Psh5;
+			
+			NetNQ = BuyNQ - SellNQ;
 
 			if (!NQChk)
 			{
@@ -2925,134 +2228,17 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				BuyLimit = false;
 			}
 
-			if (ordcntNQ == 1)
+			if (!livord)
 			{
-
-				if (NQPosn == 1)
+				if (NetNQ < 2)
 				{
-					if (NQLBid1 <= NQBLmt)
+					if (Bs3 > 0)
 					{
-						if (Bs3 <= -0.25 && Psh6 <= -0.25)
-						{
-							if (g_pEngine->tryLock(&iCode) == 1)
-							{
-								oMktOrdParams.sBuySellType.pData = "S";
-								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-								oMktOrdParams.sTicker.pData = SymbNQ.pData;
-								oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-								oMktOrdParams.sExchange = _sExchangeNQ;
-								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-								{
-									livOrd = false;
-									ordcntNQ = 0;
-									NQBLmt = 0;
-									NQPosn = 0;
-									std::cout << "\nClosed NQ Buy Market" << endl;
-								}
-								g_pEngine->unlock(&iCode);
-							}
-						}
+						livOrd = true;
+						NQModBOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-				}
-			}
-			else if (NQLBuy)
-			{
-				if (bPnl == 0 || (contract && bPnl > 0 && NQPosn == 0 && ESPosn != 0))
-				{
-					if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2))
-					{
-						if (Bs3 <= -0.25 && Psh6 <= -0.25)
-						{
-							if (!NQCnlBOrd)
-							{
-								livOrd = false;
-								NQCnlBOrd = true;
-								std::cout << "\nSending Cancelling request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-						else if (NQBLmt != NQLBid1)
-						{
-							if (!NQModBOrd)
-							{
-								livOrd = false;
-								NQModBOrd = true;
-								std::cout << "\nSending Modifying request" << endl;
-								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-							}
-						}
-					}
-				}
-			}
-			else if (ordcntNQ == 0)
-			{
-				if (NQPosn == 0)
-				{
-					if (SellLimit)
-					{
-						if (NQLBid1 > NQLow)
-						{
-							if (Bs3 >= 0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLBid1;
-										oLmtOrdParams.sBuySellType.pData = "B";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLBuy = true;
-											NQBLmt = NQLBid1;
-											NQCnlBOrd = false;
-											NQlook = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
-					else if (BuyLimit)
-					{
-						if (NQLBid1 >= NQHigh)
-						{
-							if (Bs3 >= 0.25)
-							{
-								if (!NQLSell && !NQLBuy)
-								{
-									if (g_pEngine->tryLock(&iCode) == 1)
-									{
-										oLmtOrdParams.dPrice = NQLBid1;
-										oLmtOrdParams.sBuySellType.pData = "B";
-										oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-										oLmtOrdParams.iQty = 1;
-										if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-										{
-
-										}
-										else
-										{
-											livOrd = false;
-											NQLBuy = true;
-											NQBLmt = NQLBid1;
-											NQCnlBOrd = false;
-										}
-										g_pEngine->unlock(&iCode);
-									}
-								}
-							}
-						}
-					}
+							
 				}
 			}
 		}
@@ -3111,127 +2297,7 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					BuyLimit = false;
 				}
 
-				if (ordcntES == 1)
-				{
-					if (ESPosn == 1)
-					{
-						if (ESLBid1 <= ESBLmt)
-						{
-							if (Bs3 <= -0.25 && Psh6 <= -0.25)
-							{
-								if (g_pEngine->tryLock(&iCode) == 1)
-								{
-									oMktOrdParams.sBuySellType.pData = "S";
-									oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oMktOrdParams.sBuySellType.pData);
-									oMktOrdParams.sTicker.pData = SymbES.pData;
-									oMktOrdParams.sTicker.iDataLen = (int)strlen(oMktOrdParams.sTicker.pData);
-									oMktOrdParams.sExchange = _sExchangeES;
-									if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
-									{
-										ordcntES = 0;
-										ESBLmt = 0;
-										ESPosn = 0;
-										std::cout << "\nClosed ES Buy Market" << endl;
-									}
-									g_pEngine->unlock(&iCode);
-								}
-							}
-						}
-					}
-				}
-				else if (ESLBuy)
-				{
-					if (bPnl == 0 || (contract && bPnl > 0 && NQPosn != 0 && ESPosn == 0))
-					{
-						if (abs(ESBLmt - ESLBid1) >= (incrES * 2))
-						{
-							if (Bs3 <= -0.25 && Psh6 <= -0.25)
-							{
-								if (!ESCnlBOrd)
-								{
-									ESCnlBOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-							else if (ESBLmt != ESLBid1)
-							{
-								if (!ESModBOrd)
-								{
-									ESModBOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-
-								}
-							}
-						}
-					}
-				}
-				else if (ordcntES == 0)
-				{
-					if (ESPosn == 0)
-					{
-						if (SellLimitES)
-						{
-							if (ESLBid1 > ESLow)
-							{
-								if (Bs3 >= 0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLBid1;
-											oLmtOrdParams.sBuySellType.pData = "B";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLBuy = true;
-												ESBLmt = ESLBid1;
-												ESCnlBOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-						else if (BuyLimitES)
-						{
-							if (ESLBid1 >= ESHigh)
-							{
-								if (Bs3 >= 0.25)
-								{
-									if (!ESLSell && !ESLBuy)
-									{
-										if (g_pEngine->tryLock(&iCode) == 1)
-										{
-											oLmtOrdParams.dPrice = ESLBid1;
-											oLmtOrdParams.sBuySellType.pData = "B";
-											oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-											oLmtOrdParams.iQty = 1;
-											if (!g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-											{
-
-											}
-											else
-											{
-												ESLBuy = true;
-												ESBLmt = ESLBid1;
-												ESCnlBOrd = false;
-											}
-											g_pEngine->unlock(&iCode);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				
 			}
 		}
 	}
@@ -4320,12 +3386,8 @@ int main(int      argc,
 		//track time and set to true if less than 1 minute to economic news and set to false if greater than 1 minute
 		//past economic news
 
-		if (ordcntNQ == 0 && ordcntES == 0)
-		{
-			livOrd = false;
-
-		}
-
+		if(livord)
+			std::cout << "\nBuy volume is : " << BuyNQ << " Sell volume is : " << SellNQ << endl;
 
 		//Close application if greater than 1 minute
 
