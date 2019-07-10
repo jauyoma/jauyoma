@@ -919,16 +919,18 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			{
 				_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
 				tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
-				
+
 				if (tick1 == "B")
 				{
-					NQBct = NQBct + 1;	
+					NQBct = NQBct + 1;
 				}
 				else if (tick1 == "S")
 				{
-					NQSct = NQSct + 1;	
+					NQSct = NQSct + 1;
 				}
-				
+				else
+					std:cout << "\n No action taken Order type is : " << tick1 << endl;
+
 				if (_sOrdType == "L")
 				{
 
@@ -970,10 +972,16 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							NQModSOrd = false;
 						}
 					}
+					else
+						std:cout << "\n Limit order. No action Order type is : " << tick1 << endl;
 				}
+				else
+					std:cout << "\n Order is live " << endl;
 
 			}
-
+			else
+				std:cout << "\n String is not NQ. It's : " << tick << endl;
+			
 			if (contract)
 			{
 				if (tick == std::string(_TickerES.pData, _TickerES.iDataLen))
@@ -1073,98 +1081,99 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			}
 		}
 
-
-		if(NQct < 2)
-		{
-		
 		if (NQModSOrd)
 		{
 			if (!NQS)
 			{
-				if(NQSct < 2)
+				if (NQSct < 2)
 				{
-				
-				oLmtOrdParams.dPrice = NQLAsk1;
-				oLmtOrdParams.sBuySellType.pData = "S";
-				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.iQty = 1;
 
-				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-				{
-					NQSLmt = NQLAsk1;
-					SellNQ = SellNQ + 1;
+					oLmtOrdParams.dPrice = NQLAsk1;
+					oLmtOrdParams.sBuySellType.pData = "S";
+					oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+					oLmtOrdParams.iQty = 1;
+
+					if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+					{
+						NQSLmt = NQLAsk1;
+						SellNQ = SellNQ + 1;
+					}
+
 				}
 				
-				}
-				NQModSOrd = false;
 			}
+			NQModSOrd = false;
 		}
 		else if (NQModBOrd)
 		{
 			if (!NQB)
 			{
-				if(NQBct < 2)
+				if (NQBct < 2)
 				{
-				
-				oLmtOrdParams.dPrice = NQLBid1;
-				oLmtOrdParams.sBuySellType.pData = "B";
-				oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-				oLmtOrdParams.iQty = 1;
 
-				if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-				{
-					NQBLmt = NQLBid1;
-					BuyNQ = BuyNQ + 1;
+					oLmtOrdParams.dPrice = NQLBid1;
+					oLmtOrdParams.sBuySellType.pData = "B";
+					oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+					oLmtOrdParams.iQty = 1;
+
+					if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+					{
+						NQBLmt = NQLBid1;
+						BuyNQ = BuyNQ + 1;
+					}
+
 				}
 				
-				}
-				NQModBOrd = false;
 			}
+			NQModBOrd = false;
+		}
+		else
+			std:cout << "\n No action taken. Failed to enter limit order " << endl;
 
-		}
-		
-		}
+			
 
 	}
 	else if (NQModSOrd)
 	{
-		if(SellNQ == 0)
+		if (SellNQ == 0)
 		{
-		
-		oLmtOrdParams.dPrice = NQLAsk1;
-		oLmtOrdParams.sBuySellType.pData = "S";
-		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-		oLmtOrdParams.iQty = 1;
 
-		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		{
-			NQSLmt = NQLAsk1;
-			SellNQ = SellNQ + 1;
-		}
-		
+			oLmtOrdParams.dPrice = NQLAsk1;
+			oLmtOrdParams.sBuySellType.pData = "S";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			oLmtOrdParams.iQty = 1;
+
+			if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				NQSLmt = NQLAsk1;
+				SellNQ = SellNQ + 1;
+			}
+
 		}
 		NQModSOrd = false;
 	}
 	else if (NQModBOrd)
 	{
-		if(BuyNQ == 0)
+		if (BuyNQ == 0)
 		{
-		
-		oLmtOrdParams.dPrice = NQLBid1;
-		oLmtOrdParams.sBuySellType.pData = "B";
-		oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-		oLmtOrdParams.iQty = 1;
 
-		if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
-		{
-			NQBLmt = NQLBid1;
-			BuyNQ = BuyNQ + 1;
-		}
-		
+			oLmtOrdParams.dPrice = NQLBid1;
+			oLmtOrdParams.sBuySellType.pData = "B";
+			oLmtOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+			oLmtOrdParams.iQty = 1;
+
+			if (g_pEngine->sendOrder(&oLmtOrdParams, &iCode))
+			{
+				NQBLmt = NQLBid1;
+				BuyNQ = BuyNQ + 1;
+			}
+
 		}
 		NQModBOrd = false;
 
 	}
+	else
+		std:cout << "\n No action taken elem value is : " << elem << endl;
 
 	livOrd = false;
 
