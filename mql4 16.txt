@@ -929,7 +929,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 					NQSct = NQSct + 1;
 				}
 				else
-					std::cout << "\n No action taken Order type is : " << tick1 << endl;
+					std::cout << "\n Order type not identified : " << tick1 << endl;
 
 				if (_sOrdType == "L")
 				{
@@ -953,6 +953,14 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 
 							NQModBOrd = false;
 						}
+						else if (NQCnlBOrd)
+						{
+							if (g_pEngine->cancelOrder(&g_oAccount, &OrdNum, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+							{
+
+							}	
+							NQCnlBOrd = false;
+						}
 					}
 
 					else if (tick1 == "S")
@@ -971,12 +979,20 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 							}
 							NQModSOrd = false;
 						}
+						else if (NQCnlSOrd)
+						{
+							if (g_pEngine->cancelOrder(&g_oAccount, &OrdNum, &EntTypNQ, &AlgoNQ, &UsrMsgNQ, &pCxtNQ, &iCode))
+							{
+
+							}	
+							NQCnlSOrd = false;
+						}
 					}
 					else
-						std::cout << "\n Limit order. No action Order type is : " << tick1 << endl;
+						std::cout << "\n Limit order buysell type not identified: " << tick1 << endl;
 				}
 				else
-					std::cout << "\n Order is live " << endl;
+					std::cout << "\n Order is live (market) " << endl;
 
 			}
 			else
@@ -1128,7 +1144,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			NQModBOrd = false;
 		}
 		else
-			std::cout << "\n No action taken. Failed to enter limit order " << endl;
+			std::cout << "\n Failed to identify limit order " << endl;
 
 			
 
@@ -1173,7 +1189,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 
 	}
 	else
-		std::cout << "\n No action taken elem value is : " << elem << endl;
+		std::cout << "\n Empty elem value is : " << elem << endl;
 
 	livOrd = false;
 
@@ -1827,7 +1843,18 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						NQModSOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-
+					else if (Bs3 > 0)
+					{
+						livOrd = true;
+						NQCnlSOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+					}				
+				}
+				else if (Bs3 > 0)
+				{
+					livOrd = true;
+					NQCnlSOrd = true;
+					g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 				}
 			}
 		}
@@ -1992,7 +2019,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						NQModSOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-
+					else if (Bs3 > 0)
+					{
+						livOrd = true;
+						NQCnlSOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+					}				
+				}
+				else if (Bs3 > 0)
+				{
+					livOrd = true;
+					NQCnlSOrd = true;
+					g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 				}
 			}
 		}
@@ -2050,7 +2088,7 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				SellLimit = true;
 				BuyLimit = false;
 			}
-
+			
 			if (!livOrd)
 			{
 				if (NetNQ < 2)
@@ -2061,7 +2099,18 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 						NQModBOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-
+					else if (Bs3 < 0)
+					{
+						livOrd = true;
+						NQCnlBOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+					}				
+				}
+				else if (Bs3 < 0)
+				{
+					livOrd = true;
+					NQCnlBOrd = true;
+					g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 				}
 			}
 		}
@@ -2279,7 +2328,18 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 						NQModBOrd = true;
 						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 					}
-
+					else if (Bs3 < 0)
+					{
+						livOrd = true;
+						NQCnlBOrd = true;
+						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+					}				
+				}
+				else if (Bs3 < 0)
+				{
+					livOrd = true;
+					NQCnlBOrd = true;
+					g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 				}
 			}
 		}
