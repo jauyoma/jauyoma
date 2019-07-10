@@ -929,7 +929,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 					NQSct = NQSct + 1;
 				}
 				else
-					std:cout << "\n No action taken Order type is : " << tick1 << endl;
+					std::cout << "\n No action taken Order type is : " << tick1 << endl;
 
 				if (_sOrdType == "L")
 				{
@@ -973,14 +973,14 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 						}
 					}
 					else
-						std:cout << "\n Limit order. No action Order type is : " << tick1 << endl;
+						std::cout << "\n Limit order. No action Order type is : " << tick1 << endl;
 				}
 				else
-					std:cout << "\n Order is live " << endl;
+					std::cout << "\n Order is live " << endl;
 
 			}
 			else
-				std:cout << "\n String is not NQ. It's : " << tick << endl;
+				std::cout << "\n String is not NQ. It's : " << tick << endl;
 			
 			if (contract)
 			{
@@ -1128,7 +1128,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			NQModBOrd = false;
 		}
 		else
-			std:cout << "\n No action taken. Failed to enter limit order " << endl;
+			std::cout << "\n No action taken. Failed to enter limit order " << endl;
 
 			
 
@@ -1173,7 +1173,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 
 	}
 	else
-		std:cout << "\n No action taken elem value is : " << elem << endl;
+		std::cout << "\n No action taken elem value is : " << elem << endl;
 
 	livOrd = false;
 
