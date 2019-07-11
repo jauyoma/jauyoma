@@ -129,7 +129,7 @@ bool BvolTracker = false, SvolTracker = false, NQChk = false, ESChk = false;
 short int check = 0, Vol = 0, buycheck = 0, sellcheck = 0, buyclose = 0, sellclose = 0;
 bool BuyLimit = false, SellLimit = false, OpenOrd = false, NQBuyMkt = false, NQSellMkt = false;
 bool BuyLimitES = false, SellLimitES = false;
-double NQBLmt, NQSLmt, ESBLmt, ESSLmt;
+double NQBLmt = 0, NQSLmt = 0, ESBLmt = 0, ESSLmt = 0;
 bool NQBCl, NQSCl, LiveOrdNQ = false, ESBuyMkt = false, ESSellMkt = false;
 tsNCharcb EntTypNQ, OrdNmbNQ, AlgoNQ, UsrMsgNQ;
 tsNCharcb EntTypES, OrdNmbES, AlgoES, UsrMsgES;
@@ -147,15 +147,15 @@ short int NQPnlMntr = 1, ESPnlMntr = 1, cut = 0;
 double NQRpft = 0, NQApft = 0, ESRpft = 0, ESApft = 0;
 double NQCmsh = 0, ESCmsh = 0, NQMPvt = 0, ESMPvt = 0;
 bool NQlook = false, ESlook = false, BvolTrackerES = false, SvolTrackerES = false;
-short int NQlk = 0, ESlk = 0, bPnl = 0;
+short int NQlk = 0, ESlk = 0, bPnl = 0, NQpvot = 0, ESpvot;
 double NQCPnl = 0, ESCPnl = 0, NQMPnl, ESMPnl;
 double Bs1, Bs2, Bs3, Psh4, Psh5, Psh6;
 bool NQLBuy = false, NQLSell = false, ESLBuy = false, ESLSell = false;
-double NQLow = 0, NQHigh, ESLow = 0, ESHigh = 0;
+double NQLow = 0, NQHigh, ESLow = 0, ESHigh = 0, pvtNQ =  0, pvtES = 0;
 void *pCxtNQ, *pCxtES;
 bool NQCnlBOrd = false, ESCnlBOrd = false, NQCnlSOrd = false, ESCnlSOrd = false;
 bool NQModBOrd = false, ESModBOrd = false, NQModSOrd = false, ESModSOrd = false;
-bool livOrd = false, prnt = false;
+bool livOrd = false, prnt = false, NQpvt = false, ESpvt  = false;
 int BuyNQ = 0, SellNQ = 0, BuyES = 0, SellES = 0, NetNQ = 0, NetES = 0;
 
 SYSTEMTIME st, lt;
@@ -1805,22 +1805,58 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				SellLimit = true;
 				BuyLimit = false;
 			}
-
-			if (!livOrd)
+			
+			if(!NQpvt)
 			{
-				if (NetNQ > -10)
+				if (pvtNQ == 0)
 				{
-					if (Bs3 < 0)
-					{
-						livOrd = true;
-						NQModSOrd = true;
-						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-					}					
+					pvtNQ = NQLAsk1;
+					NQpvt = true;
 				}
 			}
-
+			
+			if (NetNQ != 0)
+			{
+			
+			if (SellLimit)
+			{
+				if(NQLAsk1 > NQLow && NQLBid1 > NQLow)
+				{
+					if ((NQLAsk1 - NQSLmt) >= (incrNQ*1))
+					{
+						if (NetNQ < 0)
+						{
+							pvtNQ = NQLAsk1;
+							NQpvot = 1;
+						}
+					}
+				}
+			}
+			
+			}
+			
+			
+			if ((NQpvot == 1 && NQLAsk1 <= pvtNQ) || (NQpvot == 2 && NQLAsk1 <= (pvtNQ + (incrNQ*1)))
+			{				
+				if (!livOrd)
+				{
+					if (NetNQ > -10)
+					{
+						if (Bs3 < 0)
+						{
+							livOrd = true;
+							NQModSOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+						}					
+					}
+				}		
+			
+			}
+			
 		}
 	}
+	
+	
 
 	if (contract)
 	{
@@ -1971,17 +2007,51 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (!livOrd)
+			if(!NQpvt)
 			{
-				if (NetNQ > -10)
+				if (pvtNQ == 0)
 				{
-					if (Bs3 < 0)
+					pvtNQ = NQLAsk1;
+					NQpvt = true;
+				}
+			}
+			
+			if (NetNQ != 0)
+			{
+			
+			if (SellLimit)
+			{
+				if(NQLAsk1 > NQLow && NQLBid1 > NQLow)
+				{
+					if ((NQLAsk1 - NQSLmt) >= (incrNQ*1))
 					{
-						livOrd = true;
-						NQModSOrd = true;
-						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+						if (NetNQ < 0)
+						{
+							pvtNQ = NQLAsk1;
+							NQpvot = 1;
+						}
 					}
 				}
+			}
+			
+			}
+			
+			
+			if ((NQpvot == 1 && NQLAsk1 <= pvtNQ) || (NQpvot == 2 && NQLAsk1 <= (pvtNQ+(incrNQ*1)))
+			{				
+				if (!livOrd)
+				{
+					if (NetNQ > -10)
+					{
+						if (Bs3 < 0)
+						{
+							livOrd = true;
+							NQModSOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+						}					
+					}
+				}		
+			
 			}
 
 		}
@@ -2040,17 +2110,51 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				BuyLimit = false;
 			}
 
-			if (!livOrd)
+			if(!NQpvt)
 			{
-				if (NetNQ < 10)
+				if (pvtNQ == 0)
 				{
-					if (Bs3 > 0)
-					{
-						livOrd = true;
-						NQModBOrd = true;
-						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-					}
+					pvtNQ = NQLBid1;
+					NQpvt = true;
 				}
+			}
+			
+			if (NetNQ != 0)
+			{
+			
+			if (BuyLimit)
+			{
+				if(NQLAsk1 < NQHigh && NQLBid1 < NQHigh)
+				{
+					if ((NQLBid1 - NQBLmt) >= (incrNQ*1))
+					{
+						if (NetNQ > 0)
+						{
+							pvtNQ = NQLBid1;
+							NQpvot = 2;
+						}
+					}
+				}			
+			}
+						
+			}
+			
+			
+			if ((NQpvot == 1 && NQLBid1 >= (pvtNQ-(incrNQ*1))) || (NQpvot == 2 && NQLBid1 >= pvtNQ)
+			{				
+				if (!livOrd)
+				{
+					if (NetNQ < 10)
+					{
+						if (Bs3 > 0)
+						{
+							livOrd = true;
+							NQModBOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+						}					
+					}
+				}		
+			
 			}
 
 		}
@@ -2258,19 +2362,52 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				BuyLimit = false;
 			}
 
-			if (!livOrd)
+			if(!NQpvt)
 			{
-				if (NetNQ < 10)
+				if (pvtNQ == 0)
 				{
-					if (Bs3 > 0)
-					{
-						livOrd = true;
-						NQModBOrd = true;
-						g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
-					}
+					pvtNQ = NQLBid1;
+					NQpvt = true;
 				}
 			}
-
+			
+			if (NetNQ != 0)
+			{
+			
+			if (BuyLimit)
+			{
+				if(NQLAsk1 < NQHigh && NQLBid1 < NQHigh)
+				{
+					if ((NQLBid1 - NQBLmt) >= (incrNQ*1))
+					{
+						if (NetNQ > 0)
+						{
+							pvtNQ = NQLBid1;
+							NQpvot = 2;
+						}
+					}
+				}			
+			}
+						
+			}
+			
+			
+			if ((NQpvot == 1 && NQLBid1 >= (pvtNQ-(incrNQ*1))) || (NQpvot == 2 && NQLBid1 >= pvtNQ)
+			{				
+				if (!livOrd)
+				{
+					if (NetNQ < 10)
+					{
+						if (Bs3 > 0)
+						{
+							livOrd = true;
+							NQModBOrd = true;
+							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+						}					
+					}
+				}		
+			
+			}
 		}
 	}
 
