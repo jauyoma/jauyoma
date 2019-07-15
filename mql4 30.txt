@@ -919,7 +919,8 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			{
 				_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
 				tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
-
+				std::cout <<"Order type is : " << _sOrdType << endl;
+				
 				if (tick1 == "B")
 				{
 					NQBct = NQBct + 1;
