@@ -970,7 +970,6 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 				{
 					if (tick1 == "B")
 					{
-
 						if (NQCnlBOrd)
 						{
 							oMktOrdParams.sTicker = SymbNQ;
@@ -1759,6 +1758,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 			{
 				NQHigh = NQLAsk1;
 				NQLow = NQLAsk1;
+				NQPvt = NQLAsk1;
 				NQChk = true;
 			}
 
@@ -1795,7 +1795,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (SellNQ > 0)
 					{
-						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 1))
+						if ((Bs3 > 0 && SellNQ < 2) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
 						{
 							livOrd = true;
 							NQCnlSOrd = true;
@@ -1804,7 +1804,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					}
 					else if (BuyNQ > 0)
 					{
-						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 1))
+						if ((Bs3 < 0 && BuyNQ < 2) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
 						{
 							livOrd = true;
 							NQCnlBOrd = true;
@@ -1814,13 +1814,34 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				}
 				else
 				{
-					if (SellNQ == 0)
+					if (Bs3 < -0.24 && Psh6 < -0.24)
 					{
-						if (Bs3 < -0.24 && Psh6 < -0.24)
+						if (SellNQ == 0)
 						{
-							livOrd = true;
-							NQModSOrd = true;
-							g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							if (!NQModSOrd)
+							{
+								if (NQLAsk1 < NQPvt)
+								{
+									livOrd = true;
+									NQModSOrd = true;
+									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+								}
+							}
+						}
+					}
+					else if (Bs3 > 0.24 && Psh6 > 0.24)
+					{
+						if (BuyNQ == 0)
+						{
+							if (!NQModBOrd)
+							{
+								if (NQLAsk1 > NQPvt)
+								{
+									livOrd = true;
+									NQModBOrd = true;
+									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+								}
+							}
 						}
 					}
 				}
