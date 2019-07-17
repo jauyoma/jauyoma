@@ -1194,6 +1194,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 						if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							BuyNQ = 0;
+							bPnl = 0;
 						}
 					}
 					
@@ -1214,6 +1215,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 						if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
 						{
 							SellNQ = 0;
+							bPnl = 0;
 						}
 
 					}
@@ -1789,10 +1791,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						
 						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close sell : " << NQS << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close sell : " << bPnl << endl;
 							livOrd = true;
 							NQCnlSOrd = true;
-							if(!NQS)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -1803,10 +1806,11 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 						
 						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close buy : " << NQB << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close buy : " << bPnl << endl;
 							livOrd = true;
 							NQCnlBOrd = true;
-							if (!NQB)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2008,10 +2012,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close sell : " << NQS << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close sell : " << bPnl << endl;
 							livOrd = true;
 							NQCnlSOrd = true;
-							if (!NQS)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2021,10 +2026,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close buy : " << NQB << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close buy : " << bPnl << endl;
 							livOrd = true;
 							NQCnlBOrd = true;
-							if (!NQB)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2109,10 +2115,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close sell : " << NQS << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close sell : " << bPnl << endl;
 							livOrd = true;
 							NQCnlSOrd = true;
-							if (!NQS)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2122,10 +2129,11 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 					{
 						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close buy : " << NQB << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close buy : " << bPnl << endl;
 							livOrd = true;
 							NQCnlBOrd = true;
-							if (!NQB)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2359,10 +2367,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					{
 						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close sell : " << NQS << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close sell : " << bPnl << endl;
 							livOrd = true;
 							NQCnlSOrd = true;
-							if (!NQS)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -2372,10 +2381,11 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 					{
 						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 5))
 						{
-							std::cout << "\nTrying to close buy : " << NQB << endl;
+							if (bPnl == 2)
+								std::cout << "\nTrying to close buy : " << bPnl << endl;
 							livOrd = true;
 							NQCnlBOrd = true;
-							if (!NQB)
+							if (bPnl < 2)
 								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							else
 								g_pEngine->replayPnl(&g_oAccount, &iCode);
@@ -3486,7 +3496,25 @@ int main(int      argc,
 		return (BAD);
 	}
 
+	if (!g_pEngine->subscribeOrder((&g_oAccount, &iCode))
+	{
+		printf("REngine::subscribeOrder() error : %d\n", iCode);
+	}
+	else
+		printf("REngine::subscribeOrder() success\n");
 
+	if (!g_pEngine->subscribePnl((&g_oAccount, &iCode))
+	{
+		printf("\nREngine::subscribePnL() error : %d\n", iCode);
+
+		delete g_pEngine;
+		delete pCallbacks;
+		delete pAdmCallbacks;
+
+		return (BAD);
+	}
+	else
+		printf("\nSuccessfully subscribed to PnL engine");
 
 
 	/*   ----------------------------------------------------------------   */
@@ -3561,8 +3589,16 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
+	
+	if (!g_pEngine->unsubscribePnl(&g_oAccount, &iCode))
+	{
+		printf("\nREngine::unsubscribePnL() error : %d\n", iCode);
+	}
+	else
+		printf("\nSuccessfully unsubscribed from PnL engine");
+		
 	std::cout << "\nMain loop terminated" << endl;
-
+	
 	double TotPL;
 
 	TotPL = Pnl - (NQCmsh + ESCmsh);
