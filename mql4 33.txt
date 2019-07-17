@@ -1221,6 +1221,8 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					}
 
 				}
+				else
+					bPnl = 0;
 
 
 			}
@@ -3580,7 +3582,7 @@ int main(int      argc,
 
 		if (bPnl == 2)
 		{
-			std::cout << "\nNQB is : " << NQB << " NQS is : " << NQS << endl;
+			std::cout << "\nPosition is : " << NQPosn << endl;
 		}
 
 		//Close application if greater than 1 minute
