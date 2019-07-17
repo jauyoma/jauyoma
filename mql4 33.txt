@@ -903,7 +903,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 	string tick, tick1, tick2;
 	int elem, NQBct = 0, ESBct = 0, NQSct = 0, ESSct = 0;
 	tsNCharcb OrderNum;
-	
+
 
 	elem = pInfo->iArrayLen;
 
@@ -920,7 +920,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			{
 				_sOrdType = std::string(pnl->sOrderType.pData, pnl->sOrderType.iDataLen);
 				tick1 = std::string(pnl->sBuySellType.pData, pnl->sBuySellType.iDataLen);
-				
+
 
 				if (tick1 == "B")
 				{
@@ -967,7 +967,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 				}
 				else if (_sOrdType == "M")
 				{
-					
+
 				}
 			}
 
@@ -1184,7 +1184,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					NQLBuy = false;
 					if (NQCnlBOrd)
 					{
-					
+
 						oMktOrdParams.sTicker = SymbNQ;
 						oMktOrdParams.sExchange = _sExchangeNQ;
 						oMktOrdParams.sBuySellType.pData = "S";
@@ -1197,7 +1197,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 							bPnl = 0;
 						}
 					}
-					
+
 				}
 				else if (NQPosn < 0)
 				{
@@ -1205,7 +1205,7 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 					NQLSell = false;
 					if (NQCnlSOrd)
 					{
-						
+
 						oMktOrdParams.sTicker = SymbNQ;
 						oMktOrdParams.sExchange = _sExchangeNQ;
 						oMktOrdParams.sBuySellType.pData = "B";
@@ -1219,10 +1219,10 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 						}
 
 					}
-					
+
 				}
 
-				
+
 			}
 
 			else if (contract)
@@ -1295,6 +1295,14 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 		_minqty = pInfo->lSellQty;
 		_Posn = pInfo->lPosition;
 
+		if (_Posn != 0)
+		{
+			if (NetNQ != 0)
+				bPnl = 2;
+		}
+		else
+			bPnl = 0;
+
 		if (!contract)
 		{
 
@@ -1310,7 +1318,8 @@ int MyCallbacks::PnlUpdate(PnlInfo * pInfo,
 			}
 
 		}
-		bPnl = 2;
+
+		
 
 	}
 
@@ -1788,7 +1797,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 				{
 					if (SellNQ > 0)
 					{
-						
+
 						if (Bs3 > 0 || (NQSLmt - NQLAsk1) >= (incrNQ * 5))
 						{
 							if (bPnl == 2)
@@ -1803,7 +1812,7 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					}
 					else if (BuyNQ > 0)
 					{
-						
+
 						if (Bs3 < 0 || (NQLBid1 - NQBLmt) >= (incrNQ * 5))
 						{
 							if (bPnl == 2)
@@ -3496,14 +3505,14 @@ int main(int      argc,
 		return (BAD);
 	}
 
-	if (!g_pEngine->subscribeOrder((&g_oAccount, &iCode))
+	if (!g_pEngine->subscribeOrder(&g_oAccount, &iCode))
 	{
 		printf("REngine::subscribeOrder() error : %d\n", iCode);
 	}
 	else
 		printf("REngine::subscribeOrder() success\n");
 
-	if (!g_pEngine->subscribePnl((&g_oAccount, &iCode))
+	if (!g_pEngine->subscribePnl(&g_oAccount, &iCode))
 	{
 		printf("\nREngine::subscribePnL() error : %d\n", iCode);
 
@@ -3571,8 +3580,7 @@ int main(int      argc,
 
 		if (bPnl == 2)
 		{
-			std::cout << "\nNQB is : " << NQB <<" NQS is : "<< NQS <<  endl;
-			bPnl = 0;
+			std::cout << "\nNQB is : " << NQB << " NQS is : " << NQS << endl;
 		}
 
 		//Close application if greater than 1 minute
@@ -3589,16 +3597,16 @@ int main(int      argc,
 	/*   ----------------------------------------------------------------   */
 	/*   The order is complete.  Clean up and exit.                         */
 	/*   ----------------------------------------------------------------   */
-	
+
 	if (!g_pEngine->unsubscribePnl(&g_oAccount, &iCode))
 	{
 		printf("\nREngine::unsubscribePnL() error : %d\n", iCode);
 	}
 	else
 		printf("\nSuccessfully unsubscribed from PnL engine");
-		
+
 	std::cout << "\nMain loop terminated" << endl;
-	
+
 	double TotPL;
 
 	TotPL = Pnl - (NQCmsh + ESCmsh);
