@@ -512,7 +512,7 @@ void MyCallbacks::CloseBuyFn()
 		}
 
 
-		
+
 
 	}
 	else if (BuyLimit)
@@ -553,7 +553,7 @@ void MyCallbacks::CloseSellFn()
 			oMktOrdParams.sExchange = _sExchangeNQ;
 		}
 
-		
+
 	}
 	else if (SellLimit)
 	{
@@ -1042,7 +1042,7 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			{
 				NQSLmt = NQLAsk1;
 				SellNQ = 1;
-				std::cout << "\nSent sell limit order" << endl;
+				std::cout << "\nSent sell limit order : " << NQSLmt << endl;
 			}
 		}
 
@@ -1061,14 +1061,14 @@ int MyCallbacks::OpenOrderReplay(OrderReplayInfo * pInfo,
 			{
 				NQBLmt = NQLBid1;
 				BuyNQ = 1;
-				std::cout << "\nSent buy limit order" << endl;
+				std::cout << "\nSent buy limit order : " << NQBLmt << endl;
 			}
 		}
 
 		NQModBOrd = false;
 	}
 
-	
+
 
 	livOrd = false;
 
@@ -1134,14 +1134,14 @@ int MyCallbacks::PnlReplay(PnlReplayInfo * pInfo,
 				{
 					ordcntNQ = 1;
 					NQLBuy = false;
-					
+
 
 				}
 				else if (NQPosn < 0)
 				{
 					ordcntNQ = 2;
 					NQLSell = false;
-					
+
 
 				}
 				else
@@ -1723,9 +1723,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 					if (SellNQ > 0)
 					{
 
-						if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -1741,13 +1741,22 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								}
 							}
 						}
+						else if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2) || Bs3 > 0)
+						{
+							if (!NQCnlSOrd)
+							{
+								livOrd = true;
+								NQCnlSOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 					else if (BuyNQ > 0)
 					{
 
-						if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -1763,20 +1772,29 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 								}
 							}
 						}
+						else if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2) || Bs3 < 0)
+						{
+							if (!NQCnlBOrd)
+							{
+								livOrd = true;
+								NQCnlBOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 				}
 				else
 				{
-					
+
 					if (Bs3 < -0.24 && Psh6 < -0.24)
 					{
 						if (SellNQ == 0)
 						{
 							if (!NQModSOrd)
 							{
-									livOrd = true;
-									NQModSOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+								livOrd = true;
+								NQModSOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 							}
 						}
 					}
@@ -1787,9 +1805,9 @@ int MyCallbacks::BestAskQuote(AskInfo * pInfo,
 							if (!NQModBOrd)
 							{
 
-									livOrd = true;
-									NQModBOrd = true;
-									g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+								livOrd = true;
+								NQModBOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
 
 							}
 						}
@@ -1955,9 +1973,9 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (SellNQ > 0)
 					{
-						if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -1973,12 +1991,21 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								}
 							}
 						}
+						else if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2) || Bs3 > 0)
+						{
+							if (!NQCnlSOrd)
+							{
+								livOrd = true;
+								NQCnlSOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 					else if (BuyNQ > 0)
 					{
-						if ((Bs3 < 0 && NQLBid1 > NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -1994,10 +2021,19 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								}
 							}
 						}
+						else if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2) || Bs3 < 0)
+						{
+							if (!NQCnlBOrd)
+							{
+								livOrd = true;
+								NQCnlBOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 				}
 				else
-				{					
+				{
 					if (SellNQ == 0)
 					{
 						if (Bs3 < -0.24 && Psh6 < -0.24)
@@ -2072,30 +2108,39 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 				{
 					if (SellNQ > 0)
 					{
-						f ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
-						{
 						if (bPnl == 2)
 						{
-							oMktOrdParams.sTicker = SymbNQ;
-							oMktOrdParams.sExchange = _sExchangeNQ;
-							oMktOrdParams.sBuySellType.pData = "B";
-							oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
-							oMktOrdParams.iQty = 1;
-
-							if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+							if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
 							{
-								SellNQ = 0;
-								bPnl = 0;
-								std::cout << "\nClosed Sell" << endl;
+								oMktOrdParams.sTicker = SymbNQ;
+								oMktOrdParams.sExchange = _sExchangeNQ;
+								oMktOrdParams.sBuySellType.pData = "B";
+								oMktOrdParams.sBuySellType.iDataLen = (int)strlen(oLmtOrdParams.sBuySellType.pData);
+								oMktOrdParams.iQty = 1;
+
+								if (g_pEngine->sendOrder(&oMktOrdParams, &iCode))
+								{
+									SellNQ = 0;
+									bPnl = 0;
+									std::cout << "\nClosed Sell" << endl;
+								}
 							}
 						}
+						else if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2) || Bs3 > 0)
+						{
+							if (!NQCnlSOrd)
+							{
+								livOrd = true;
+								NQCnlSOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
 						}
 					}
 					else if (BuyNQ > 0)
 					{
-						if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -2111,11 +2156,20 @@ int MyCallbacks::BestBidAskQuote(BidInfo * pBid,
 								}
 							}
 						}
+						else if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2) || Bs3 < 0)
+						{
+							if (!NQCnlBOrd)
+							{
+								livOrd = true;
+								NQCnlBOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 				}
 				else
 				{
-					
+
 					if (BuyNQ == 0)
 					{
 						if (Bs3 > 0.24 && Psh6 > 0.24)
@@ -2339,9 +2393,9 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 				{
 					if (SellNQ > 0)
 					{
-						if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 > 0 && NQLAsk1 > NQSLmt) || (NQSLmt - NQLAsk1) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -2357,12 +2411,21 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								}
 							}
 						}
+						else if (abs(NQSLmt - NQLAsk1) >= (incrNQ * 2) || Bs3 > 0)
+						{
+							if (!NQCnlSOrd)
+							{
+								livOrd = true;
+								NQCnlSOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 					else if (BuyNQ > 0)
 					{
-						if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
+						if (bPnl == 2)
 						{
-							if (bPnl == 2)
+							if ((Bs3 < 0 && NQLBid1 < NQBLmt) || (NQLBid1 - NQBLmt) >= (incrNQ * 10))
 							{
 								oMktOrdParams.sTicker = SymbNQ;
 								oMktOrdParams.sExchange = _sExchangeNQ;
@@ -2378,11 +2441,20 @@ int MyCallbacks::BestBidQuote(BidInfo * pInfo,
 								}
 							}
 						}
+						else if (abs(NQBLmt - NQLBid1) >= (incrNQ * 2) || Bs3 < 0)
+						{
+							if (!NQCnlBOrd)
+							{
+								livOrd = true;
+								NQCnlBOrd = true;
+								g_pEngine->replayOpenOrders(&g_oAccount, &iCode);
+							}
+						}
 					}
 				}
 				else
 				{
-					
+
 					if (BuyNQ == 0)
 					{
 						if (Bs3 > 0.24 && Psh6 > 0.24)
@@ -3565,7 +3637,7 @@ int main(int      argc,
 			std::cout << "\nPosition is : " << NQPosn << endl;
 			prt = bPnl;
 		}
-		
+
 
 		//Close application if greater than 1 minute
 
